@@ -1,0 +1,5 @@
+*/*.pyc
+*.pyc
+dist/*
+build/
+cyder/settings.py
