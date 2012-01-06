@@ -1,0 +1,12 @@
+Notes on setup
+
+virtualenv --no-site-packages cyder_env
+cd cyder_env
+source bin/activate
+sudo apt-get build-dep python-mysqldb
+pip install MySQL-python
+pip install ipaddr
+http://packages.python.org/ipaddr/
+
+Notes about the DB
+------------------
