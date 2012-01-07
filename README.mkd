@@ -24,6 +24,12 @@ don't be afraid to use a different utility (not named utility!!) module.
 
 No trailing white space anywhere.
 
+Test everything (try to).
+
+Before you do anything with an IP address (as a string or int) put it into the ipaddr library
+functions IPv4Address and IPv6Address. This will standardise how things are formated, stored, and
+displayed.
+
 DNS
 ===
 Domains and Reverse Domains
