@@ -37,7 +37,8 @@ def add_str_ipv4(addr):
         print str(e)
         return False
     try:
-        reverse_domain = ip_to_reverse_domain( ip.__str__() )[0]
+        ip_str = ip.__str__()
+        reverse_domain = ip_to_reverse_domain( ip_str )[0]
     except ReverseDomainNotFoundError:
         raise
 
@@ -53,10 +54,12 @@ def add_str_ipv6(addr):
         return False
     ip_upper, ip_lower = ipv6_to_longs( ip.__str__() )
     try:
-        reverse_domain = ip_to_reverse_domain( ip.__str__(), split=':' )[0]
+        ip_str = ip.__str__()
+        reverse_domain = ip_to_reverse_domain( ip_str, split=':' )[0]
     except ReverseDomainNotFoundError:
         raise
-    Ip( ip_upper = 0, ip_lower = ip.__int__(), reverse_domain = reverse_domain).save()
+    ip_upper, ip_lower = ipv6_to_longs(ip.__int__())
+    Ip( ip_upper = ip_upper, ip_lower = ip_lower, reverse_domain = reverse_domain).save()
     return
 
 

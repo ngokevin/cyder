@@ -1,5 +1,6 @@
 from django.db import models
 from cyder.cydns.soa.models import Soa
+import ipaddr
 import pdb
 
 class Reverse_Domain( models.Model ):
@@ -14,6 +15,10 @@ class Reverse_Domain( models.Model ):
 class ReverseDomainNotFoundError(Exception):
     def __str__(self):
         return "No reverse domain found. Condisder creating one."
+
+class ReverseDomainExistsError(Exception):
+    def __str__(self):
+        return "Reverse domain already exists."
 """
 Given an ip return the most specific reverse domain that the ip can belong to.
 @param: ip <ipaddr.IpAddres>
@@ -21,7 +26,7 @@ Given an ip return the most specific reverse domain that the ip can belong to.
 """
 def ip_to_reverse_domain( ip, split='.' ):
     octets = ip.split(split)
-    for i in range(len(octets)+1):
+    for i in reversed(range(len(octets)+1)):
         search_reverse_domain = split.join(octets[:i])
         rev_dom = Reverse_Domain.objects.filter( name = search_reverse_domain )
         if rev_dom:
@@ -40,12 +45,37 @@ This function needs to:
     2) Get all ip's that belong to the master_domain.
         * if any ip's now belong to the new reverse_domain, reassign the ip.
 """
-def add_reverse_domain( name, master_reverse_domain ):
+def add_reverse_ipv4_domain( name, master_reverse_domain ):
     #For now just add it. MUST ADD LOGIC HERE TODO
+
     if master_reverse_domain is None:
         soa = None
     else:
         soa = master_reverse_domain.soa
 
     reverse_domain = Reverse_Domain( name=name, master_reverse_domain=None, soa=soa )
+    reverse_domain.save()
+
+"""
+Use ipaddr.IPv6Address('2001:0db8:85a3:0002:0:0:0:2').__str__()
+this will represent the ip in a consisten manner.
+"""
+def add_reverse_ipv6_domain( name, master_reverse_domain ):
+    #For now just add it. MUST ADD LOGIC HERE TODO
+    try:
+        ip = ipaddr.IPv6Address(name)
+    except ipaddr.AddressValueError, e:
+        raise
+
+    if master_reverse_domain is None:
+        soa = None
+    else:
+        soa = master_reverse_domain.soa
+
+    # Check for a domain that already exists.
+    ip_name = ip.__str__().rstrip(':') #Get rid of trailing ':'
+    if Reverse_Domain.objects.filter( name=ip_name ):
+        raise ReverseDomainExistsError
+
+    reverse_domain = Reverse_Domain( name=ip_name, master_reverse_domain=None, soa=soa )
     reverse_domain.save()
