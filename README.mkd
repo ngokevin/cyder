@@ -1,4 +1,21 @@
+cyder is an [IPAM][ipam] system. It is split up into two logically seperate apps; `cydns` (DNS) and `cydhcp` (DHCP). The goal is two have the two apps be standalone and have less generic code 'glue' them together.
+
+The 'glue' (not to be confused with DNS glue records) is found in `core/`.
+
+Coding Ideas (Standards)
+------------------------
+
+Models shouldn't do anything magical. If something goes wrong, the calling code should be able to tell exactly what went wrong. Exceptions should be used at the model level and in helper function level. Ideally, these exceptions can help the code that more directly interfaces with the user make CRUD tasks easier.
+
+Avoid touching the models. You should never ever *EVER* directly create or update an instance of a model. Use helper function and use them everywhere. If a helper function doesn't exist *CREATE* it instead of directly accessing the model. Accessing the models for read access is OK.
+
+Builder function for models should be in the models.py file of the model. For more complex tasks don't be afraid to use a different utility (not named utility!!) module.
+
+No trailing white space anywhere.
+
+
 Notes on setup
+--------------
 
 virtualenv --no-site-packages cyder_env
 cd cyder_env
@@ -8,5 +25,4 @@ pip install MySQL-python
 pip install ipaddr
 http://packages.python.org/ipaddr/
 
-Notes about the DB
-------------------
+[ipam]:http://en.wikipedia.org/wiki/Internet_Protocol_Address_Management
