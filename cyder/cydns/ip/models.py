@@ -42,7 +42,9 @@ def add_str_ipv4(addr):
     except ReverseDomainNotFoundError:
         raise
 
-    Ip( ip_upper = 0, ip_lower = ip.__int__(), reverse_domain = reverse_domain).save()
+    new_ip = Ip( ip_upper = 0, ip_lower = ip.__int__(), reverse_domain = reverse_domain)
+    new_ip.save()
+    return new_ip
 
 
 
@@ -59,8 +61,9 @@ def add_str_ipv6(addr):
     except ReverseDomainNotFoundError:
         raise
     ip_upper, ip_lower = ipv6_to_longs(ip.__int__())
-    Ip( ip_upper = ip_upper, ip_lower = ip_lower, reverse_domain = reverse_domain).save()
-    return
+    new_ip = Ip( ip_upper = ip_upper, ip_lower = ip_lower, reverse_domain = reverse_domain)
+    new_ip.save()
+    return new_ip
 
 
 def ipv6_to_longs(addr):
