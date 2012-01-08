@@ -8,9 +8,9 @@ from django.test import TestCase
 from cyder.cydns.reverse_domain.models import Reverse_Domain, add_reverse_ipv4_domain
 from cyder.cydns.reverse_domain.models import add_reverse_ipv6_domain, ReverseDomainNotFoundError
 from cyder.cydns.reverse_domain.models import ReverseDomainExistsError,MasterReverseDomainNotFoundError
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
+from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain,remove_reverse_ipv4_domain
 
-from cyder.cydns.ip.models import add_str_ipv4, add_str_ipv6, ipv6_to_longs
+from cyder.cydns.ip.models import add_str_ipv4, add_str_ipv6, ipv6_to_longs, Ip
 
 from cyder.cydns.domain.models import Domain, add_domain, DomainExistsError, MasterDomainNotFoundError, remove_domain, DomainNotFoundError
 from cyder.cydns.domain.models import remove_domain_str, remove_domain
@@ -60,6 +60,8 @@ class SimpleTest(TestCase):
             pass
         self.assertEqual( MasterDomainNotFoundError, type(e))
 
+
+    # Reverse Domain test functions
     def test_boot_strap_add_ipv6_domain(self):
         osu_block = "2621:105:F000"
         test_dname = osu_block+":dead:beef::"
@@ -98,24 +100,30 @@ class SimpleTest(TestCase):
         boot_strap_add_ipv6_reverse_domain('2624::')
         boot_strap_add_ipv6_reverse_domain('2625:1::')
 
-    # Reverse Domain test functions
-    def test_remove_reverse_domain(self):
-        add_reverse_ipv4_domain('128')
-        rd = add_reverse_ipv4_domain('128.193')
-        ip1 = add_str_ipv4('128.193.8.1')
-        self.assertEqual( ip1.reverse_domain, rd )
-        ip2 = add_str_ipv4('128.193.8.2')
-        self.assertEqual( ip2.reverse_domain, rd )
-        ip3 = add_str_ipv4('128.193.8.3')
-        self.assertEqual( ip3.reverse_domain, rd )
-        ip4 = add_str_ipv4('128.193.8.4')
-        self.assertEqual( ip4.reverse_domain, rd )
-        rd = add_reverse_ipv4_domain('128.193.8')
-        self.assertEqual( ip1.reverse_domain, rd )
-        self.assertEqual( ip2.reverse_domain, rd )
-        self.assertEqual( ip3.reverse_domain, rd )
-        self.assertEqual( ip4.reverse_domain, rd )
+    def test_remove_reverse_ipv4_domain(self):
+        add_reverse_ipv4_domain('127')
+        rd1 = add_reverse_ipv4_domain('127.193')
+        rd2 = add_reverse_ipv4_domain('127.193.8')
+        ip1 = add_str_ipv4('127.193.8.1')
+        self.assertEqual( ip1.reverse_domain, rd2 )
+        ip2 = add_str_ipv4('127.193.8.2')
+        self.assertEqual( ip2.reverse_domain, rd2 )
+        ip3 = add_str_ipv4('127.193.8.3')
+        self.assertEqual( ip3.reverse_domain, rd2 )
+        ip4 = add_str_ipv4('127.193.8.4')
+        self.assertEqual( ip4.reverse_domain, rd2 )
+        remove_reverse_ipv4_domain('127.193.8')
+        ip1 = Ip.objects.filter(ip_lower = ipaddr.IPv4Address('127.193.8.1').__int__(), ip_type = '4')[0]
+        self.assertEqual( ip1.reverse_domain, rd1 )
+        ip2 = Ip.objects.filter(ip_lower = ipaddr.IPv4Address('127.193.8.2').__int__(), ip_type = '4')[0]
+        self.assertEqual( ip2.reverse_domain, rd1 )
+        ip3 = Ip.objects.filter(ip_lower = ipaddr.IPv4Address('127.193.8.2').__int__(), ip_type = '4')[0]
+        self.assertEqual( ip3.reverse_domain, rd1 )
+        ip4 = Ip.objects.filter(ip_lower = ipaddr.IPv4Address('127.193.8.3').__int__(), ip_type = '4')[0]
+        self.assertEqual( ip4.reverse_domain, rd1 )
 
+    """
+    def test_remove_reverse_ipv6_domain(self):
         osu_block = "2620:105:F000"
         rd = add_reverse_ipv4_domain(osu_block+":8::1")
         ip1 = add_str_ipv4(osu_block+":8::1")
@@ -131,20 +139,77 @@ class SimpleTest(TestCase):
         self.assertEqual( ip2.reverse_domain, rd )
         self.assertEqual( ip3.reverse_domain, rd )
         self.assertEqual( ip4.reverse_domain, rd )
+    """
 
-    def test_add_reverse_domains(self):
+    def test_master_reverse_domains(self):
+        rd1 =add_reverse_ipv4_domain('128')
+        rd2 = add_reverse_ipv4_domain('128.193')
+        rd3 = add_reverse_ipv4_domain('128.193.8')
+        self.assertEqual( rd3.master_reverse_domain, rd2 )
+        self.assertEqual( rd2.master_reverse_domain, rd1 )
+        self.assertEqual( rd1.master_reverse_domain, None )
+        """
+        rd1 =add_reverse_ipv4_domain('1283::')
+        rd2 = add_reverse_ipv4_domain('1283:0::')
+        rd3 = add_reverse_ipv4_domain('1283:0:4345::')
+        self.assertEqual( rd3.master_reverse_domain, rd2 )
+        self.assertEqual( rd2.master_reverse_domain, rd1 )
+        self.assertEqual( rd1.master_reverse_domain, None )
+        """
+
+
+    def test_add_reverse_ipv4_domains(self):
         try:
             add_reverse_ipv4_domain('192.168')
-        except ReverseMasterDomainNotFoundError, e:
+        except MasterReverseDomainNotFoundError, e:
             pass
-        self.assertEqual(ReverseMasterDomainNotFoundError, e)
+        self.assertEqual( MasterReverseDomainNotFoundError, type(e))
         add_reverse_ipv4_domain('192')
         add_reverse_ipv4_domain('192.168')
         try:
             add_reverse_ipv4_domain('192.168')
         except ReverseDomainExistsError, e:
             pass
-        self.assertEqual(ReverseDomainExistsError, e)
+        self.assertEqual(ReverseDomainExistsError, type(e))
+
+        add_reverse_ipv4_domain('128')
+        rd = add_reverse_ipv4_domain('128.193')
+        ip1 = add_str_ipv4('128.193.8.1')
+        self.assertEqual( ip1.reverse_domain, rd )
+        ip2 = add_str_ipv4('128.193.8.2')
+        self.assertEqual( ip2.reverse_domain, rd )
+        ip3 = add_str_ipv4('128.193.8.3')
+        self.assertEqual( ip3.reverse_domain, rd )
+        ip4 = add_str_ipv4('128.193.8.4')
+        self.assertEqual( ip4.reverse_domain, rd )
+        rd = add_reverse_ipv4_domain('128.193.8')
+        ip1 = Ip.objects.filter(ip_lower = ipaddr.IPv4Address('128.193.8.1').__int__(), ip_type = '4')[0]
+        self.assertEqual( ip1.reverse_domain, rd )
+        ip2 = Ip.objects.filter(ip_lower = ipaddr.IPv4Address('128.193.8.2').__int__(), ip_type = '4')[0]
+        self.assertEqual( ip2.reverse_domain, rd )
+        ip3 = Ip.objects.filter(ip_lower = ipaddr.IPv4Address('128.193.8.3').__int__(), ip_type = '4')[0]
+        self.assertEqual( ip3.reverse_domain, rd )
+        ip4 = Ip.objects.filter(ip_lower = ipaddr.IPv4Address('128.193.8.4').__int__(), ip_type = '4')[0]
+        self.assertEqual( ip4.reverse_domain, rd )
+
+    """
+    def test_add_reverse_ipv6_domains(self):
+        osu_block = "2620:105:F000"
+        rd = add_reverse_ipv4_domain(osu_block+":8::1")
+        ip1 = add_str_ipv4(osu_block+":8::1")
+        self.assertEqual( ip1.reverse_domain, rd )
+        ip2 = add_str_ipv4(osu_block+":8::2")
+        self.assertEqual( ip2.reverse_domain, rd )
+        ip3 = add_str_ipv4(osu_block+":8::3")
+        self.assertEqual( ip3.reverse_domain, rd )
+        ip4 = add_str_ipv4(osu_block+":8::4")
+        self.assertEqual( ip4.reverse_domain, rd )
+        rd = add_reverse_ipv4_domain(osu_block+":8::")
+        self.assertEqual( ip1.reverse_domain, rd )
+        self.assertEqual( ip2.reverse_domain, rd )
+        self.assertEqual( ip3.reverse_domain, rd )
+        self.assertEqual( ip4.reverse_domain, rd )
+    """
 
     def test_add_reverse_domainless_ips(self):
         try:
@@ -158,8 +223,7 @@ class SimpleTest(TestCase):
         except ReverseDomainNotFoundError, e:
             pass
         self.assertEqual( ReverseDomainNotFoundError, type(e))
-
-        add_reverse_ipv6_domain('2001:0db8:85a3:0000:0000::')
+        boot_strap_add_ipv6_reverse_domain('2001:0db8:85a3::')
         try:
             add_reverse_ipv6_domain('2001:0db8:85a3::')
         except ReverseDomainExistsError, e:

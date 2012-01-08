@@ -9,6 +9,11 @@ class Reverse_Domain( models.Model ):
     master_reverse_domain   = models.ForeignKey("self", null=True)
     soa                     = models.ForeignKey(Soa, null=True)
 
+    def __str__(self):
+        return "reverse_domain %s" % (self.name)
+    def __repr__(self):
+        return "<Reverse_Domain '%s'>" % (self.__str__())
+
     class Meta:
         db_table = 'reverse_domain'
 
@@ -29,19 +34,21 @@ class MasterReverseDomainNotFoundError(Exception):
 
 """
 Given an ip return the most specific reverse domain that the ip can belong to.
-@param: ip <ipaddr.IpAddres>
+@param: ip <'str'>
 @return: Reverse_Domain <'object'>
 """
 def ip_to_reverse_domain( ip, split='.' ):
     octets = ip.split(split)
-    for i in reversed(range(len(octets)+1)):
-        search_reverse_domain = split.join(octets[:i])
-        rev_dom = Reverse_Domain.objects.filter( name = search_reverse_domain )
-        if rev_dom:
-            return rev_dom
-        else:
-            continue
-    raise ReverseDomainNotFoundError
+    reverse_domain = None
+    for i in reversed(range(1,len(octets))):
+        search_reverse_domain = split.join(octets[:-i])
+        tmp_reverse_domain = Reverse_Domain.objects.filter( name = search_reverse_domain )
+        if tmp_reverse_domain:
+            reverse_domain = tmp_reverse_domain[0]
+    if reverse_domain:
+        return reverse_domain
+    else:
+        raise ReverseDomainNotFoundError
 
 """
 Given an name return the most specific reverse_domain that the ip can belong to.
@@ -55,13 +62,16 @@ A name x.y.z can be split up into x y and z. The reverse_domains, 'y.z' and 'z' 
         master domain
 """
 def _dname_to_master_reverse_domain( dname, split='.' ):
+    dname = dname.rstrip(split)
     tokens = dname.split(split)
     master_reverse_domain = None
-    for i in reversed(range(len(tokens)-1)):
-        parent_dname = split.join(tokens[i+1:])
-        master_reveres_domain = Reverse_Domain.objects.filter( name = parent_dname )
-        if not master_reverse_domain:
+    for i in reversed(range(1,len(tokens))):
+        parent_dname = split.join(tokens[:-i])
+        possible_master_reverse_domain = Reverse_Domain.objects.filter( name = parent_dname )
+        if not possible_master_reverse_domain:
             raise MasterReverseDomainNotFoundError
+        else:
+            master_reverse_domain = possible_master_reverse_domain[0]
     return master_reverse_domain
 
 """
@@ -70,7 +80,7 @@ This function is here to help create IPv6 reverse domains.
                     block   1    2    3    4
 
 The funciton should attempt to create block 1, block 2 ... block n.
-@return True if succesfull
+@return the last reverse_domain created.
 @exceptions ReverseDomainExistsError if it finds that any of the blocks already exist.
 """
 def boot_strap_add_ipv6_reverse_domain( dname ):
@@ -80,8 +90,8 @@ def boot_strap_add_ipv6_reverse_domain( dname ):
         cur_reverse_domain = tmp.rstrip(':')
         if i < 7:
             cur_reverse_domain += "::"
-        add_reverse_ipv6_domain( cur_reverse_domain )
-    return True
+        reverse_domain = add_reverse_ipv6_domain( cur_reverse_domain )
+    return reverse_domain
 
 """
 There are some formalities that need to happen when a reverse domain is added and deleted.
@@ -93,22 +103,42 @@ Given a new_domain the add function needs to:
     2) Get all ip's that belong to the master_domain.
         * if any ip's now belong to the new reverse_domain, reassign the ip to the new_domain
 """
-def add_reverse_ipv4_domain( name ):
+def add_reverse_ipv4_domain( dname ):
+    if Reverse_Domain.objects.filter( name = dname ):
+        raise ReverseDomainExistsError
     #For now just add it. MUST ADD LOGIC HERE TODO
 
-    if master_reverse_domain is None:
+    master_reverse_domain = _dname_to_master_reverse_domain( dname )
+    if not master_reverse_domain:
         soa = None
     else:
         soa = master_reverse_domain.soa
 
-    _dname_to_master_reverse_domain( dname ) # This function runs sanity checks
-    if Domain.objects.filter( name = dname ):
-        raise DomainExistsError
-
-
-    reverse_domain = Reverse_Domain( name=name, master_reverse_domain=None, soa=soa )
+    reverse_domain = Reverse_Domain( name=dname, master_reverse_domain=master_reverse_domain, soa=soa )
     reverse_domain.save()
+    _reassign_reverse_ipv4_ips( reverse_domain, master_reverse_domain )
     return reverse_domain
+"""
+See notes above. This function does the part...
+"* if any ip's (from the master_reverse_domain) now belong to the new reverse_domain, reassign the ip to the new_domain"
+Generic function to reassign ip's to their propper reverse domain.
+@param reverse_domain_1 and reverse_domain_2 <'Reverse_Domain'>
+Behaviour:
+    Get all reverse_domain_2's ip's.
+        if any ip can be reassigned to reverse_domain_1, reassign
+
+reverse_domain_1 <-- get's 0 or more new ip's
+
+"""
+def _reassign_reverse_ipv4_ips( reverse_domain_1, reverse_domain_2 ):
+    if reverse_domain_2 is None:
+        return
+    ips = reverse_domain_2.ip_set.iterator()
+    for ip in ips:
+        correct_reverse_domain = ip_to_reverse_domain( ip.__str__() )
+        if correct_reverse_domain != ip.reverse_domain:
+            ip.reverse_domain = correct_reverse_domain
+            ip.save()
 """
 Given a del_domain the remove function needs to:
     1) Make sure del_domain exists. Through ReverseDomainNotFoundError if it doesn't.
@@ -119,8 +149,15 @@ Given a del_domain the remove function needs to:
         defined to work on _leaf nodes_. If you attempt to remove a none leaf reverse_domain a
         ReverseChildDomainExistsError will be thrown.
 """
-def remove_reverse_ipv4_domain( name ):
-    pass
+def remove_reverse_ipv4_domain( dname ):
+    if not Reverse_Domain.objects.filter( name = dname ):
+        raise ReverseDomainNotFoundError
+    reverse_domain = Reverse_Domain.objects.filter( name = dname )[0] # It's cached
+    ips = reverse_domain.ip_set.iterator()
+    for ip in ips:
+        ip.reverse_domain = reverse_domain.master_reverse_domain
+        ip.save()
+    reverse_domain.delete()
 
 
 """
@@ -135,20 +172,22 @@ def add_reverse_ipv6_domain( name ):
         raise
 
     ip_name = ip.__str__().rstrip(':') #Get rid of trailing ':'
-    possible_master_domain = ':'.join(ip_name.split(':')[:-1]) # Remove the last block
+    possible_master_reverse_domain = ':'.join(ip_name.split(':')[:-1]) # Remove the last block
     # 1238:1234:1234 -> becomes -> 1238:1234 (which is the master domain)
-
-    master_reverse_domain = None
-    if not possible_master_domain:
-        soa = None
-    else:
-        # Inherit SOA from master
-        master_reverse_domain = Reverse_Domain.objects.filter( name = possible_master_domain )[0]
-        soa = master_reverse_domain.soa
 
     # Check for a domain that already exists.
     if Reverse_Domain.objects.filter( name=ip_name ):
         raise ReverseDomainExistsError
 
+    master_reverse_domain = None
+    if not possible_master_reverse_domain:
+        soa = None
+    else:
+        # Inherit SOA from master
+        master_reverse_domain = Reverse_Domain.objects.filter( name = possible_master_reverse_domain )[0]
+        soa = master_reverse_domain.soa
+
+
     reverse_domain = Reverse_Domain( name=ip_name, master_reverse_domain=None, soa=soa )
     reverse_domain.save()
+    return reverse_domain
