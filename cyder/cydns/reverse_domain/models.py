@@ -10,9 +10,9 @@ class Reverse_Domain( models.Model ):
     soa                     = models.ForeignKey(Soa, null=True)
 
     def __str__(self):
-        return "reverse_domain %s" % (self.name)
+        return "<Reverse_Domain '%s'>" % (self.name)
     def __repr__(self):
-        return "<Reverse_Domain '%s'>" % (self.__str__())
+        return  self.__str__()
 
     class Meta:
         db_table = 'reverse_domain'
