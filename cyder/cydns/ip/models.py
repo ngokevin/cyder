@@ -23,7 +23,7 @@ class Ip( models.Model ):
     ip_upper        = models.BigIntegerField(null=False)
     ip_lower        = models.BigIntegerField(null=False)
     reverse_domain  = models.ForeignKey(Reverse_Domain, null=False)
-    ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES)
+    ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
 
     def __str__(self):
         if self.ip_type == '4':
@@ -49,7 +49,7 @@ def add_str_ipv4(addr):
     try:
         ip = ipaddr.IPv4Address(addr)
     except ipaddr.AddressValueError, e:
-        "Error in creating new ip."
+        print "Error in creating new ip."
         print str(e)
         return False
     try:
@@ -73,7 +73,7 @@ def add_str_ipv6(addr):
     ip_upper, ip_lower = ipv6_to_longs( ip.__str__() )
     try:
         ip_str = ip.__str__()
-        reverse_domain = ip_to_reverse_domain( ip_str, split=':' )
+        reverse_domain = ip_to_reverse_domain( ip_str, ip_type='6' )
     except ReverseDomainNotFoundError:
         raise
     ip_upper, ip_lower = ipv6_to_longs(ip.__int__())
@@ -83,7 +83,11 @@ def add_str_ipv6(addr):
 
 
 def ipv6_to_longs(addr):
-    ip = ipaddr.IPv6Address(addr)
+    try:
+        ip = ipaddr.IPv6Address(addr)
+    except ipaddr.AddressValueError, e:
+        raise
     ip_upper = ip._ip >> 64 # Put the last 64 bits in the first 64
     ip_lower = ip._ip & (1 << 64)-1 # Mask off the last sixty four bits
     return (ip_upper, ip_lower)
+
