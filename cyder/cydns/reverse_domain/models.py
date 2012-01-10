@@ -39,7 +39,7 @@ Given an ip return the most specific reverse domain that the ip can belong to.
 @param: ip <'str'>
 @return: Reverse_Domain <'object'>
 """
-def ip_to_reverse_domain( ip, ip_type='4' ):
+def ip_to_reverse_domain( ip, ip_type ):
     if ip_type == '6':
         ip = nibblize(ip)
     tokens = ip.split('.')
@@ -91,7 +91,7 @@ The funciton should attempt to create nibble 1, nibble 2 ... nibble n.
 def boot_strap_add_ipv6_reverse_domain( ip ):
     for i in range(1,len(ip)+1,2):
         cur_reverse_domain = ip[:i]
-        reverse_domain = add_reverse_ipv4_domain( cur_reverse_domain, ip_type='6' )
+        reverse_domain = add_reverse_domain( cur_reverse_domain, ip_type='6' )
     return reverse_domain
 
 """
@@ -104,7 +104,7 @@ Given a new_domain the add function needs to:
     2) Get all ip's that belong to the master_domain.
         * if any ip's now belong to the new reverse_domain, reassign the ip to the new_domain
 """
-def add_reverse_ipv4_domain( dname, ip_type='4' ):
+def add_reverse_domain( dname, ip_type ):
     if Reverse_Domain.objects.filter( name = dname ):
         raise ReverseDomainExistsError
     #For now just add it. MUST ADD LOGIC HERE TODO
@@ -133,7 +133,7 @@ Behaviour:
 reverse_domain_1 <-- get's 0 or more new ip's
 
 """
-def _reassign_reverse_ipv4_ips( reverse_domain_1, reverse_domain_2, ip_type='4' ):
+def _reassign_reverse_ipv4_ips( reverse_domain_1, reverse_domain_2, ip_type ):
     if reverse_domain_2 is None:
         return
     ips = reverse_domain_2.ip_set.iterator()
@@ -152,10 +152,10 @@ Given a del_domain the remove function needs to:
         defined to work on _leaf nodes_. If you attempt to remove a none leaf reverse_domain a
         ReverseChildDomainExistsError will be thrown.
 """
-def remove_reverse_ipv4_domain( dname ):
-    if not Reverse_Domain.objects.filter( name = dname ):
+def remove_reverse_domain( dname, ip_type ):
+    if not Reverse_Domain.objects.filter( name = dname, ip_type = ip_type ):
         raise ReverseDomainNotFoundError
-    reverse_domain = Reverse_Domain.objects.filter( name = dname )[0] # It's cached
+    reverse_domain = Reverse_Domain.objects.filter( name = dname, ip_type = ip_type )[0] # It's cached
     ips = reverse_domain.ip_set.iterator()
     for ip in ips:
         ip.reverse_domain = reverse_domain.master_reverse_domain

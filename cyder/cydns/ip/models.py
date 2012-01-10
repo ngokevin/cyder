@@ -54,7 +54,7 @@ def add_str_ipv4(addr):
         return False
     try:
         ip_str = ip.__str__()
-        reverse_domain = ip_to_reverse_domain( ip_str )
+        reverse_domain = ip_to_reverse_domain( ip_str, ip_type='4' )
     except ReverseDomainNotFoundError:
         raise
 
