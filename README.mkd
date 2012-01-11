@@ -161,10 +161,11 @@ There are possible race conditions in adding and removing a reverse_domain.
 reverse_domain: 128.193.8
 reverse_domain: 128.193
 
-Someone starts to delete 128.193.8
-You create a new ip with reverse_domain = 128.193.8
-Before you do Ip.save(), 128.193.8 is deleted in the database.
-You do Ip.save(); You now reverence a non existant reverse_domain.
+
+    Someone starts to delete 128.193.8
+    You create a new ip with reverse_domain = 128.193.8
+    Before you do Ip.save(), 128.193.8 is deleted in the database.
+    You do Ip.save(); You now reverence a non existant reverse_domain.
 
 Likely hood: Very Very low.
 Solution: Lock the reverse_domain table when creating a new Ip or have a script go through once in a
@@ -215,13 +216,18 @@ If instead we started with:
     |
     1234:0:0:: [ip set: 1234:0:0:0:1: 1234:0:0:0:2::]
 
-Then we added, `1234:0:0:0::`, we would have the same tree.
+Then we added, `1234:0:0:0::`,  the ip set would be reassigned and we would have the same tree.
 
     1234:: [ip set: 1234:1:: 1234:2::]
     |
     1234:0:0:: [ip set: Null ]
     |
     1234:0:0:0:: [ip set: 1234:0:0:0:1: 1234:0:0:0:2::]
+
+### So what is the problem right now?
+
+It comes down to the `ipaddr` library. The address `1234::` and `1234:0:0:0::`, when put into
+IPv6Address come out to the same representation `1234::`.
 
 Notes on setup
 --------------
