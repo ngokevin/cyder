@@ -165,7 +165,8 @@ reverse_domain: 128.193
     Someone starts to delete 128.193.8
     You create a new ip with reverse_domain = 128.193.8
     Before you do Ip.save(), 128.193.8 is deleted in the database.
-    You do Ip.save(); You now reverence a non existant reverse_domain.
+    You do Ip.save()
+    You now reverence a non existant reverse_domain.
 
 Likely hood: Very Very low.
 Solution: Lock the reverse_domain table when creating a new Ip or have a script go through once in a
