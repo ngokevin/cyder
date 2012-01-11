@@ -38,15 +38,6 @@ This is used to check for rule 1 in add_domain() rules.
 A name x.y.z can be split up into x y and z. The domains, 'y.z' and 'z' shoud exist.
 @return master_domain if valid domain
         None if invalid master domain
-def _dname_to_master_domain( dname ):
-    tokens = dname.split('.')
-    master_domain = None
-    for i in reversed(range(len(tokens)-1)):
-        parent_dname = '.'.join(tokens[i+1:])
-        master_domain = Domain.objects.filter( name = parent_dname )
-        if not master_domain:
-            raise MasterDomainNotFoundError
-    return master_domain
 """
 
 def _dname_to_master_domain( dname ):

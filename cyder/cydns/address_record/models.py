@@ -9,5 +9,8 @@ class Address_Record( models.Model ):
     ip              = models.OneToOneField(Ip, null=False)
     domain          = models.ForeignKey(Domain, null=False)
 
+    def __str__():
+
     class Meta:
         db_table = 'address_record'
+

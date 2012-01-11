@@ -3,21 +3,10 @@ from cyder.cydns.reverse_domain.models import Reverse_Domain, ip_to_reverse_doma
 import ipaddr
 import pdb
 
-"""
-2001:0db8:85a3:0000:0000:8a2e:0370:7334
-|-----------------| |------------------|
-    *ip_upper*              128.193.0.0
-                            *ip_lower*
-
-TODO
-Data Validation
----------------
-* If ipv4, ip_upper == 0
-* If ipv4, ip_lower < 4294967295
-
-"""
 
 class Ip( models.Model ):
+    """Ip represents either an IPv4 or IPv6 address. All A, CNAME, PTR, and any other classes that use an ip will import and use this class.
+    """
     IP_TYPE_CHOICES = ( ('4','ipv4'),('6','ipv6') )
     id              = models.AutoField(primary_key=True)
     ip_upper        = models.BigIntegerField(null=False)
@@ -44,6 +33,13 @@ class Ip( models.Model ):
         db_table = 'ip'
 
 def add_str_ipv4(addr):
+    """This function will add an IPv4 address to the database.
+
+    :param name: addr
+    :type name: str
+    :returns: new_ip -- Ip object
+    :raises: ValueError, AddressValueError, ReverseDomainNotFoundError
+    """
     if type(addr) is not type(''):
         raise ValueError
     try:
@@ -65,6 +61,13 @@ def add_str_ipv4(addr):
 
 
 def add_str_ipv6(addr):
+    """This function will add an IPv6 address to the database.
+
+    :param name: addr
+    :type name: str
+    :returns: new_ip -- Ip object
+    :raises: ValueError, AddressValueError, ReverseDomainNotFoundError
+    """
     try:
         ip = ipaddr.IPv6Address(addr)
     except ipaddr.AddressValueError, e:
@@ -83,6 +86,13 @@ def add_str_ipv6(addr):
 
 
 def ipv6_to_longs(addr):
+    """This function will turn an IPv6 into two long. The first will be reprsenting the first 64 bits of the address and second will be the lower 64 bits.
+
+    :param name: addr
+    :type name: str
+    :returns: (ip_upper, ip_lower) -- (int, int)
+    :raises: AddressValueError
+    """
     try:
         ip = ipaddr.IPv6Address(addr)
     except ipaddr.AddressValueError, e:
