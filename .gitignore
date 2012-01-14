@@ -4,6 +4,5 @@ dist/*
 build/
 cyder/settings.py
 doc_build/
-doc_source/
 make.bat
 cyder/Makefile
