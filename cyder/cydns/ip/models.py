@@ -35,8 +35,8 @@ class Ip( models.Model ):
 def add_str_ipv4(addr):
     """This function will add an IPv4 address to the database.
 
-    :param name: addr
-    :type name: str
+    :param addr: IPv4 address to be added.
+    :type addr: str
     :returns: new_ip -- Ip object
     :raises: ValueError, AddressValueError, ReverseDomainNotFoundError
     """
@@ -63,10 +63,10 @@ def add_str_ipv4(addr):
 def add_str_ipv6(addr):
     """This function will add an IPv6 address to the database.
 
-    :param name: addr
-    :type name: str
+    :param addr: IPv6 address to be added.
+    :type addr: str
     :returns: new_ip -- Ip object
-    :raises: ValueError, AddressValueError, ReverseDomainNotFoundError
+    :raises: AddressValueError, ReverseDomainNotFoundError
     """
     try:
         ip = ipaddr.IPv6Address(addr)
@@ -88,8 +88,8 @@ def add_str_ipv6(addr):
 def ipv6_to_longs(addr):
     """This function will turn an IPv6 into two long. The first will be reprsenting the first 64 bits of the address and second will be the lower 64 bits.
 
-    :param name: addr
-    :type name: str
+    :param addr: IPv6 to be converted.
+    :type addr: str
     :returns: (ip_upper, ip_lower) -- (int, int)
     :raises: AddressValueError
     """

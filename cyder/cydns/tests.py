@@ -5,18 +5,21 @@ OSU IPv6 allocation:
 
 from django.test import TestCase
 
-from cyder.cydns.reverse_domain.models import Reverse_Domain, add_reverse_domain
-from cyder.cydns.reverse_domain.models import add_reverse_ipv6_domain, ReverseDomainNotFoundError
+from cyder.cydns.reverse_domain.models import Reverse_Domain, add_reverse_domain,ReverseDomainNotFoundError
 from cyder.cydns.reverse_domain.models import ReverseDomainExistsError,MasterReverseDomainNotFoundError
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain,remove_reverse_domain
 
 from cyder.cydns.ip.models import add_str_ipv4, add_str_ipv6, ipv6_to_longs, Ip
 
-from cyder.cydns.domain.models import Domain, add_domain, DomainExistsError, MasterDomainNotFoundError, remove_domain, DomainNotFoundError
-from cyder.cydns.domain.models import remove_domain_str, remove_domain
+from cyder.cydns.domain.models import Domain, add_domain, DomainExistsError, MasterDomainNotFoundError
+from cyder.cydns.domain.models import remove_domain_str, remove_domain, remove_domain, DomainNotFoundError
+
+from cyder.cydns.address_record.models import remove_domain_str, remove_domain, remove_domain, RecordExistsError
+from cyder.cydns.address_record.models import InvalidRecordNameError
 
 import ipaddr
 import pdb
+
 
 class DomainTests(TestCase):
     def test_remove_domain(self):
