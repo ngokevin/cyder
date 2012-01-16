@@ -134,6 +134,16 @@ class AddressRecordTests(TestCase):
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
         try:
+            self.do_update_A_record_test( rec0, None, 12314123)
+        except InvalidRecordNameError, e:
+            pass
+        self.assertEqual(InvalidRecordNameError, type(e))
+        try:
+            self.do_update_A_record_test( rec0, "narf", 1214123)
+        except InvalidRecordNameError, e:
+            pass
+        self.assertEqual(InvalidRecordNameError, type(e))
+        try:
             self.do_update_A_record_test( rec0, "%asdfsaf", "1928.193.23.1")
         except InvalidRecordNameError, e:
             pass
@@ -179,6 +189,11 @@ class AddressRecordTests(TestCase):
         self.assertEqual(InvalidRecordNameError, type(e))
         try:
             self.do_update_AAAA_record_test( rec0, " sdfsa ", None)
+        except InvalidRecordNameError, e:
+            pass
+        self.assertEqual(InvalidRecordNameError, type(e))
+        try:
+            self.do_update_AAAA_record_test( rec0, "sdfsa", 1239812472934623847)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
@@ -380,6 +395,12 @@ class AddressRecordTests(TestCase):
         self.assertEqual(AddressValueError, type(e))
 
         try:
+            add_A_record( 'asdf1', self.o_e , 123142314)
+        except ipaddr.AddressValueError, e:
+            pass
+        self.assertEqual(AddressValueError, type(e))
+
+        try:
             add_A_record( 'asdf1', self.o_e , "128.193.0.1.22")
         except ipaddr.AddressValueError, e:
             pass
@@ -408,6 +429,13 @@ class AddressRecordTests(TestCase):
         except ipaddr.AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
+
+        try:
+            add_AAAA_record( 'asdf4', self.o_e , 123213487823762347612346)
+        except ipaddr.AddressValueError, e:
+            pass
+        self.assertEqual(AddressValueError, type(e))
+
         try:
             add_AAAA_record( 'asdf6', self.o_e , "9::1")
         except ReverseDomainNotFoundError, e:
