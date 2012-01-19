@@ -14,7 +14,7 @@ from cyder.cydns.ip.models import add_str_ipv4, add_str_ipv6, ipv6_to_longs, Ip
 from cyder.cydns.domain.models import Domain, add_domain, DomainExistsError, MasterDomainNotFoundError
 from cyder.cydns.domain.models import remove_domain_str, remove_domain, remove_domain, DomainNotFoundError
 
-from cyder.cydns.address_record.models import remove_domain_str, remove_domain, remove_domain, RecordExistsError
+#from cyder.cydns.address_record.models import remove_domain_str, remove_domain, remove_domain, RecordExistsError
 from cyder.cydns.address_record.models import InvalidRecordNameError
 
 import ipaddr
@@ -35,6 +35,7 @@ class DomainTests(TestCase):
         except DomainNotFoundError, e:
             pass
         self.assertEqual( DomainNotFoundError, type(e))
+        e = None
 
     def test__name_to_master_domain(self):
         try:
@@ -42,6 +43,7 @@ class DomainTests(TestCase):
         except MasterDomainNotFoundError, e:
             pass
         self.assertEqual( MasterDomainNotFoundError, type(e))
+        e = None
 
         cn = add_domain('cn' )
         add_domain('foo.cn' )
@@ -50,6 +52,7 @@ class DomainTests(TestCase):
         except DomainExistsError, e:
             pass
         self.assertEqual( DomainExistsError, type(e))
+        e = None
 
 
     def test_create_domain(self):
@@ -60,6 +63,7 @@ class DomainTests(TestCase):
         except MasterDomainNotFoundError, e:
             pass
         self.assertEqual( MasterDomainNotFoundError, type(e))
+        e = None
 
 class ReverseDomainTests(TestCase):
 
@@ -69,7 +73,6 @@ class ReverseDomainTests(TestCase):
         add_reverse_domain('127', ip_type='4')
         rd1 = add_reverse_domain('127.193', ip_type='4')
         rd2 = add_reverse_domain('127.193.8', ip_type='4')
-        #pdb.set_trace()
         ip1 = add_str_ipv4('127.193.8.1')
         self.assertEqual( ip1.reverse_domain, rd2 )
         ip2 = add_str_ipv4('127.193.8.2')
@@ -105,6 +108,7 @@ class ReverseDomainTests(TestCase):
         except MasterReverseDomainNotFoundError, e:
             pass
         self.assertEqual( MasterReverseDomainNotFoundError, type(e))
+        e = None
         add_reverse_domain('192', ip_type='4')
         add_reverse_domain('192.168', ip_type='4')
         try:
@@ -112,6 +116,7 @@ class ReverseDomainTests(TestCase):
         except ReverseDomainExistsError, e:
             pass
         self.assertEqual(ReverseDomainExistsError, type(e))
+        e = None
 
         rd = add_reverse_domain('128', ip_type='4')
         rd0 = add_reverse_domain('128.193', ip_type='4')
@@ -151,26 +156,31 @@ class ReverseDomainTests(TestCase):
         except ReverseDomainExistsError, e:
             pass
         self.assertEqual( ReverseDomainExistsError, type(e))
+        e = None
         try:
             add_reverse_domain('2.6.2.1', ip_type='6')
         except ReverseDomainExistsError, e:
             pass
         self.assertEqual( ReverseDomainExistsError, type(e))
+        e = None
         try:
             add_reverse_domain('2.6.2.1.1.0.5.F.0.0.0.d.e.a.d', ip_type='6')
         except ReverseDomainExistsError, e:
             pass
         self.assertEqual( ReverseDomainExistsError, type(e))
+        e = None
         try:
             add_reverse_domain('2.6.2.1.1.0.5.F.0.0.0.d.e.a.d.b.e.e.f', ip_type='6')
         except ReverseDomainExistsError, e:
             pass
         self.assertEqual( ReverseDomainExistsError, type(e))
+        e = None
         try:
             add_reverse_domain(test_dname, ip_type='6')
         except ReverseDomainExistsError, e:
             pass
         self.assertEqual( ReverseDomainExistsError, type(e))
+        e = None
         # These should pass
         boot_strap_add_ipv6_reverse_domain('7.6.2.4')
         boot_strap_add_ipv6_reverse_domain('6.6.2.5.1')
@@ -184,18 +194,21 @@ class ReverseDomainTests(TestCase):
         except ReverseDomainNotFoundError, e:
             pass
         self.assertEqual( ReverseDomainNotFoundError, type(e))
+        e = None
 
         try:
             add_str_ipv6('2001:0db8:85a3:0000:0000:8a2e:0370:733')
         except ReverseDomainNotFoundError, e:
             pass
         self.assertEqual( ReverseDomainNotFoundError, type(e))
+        e = None
         rd0 = boot_strap_add_ipv6_reverse_domain("2.0.0.1")
         try:
             add_reverse_domain('2.0.0.1', ip_type='6')
         except ReverseDomainExistsError, e:
             pass
         self.assertEqual( ReverseDomainExistsError, type(e))
+        e = None
 
         add_str_ipv6('2001:0db8:85a3:0000:0000:8a2e:0370:733')
 

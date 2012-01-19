@@ -42,12 +42,7 @@ def add_str_ipv4(addr):
     """
     if type(addr) is not type(''):
         raise ValueError
-    try:
-        ip = ipaddr.IPv4Address(addr)
-    except ipaddr.AddressValueError, e:
-        print "Error in creating new ip."
-        print str(e)
-        return False
+    ip = ipaddr.IPv4Address(addr)
     try:
         ip_str = ip.__str__()
         reverse_domain = ip_to_reverse_domain( ip_str, ip_type='4' )
@@ -68,11 +63,8 @@ def add_str_ipv6(addr):
     :returns: new_ip -- Ip object
     :raises: AddressValueError, ReverseDomainNotFoundError
     """
-    try:
-        ip = ipaddr.IPv6Address(addr)
-    except ipaddr.AddressValueError, e:
-        print str(e)
-        return False
+    ip = ipaddr.IPv6Address(addr)
+
     ip_upper, ip_lower = ipv6_to_longs( ip.__str__() )
     try:
         ip_str = ip.__str__()

@@ -16,10 +16,9 @@ from cyder.cydns.ip.models import add_str_ipv4, add_str_ipv6, ipv6_to_longs, Ip
 from cyder.cydns.domain.models import Domain, add_domain, DomainExistsError, MasterDomainNotFoundError
 from cyder.cydns.domain.models import remove_domain_str, remove_domain, remove_domain, DomainNotFoundError
 
-from cyder.cydns.address_record.models import remove_domain_str, remove_domain, remove_domain, RecordExistsError
 from cyder.cydns.address_record.models import InvalidRecordNameError,RecordNotFoundError,add_AAAA_record,add_A_record
 from cyder.cydns.address_record.models import remove_A_record,remove_AAAA_record, update_A_record, update_AAAA_record
-from cyder.cydns.address_record.models import Address_Record,AddressValueError
+from cyder.cydns.address_record.models import Address_Record,AddressValueError,RecordExistsError
 
 import ipaddr
 import pdb
@@ -33,36 +32,42 @@ class AddressRecordTests(TestCase):
         try:
             self.o_e = add_domain('oregonstate.edu')
         except DomainExistsError, e:
+            self.o_e = Domain.objects.filter( name = 'oregonstate.edu' )[0]
+            pass
+
+        try:
+            self.f_o_e = add_domain('foo.oregonstate.edu')
+        except DomainExistsError, e:
+            self.f_o_e = Domain.objects.filter( name = 'foo.oregonstate.edu' )[0]
+            pass
+
+        try:
+            self.m_o_e = add_domain('max.oregonstate.edu')
+        except DomainExistsError, e:
+            self.m_o_e = Domain.objects.filter( name = 'max.oregonstate.edu' )[0]
+            pass
+
+        try:
+            self.z_o_e = add_domain('zax.oregonstate.edu')
+        except DomainExistsError, e:
+            self.z_o_e = Domain.objects.filter( name = 'zax.oregonstate.edu' )[0]
             pass
         try:
-            self.o_e = Domain.objects.filter( name = 'oregonstate.edu' )
+            self.g_o_e = add_domain('george.oregonstate.edu')
         except DomainExistsError, e:
+            self.g_o_e = Domain.objects.filter( name = 'george.oregonstate.edu' )[0]
             pass
-        try:
-            self.f_o_e = Domain.objects.filter( name = 'foo.oregonstate.edu' )
-        except DomainExistsError, e:
-            pass
-        try:
-            self.m_o_e = Domain.objects.filter( name = 'max.oregonstate.edu' )
-        except DomainExistsError, e:
-            pass
-        try:
-            self.z_o_e = Domain.objects.filter( name = 'zax.oregonstate.edu' )
-        except DomainExistsError, e:
-            pass
-        try:
-            self.g_o_e = Domain.objects.filter( name = 'george.oregonstate.edu' )
-        except DomainExistsError, e:
-            pass
+
         try:
             self._128 = add_reverse_domain('128', ip_type='4')
         except ReverseDomainExistsError, e:
-            self._128 = Reverse_Domain.objects.filter( name = '128' )
+            self._128 = Reverse_Domain.objects.filter( name = '128' )[0]
             pass
+
         try:
              self._128._193 = add_reverse_domain('128.193', ip_type='4')
         except ReverseDomainExistsError, e:
-            self._128._193 = Reverse_Domain.objects.filter( name = '128.193' )
+            self._128._193 = Reverse_Domain.objects.filter( name = '128.193' )[0]
             pass
 
     ######################
@@ -75,7 +80,7 @@ class AddressRecordTests(TestCase):
     """
     def do_update_A_record_test( self, record, new_name, new_ip ):
         update_A_record( record , new_name, new_ip )
-        aret  = Address_Record.objects.filter( name = new_name ).select_relate('ip')[0]
+        aret  = Address_Record.objects.filter( name = new_name ).select_related('ip')[0]
         if new_name:
             self.assertEqual( aret.name, new_name )
         if new_ip:
@@ -83,7 +88,7 @@ class AddressRecordTests(TestCase):
 
     def do_update_AAAA_record_test( self, record, new_name, new_ip ):
         update_AAAA_record( record , new_name, new_ip )
-        aret  = Address_Record.objects.filter( name = new_name ).select_relate('ip')[0]
+        aret  = Address_Record.objects.filter( name = new_name ).select_related('ip')[0]
         if new_name:
             self.assertEqual( aret.name, new_name )
         if new_ip:
@@ -107,7 +112,8 @@ class AddressRecordTests(TestCase):
         self.do_update_A_record_test( rec2, None, None)
 
     def test_update_AAAA_record(self):
-        osu_block = "2620:105:F000:"
+        osu_block = "8620:105:F000:"
+        boot_strap_add_ipv6_reverse_domain("8.6.2.0")
         rec0 = add_AAAA_record( '', self.z_o_e , osu_block+":1")
         rec1 = add_AAAA_record( 'foo', self.z_o_e , osu_block+":1")
         rec2 = add_AAAA_record( 'bar', self.z_o_e , osu_block+":1")
@@ -133,90 +139,108 @@ class AddressRecordTests(TestCase):
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_A_record_test( rec0, None, 12314123)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_A_record_test( rec0, "narf", 1214123)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_A_record_test( rec0, "%asdfsaf", "1928.193.23.1")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_A_record_test( rec0, " sdfsa ", None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_A_record_test( rec0, None, "19.193.23.1.2")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_A_record_test( rec0, -1, None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_A_record_test( rec0, 34871, None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_A_record_test( rec0, None, 71134)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
 
     def test_update_invalid_ip_AAAA_record(self):
-        osu_block = "2620:105:F000:"
+        osu_block = "7620:105:F000:"
+        boot_strap_add_ipv6_reverse_domain("7.6.2.0")
         rec0 = add_AAAA_record( '', self.g_o_e , osu_block+":1")
         try:
             self.do_update_AAAA_record_test( rec0, None, osu_block+":::")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_AAAA_record_test( rec0, "%asdfsaf", osu_block)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_AAAA_record_test( rec0, " sdfsa ", None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_AAAA_record_test( rec0, "sdfsa", 1239812472934623847)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_AAAA_record_test( rec0, None, "128.193.1.1")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_AAAA_record_test( rec0, -1, None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_AAAA_record_test( rec0, 34871, None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             self.do_update_AAAA_record_test( rec0, None, 71134)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
 
 
     ######################
@@ -273,7 +297,8 @@ class AddressRecordTests(TestCase):
         self.do_remove_A_record_test("right", self.f_o_e, "128.193.2.6" )
 
     def test_remove_AAAA_address_records(self):
-        osu_block = "2620:105:F000:"
+        osu_block = "4620:105:F000:"
+        boot_strap_add_ipv6_reverse_domain("4.6.2.0")
         self.do_remove_AAAA_record_test("", self.o_e, osu_block+":1" )
         self.do_remove_AAAA_record_test("please", self.o_e, osu_block+":2" )
         self.do_remove_AAAA_record_test("visit", self.o_e, osu_block+":4" )
@@ -295,6 +320,7 @@ class AddressRecordTests(TestCase):
         except RecordNotFoundError, e:
             pass
         self.assertEqual(RecordNotFoundError, type(e))
+        e = None
         #++++++++++++++++
         try:
             remove_A_record("", self.f_o_e)
@@ -305,12 +331,14 @@ class AddressRecordTests(TestCase):
         except RecordNotFoundError, e:
             pass
         self.assertEqual(RecordNotFoundError, type(e))
+        e = None
         #++++++++++++++++
         try:
             remove_A_record("pretty_sure_it_doesn_exist0", self.o_e)
         except RecordNotFoundError, e:
             pass
         self.assertEqual(RecordNotFoundError, type(e))
+        e = None
         #++++++++++++++++
         try:
             remove_A_record("", self.f_o_e)
@@ -321,6 +349,7 @@ class AddressRecordTests(TestCase):
         except RecordNotFoundError, e:
             pass
         self.assertEqual(RecordNotFoundError, type(e))
+        e = None
 
     def test_remove_nonexistant_AAAA_address_records(self):
         try:
@@ -328,6 +357,7 @@ class AddressRecordTests(TestCase):
         except RecordNotFoundError, e:
             pass
         self.assertEqual(RecordNotFoundError, type(e))
+        e = None
         #++++++++++++++++
         try:
             remove_AAAA_record("", self.f_o_e)
@@ -338,12 +368,14 @@ class AddressRecordTests(TestCase):
         except RecordNotFoundError, e:
             pass
         self.assertEqual(RecordNotFoundError, type(e))
+        e = None
         #++++++++++++++++
         try:
             remove_AAAA_record("pretty_sure_it_doesn_exist0", self.o_e)
         except RecordNotFoundError, e:
             pass
         self.assertEqual(RecordNotFoundError, type(e))
+        e = None
         #++++++++++++++++
         try:
             remove_AAAA_record("", self.f_o_e)
@@ -354,30 +386,37 @@ class AddressRecordTests(TestCase):
         except RecordNotFoundError, e:
             pass
         self.assertEqual(RecordNotFoundError, type(e))
+        e = None
 
     ####################
     ### Adding Tests ###
     ####################
 
     def test_add_A_address_records(self):
-        add_A_record( '', self.o_e , "128.193.0.1")
+        rec = add_A_record( '', self.o_e , "128.193.0.1")
+        self.assertEqual( rec.__str__(), "oregonstate.edu A 128.193.0.1" )
         add_A_record( '', self.f_o_e , "128.193.0.6")
-        add_A_record( 'ba3z', self.o_e , "128.193.0.3")
+        rec = add_A_record( 'ba3z', self.o_e , "128.193.0.3")
+        self.assertEqual( rec.__str__(), "ba3z.oregonstate.edu A 128.193.0.3" )
         add_A_record( 'ba3z', self.f_o_e , "128.193.0.8")
         add_A_record( 'foob1ar', self.f_o_e , "128.193.0.10")
         add_A_record( 'foob1ar', self.o_e , "128.193.0.5")
-        add_A_record( 'foo', self.f_o_e , "128.193.0.7")
-        add_A_record( 'foo', self.o_e , "128.193.0.2")
+        add_A_record( 'foo2', self.f_o_e , "128.193.0.7")
+        add_A_record( 'foo2', self.o_e , "128.193.0.2")
         add_A_record( 'ba-r', self.f_o_e , "128.193.0.9")
         add_A_record( 'ba-r', self.o_e , "128.193.0.4")
-        add_A_record( 'somthingreallylongthatmightactuallybeaddedinttherealworl-r', self.o_e , "128.193.0.4")
+        rec = add_A_record( 'somthingreallylongthatmightactuallybeaddedinttherealworl-r', self.o_e , "128.193.0.4")
+        self.assertEqual( rec.__str__(), "somthingreallylongthatmightactuallybeaddedinttherealworl-r.oregonstate.edu A 128.193.0.4" )
 
     def test_add_AAAA_address_records(self):
         osu_block = "2620:105:F000:"
-        add_AAAA_record( '', self.f_o_e , osu_block+":4")
-        add_AAAA_record( '', self.o_e , osu_block+":1")
-        add_AAAA_record( '6ba-r', self.o_e , osu_block+":6")
-        add_AAAA_record( '6ba-r', self.f_o_e , osu_block+":7")
+        boot_strap_add_ipv6_reverse_domain("2.6.2.0")
+        rec = add_AAAA_record( '', self.f_o_e , osu_block+":4")
+        self.assertEqual( rec.__str__(), "foo.oregonstate.edu AAAA 2620:105:f000::4" )
+        rec = add_AAAA_record( '', self.o_e , osu_block+":1")
+        rec = add_AAAA_record( '6ba-r', self.o_e , osu_block+":6")
+        rec = add_AAAA_record( '6ba-r', self.f_o_e , osu_block+":7")
+        self.assertEqual( rec.__str__(), "6ba-r.foo.oregonstate.edu AAAA 2620:105:f000::7" )
         add_AAAA_record( '6foo', self.f_o_e , osu_block+":5")
         add_AAAA_record( '6foo', self.o_e , osu_block+":3")
         add_AAAA_record( '6ba3z', self.o_e , osu_block+":4")
@@ -390,91 +429,113 @@ class AddressRecordTests(TestCase):
         osu_block = "2620:105:F000:"
         try:
             add_A_record( 'asdf0', self.o_e , osu_block+":1")
-        except ipaddr.AddressValueError, e:
+        except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
+        e = None
 
         try:
             add_A_record( 'asdf1', self.o_e , 123142314)
-        except ipaddr.AddressValueError, e:
+        except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
+        e = None
 
         try:
             add_A_record( 'asdf1', self.o_e , "128.193.0.1.22")
-        except ipaddr.AddressValueError, e:
+        except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         try:
             add_A_record( 'asdf2', self.o_e , "128.193.8")
-        except ipaddr.AddressValueError, e:
+        except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
+        e = None
         try:
             add_A_record( 'asdf3', self.o_e , "99.193.8.1")
         except ReverseDomainNotFoundError, e:
             pass
         self.assertEqual(ReverseDomainNotFoundError, type(e))
+        e = None
 
     def test_bad_AAAA_ip(self):
         # IPv6 Tests
         osu_block = "2620:105:F000:"
         try:
             add_AAAA_record( 'asdf5', self.o_e , "128.193.8.1")
-        except ipaddr.AddressValueError, e:
+        except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
+        e = None
         try:
             add_AAAA_record( 'asdf4', self.o_e , osu_block+":::")
-        except ipaddr.AddressValueError, e:
+        except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
+        e = None
 
         try:
             add_AAAA_record( 'asdf4', self.o_e , 123213487823762347612346)
-        except ipaddr.AddressValueError, e:
+        except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
+        e = None
 
         try:
             add_AAAA_record( 'asdf6', self.o_e , "9::1")
         except ReverseDomainNotFoundError, e:
             pass
         self.assertEqual(ReverseDomainNotFoundError, type(e))
+        e = None
         try:
             add_AAAA_record( 'asdf6', self.o_e , "9213:123:213:12::1")
         except ReverseDomainNotFoundError, e:
             pass
         self.assertEqual(ReverseDomainNotFoundError, type(e))
+        e = None
 
     def test_add_A_records_exist(self):
+        try:
+            add_A_record( '', self.f_o_e,"128.193.0.2" )
+        except RecordExistsError, e:
+            pass
+        try:
+            add_A_record( '', self.f_o_e ,"128.193.0.2" )
+        except RecordExistsError, e:
+            pass
         add_A_record( 'new', self.f_o_e,"128.193.0.2" )
         try:
             add_A_record( 'new', self.f_o_e ,"128.193.0.2" )
         except RecordExistsError, e:
             pass
         self.assertEqual(RecordExistsError, type(e))
+        e = None
         add_A_record( 'nope', self.o_e ,"128.193.0.2" )
         try:
             add_A_record( 'nope', self.o_e ,"128.193.0.2" )
         except RecordExistsError, e:
             pass
         self.assertEqual(RecordExistsError, type(e))
+        e = None
 
     def test_add_AAAA_records_exist(self):
-        osu_block = "2620:105:F000:"
+        osu_block = "9620:105:F000:"
+        boot_strap_add_ipv6_reverse_domain("9.6.2.0")
         add_AAAA_record( 'new', self.f_o_e,osu_block+":2")
         try:
             add_AAAA_record( 'new', self.f_o_e ,osu_block+":2")
         except RecordExistsError, e:
             pass
         self.assertEqual(RecordExistsError, type(e))
+        e = None
         add_AAAA_record( 'nope', self.o_e ,osu_block+":4")
         try:
             add_AAAA_record( 'nope', self.o_e ,osu_block+":4")
         except RecordExistsError, e:
             pass
         self.assertEqual(RecordExistsError, type(e))
+        e = None
 
     def test_add_A_invalid_address_records(self):
         try:
@@ -482,85 +543,94 @@ class AddressRecordTests(TestCase):
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
-        self.assertEqual("Please do not span multiple domains when creating A records. Please create the nas subdomain before adding records to it.", e.__str__())
+        e = None
 
         try:
             add_A_record( 'foo.bar.nas', self.o_e ,"128.193.0.2" )
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
-        self.assertEqual("Please do not span multiple domains when creating A records. Please create subdomain(s) 'bas' and 'bar' before adding records to them/it.", e.__str__())
+        e = None
 
         try:
             add_A_record( 'foo.baz.bar.nas', self.o_e ,"128.193.0.2" )
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
-        self.assertEqual("Please do not span multiple domains when creating A records. Please create subdomain(s) 'baz', 'bar' and 'nas' before adding records to it/them.", e.__str__())
+        e = None
 
         try:
             add_A_record( 'n as', self.o_e ,"128.193.0.2" )
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
 
         try:
             add_A_record( 'n as', self.o_e ,"128.193.0.2" )
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             add_A_record( 'n%as', self.o_e ,"128.193.0.2" )
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             add_A_record( 'n+as', self.o_e ,"128.193.0.2" )
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
 
     def test_add_AAAA_invalid_address_records(self):
-        osu_block = "2620:105:F000:"
+        osu_block = "3620:105:F000:"
+        boot_strap_add_ipv6_reverse_domain("3.6.2.0")
         try:
             add_AAAA_record( 'foo.nas', self.o_e , osu_block+":1")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
-        self.assertEqual("Please do not span multiple domains when creating A records. Please create the nas subdomain before adding records to it.", e.__str__())
+        e = None
 
         try:
             add_AAAA_record( 'foo.bar.nas', self.o_e ,osu_block+":2")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
-        self.assertEqual("Please do not span multiple domains when creating A records. Please create subdomain(s) 'bas' and 'bar' before adding records to them/it.", e.__str__())
+        e = None
 
         try:
             add_AAAA_record( 'foo.baz.bar.nas', self.o_e ,osu_block+":3")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
-        self.assertEqual("Please do not span multiple domains when creating A records. Please create subdomain(s) 'baz', 'bar' and 'nas' before adding records to it/them.", e.__str__())
+        e = None
 
         try:
             add_AAAA_record( 'n as', self.o_e ,osu_block+":4")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
 
         try:
-            add_AAAA_record( 'n as', self.o_e ,osu_block+":5")
+            add_AAAA_record( 'n!+/*&%$#@as', self.o_e ,osu_block+":5")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             add_AAAA_record( 'n%as', self.o_e ,osu_block+":6")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
         try:
             add_AAAA_record( 'n+as', self.o_e ,osu_block+":7")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
+        e = None
