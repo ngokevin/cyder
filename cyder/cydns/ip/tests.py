@@ -38,3 +38,12 @@ class SimpleTest(TestCase):
         ip_upper, ip_lower = ipv6_to_longs(ip_str)
         new_ip = Ip( ip_upper = ip_upper, ip_lower = ip_lower, reverse_domain = rd, ip_type = '6')
         self.assertEqual(ip_str, new_ip.__str__())
+
+    def test_large_ipv6(self):
+        rd = boot_strap_add_ipv6_reverse_domain('f')
+        ip_str = 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'
+        ip = ipaddr.IPv6Address(ip_str)
+        ip_upper, ip_lower = ipv6_to_longs(ip_str)
+        self.assertEqual( ip.__int__(), (2**64)*ip_upper + ip_lower)
+        new_ip = Ip( ip_upper = ip_upper, ip_lower = ip_lower, reverse_domain = rd, ip_type = '6')
+        self.assertEqual(ip_str, new_ip.__str__())
