@@ -109,11 +109,11 @@ class AddressRecordTests(TestCase):
             else:
                 self.assertEqual( aret.ip.__str__(), ipaddr.IPv6Address(new_ip).__str__() )
 
-    def do_update_A_record_test( self, record, new_name, new_ip ):
+    def do_update_A_record( self, record, new_name, new_ip ):
         update_A_record( record , new_name, new_ip )
         self._do_generic_update_test( record, new_name, new_ip, '4' )
 
-    def do_update_AAAA_record_test( self, record, new_name, new_ip ):
+    def do_update_AAAA_record( self, record, new_name, new_ip ):
         update_AAAA_record( record , new_name, new_ip )
         self._do_generic_update_test( record, new_name, new_ip, '6' )
 
@@ -124,14 +124,14 @@ class AddressRecordTests(TestCase):
         rec2 = add_A_record( 'bar', self.m_o_e , "128.193.0.1")
         rec3 = add_A_record( 'bazisgoingtobelasdfhklashflashfllk-324-123n2319rjn2ddasfdasfd-sa', self.m_o_e , "128.193.0.1")
         rec4 = add_A_record( 'rees', self.m_o_e , "128.193.0.1")
-        self.do_update_A_record_test( rec0, "whooooop1", "128.193.23.1")
-        self.do_update_A_record_test( rec1, "whoooasfdasdflasdfjoop3", "128.193.23.2")
-        self.do_update_A_record_test( rec2, "whsdflhjsafdohaosdfhsadooooop1", "128.193.23.4")
-        self.do_update_A_record_test( rec3, "wasdflsadhfaoshfuoiwehfjsdkfavbhooooop1", "128.193.23.3")
-        self.do_update_A_record_test( rec0, "liaslfdjsa8df09823hsdljf-whooooop1", "128.193.25.17")
-        self.do_update_A_record_test( rec1, "w", "128.193.29.83")
-        self.do_update_A_record_test( rec0, None, "128.193.23.1")
-        self.do_update_A_record_test( rec1, "whoooasfdasdflasdfjoop3", None)
+        self.do_update_A_record( rec0, "whooooop1", "128.193.23.1")
+        self.do_update_A_record( rec1, "whoooasfdasdflasdfjoop3", "128.193.23.2")
+        self.do_update_A_record( rec2, "whsdflhjsafdohaosdfhsadooooop1", "128.193.23.4")
+        self.do_update_A_record( rec3, "wasdflsadhfaoshfuoiwehfjsdkfavbhooooop1", "128.193.23.3")
+        self.do_update_A_record( rec0, "liaslfdjsa8df09823hsdljf-whooooop1", "128.193.25.17")
+        self.do_update_A_record( rec1, "w", "128.193.29.83")
+        self.do_update_A_record( rec0, None, "128.193.23.1")
+        self.do_update_A_record( rec1, "whoooasfdasdflasdfjoop3", None)
 
     def test_update_AAAA_record(self):
         osu_block = "8620:105:F000:"
@@ -139,44 +139,44 @@ class AddressRecordTests(TestCase):
         rec0 = add_AAAA_record( '', self.z_o_e , osu_block+":1")
         rec1 = add_AAAA_record( 'foo', self.z_o_e , osu_block+":1")
         rec2 = add_AAAA_record( 'bar', self.z_o_e , osu_block+":1")
-        self.do_update_AAAA_record_test( rec0, "whoooooasfjsp1", osu_block+"0:0:123:321::")
-        self.do_update_AAAA_record_test( rec1, "wasfasfsafdhooooop1", osu_block+"0:0:123:321::")
-        self.do_update_AAAA_record_test( rec2, "whoooooasfdisafsap1", osu_block+"0:24:123:322:1")
-        self.do_update_AAAA_record_test( rec0, "whooooop1", osu_block+"0:aaa::1")
-        self.do_update_AAAA_record_test( rec0, "wasflasksdfhooooop1", osu_block+"0:dead::")
-        self.do_update_AAAA_record_test( rec1, "whooooosf13fp1", osu_block+"0:0::")
-        self.do_update_AAAA_record_test( rec1, "whooooodfijasf1", osu_block+"0:1:23::")
-        self.do_update_AAAA_record_test( rec2, "lliasdflsafwhooooop1", osu_block+":")
-        self.do_update_AAAA_record_test( rec1, "whooooopsjafasf1", osu_block+"0::")
-        self.do_update_AAAA_record_test( rec2, None, osu_block+":")
-        self.do_update_AAAA_record_test( rec1, "whooooopsjafasf1", None)
-        self.do_update_AAAA_record_test( rec0, None, osu_block+"0:0:123:321::")
-        self.do_update_AAAA_record_test( rec1, None, osu_block+"0:0:123:321::")
+        self.do_update_AAAA_record( rec0, "whoooooasfjsp1", osu_block+"0:0:123:321::")
+        self.do_update_AAAA_record( rec1, "wasfasfsafdhooooop1", osu_block+"0:0:123:321::")
+        self.do_update_AAAA_record( rec2, "whoooooasfdisafsap1", osu_block+"0:24:123:322:1")
+        self.do_update_AAAA_record( rec0, "whooooop1", osu_block+"0:aaa::1")
+        self.do_update_AAAA_record( rec0, "wasflasksdfhooooop1", osu_block+"0:dead::")
+        self.do_update_AAAA_record( rec1, "whooooosf13fp1", osu_block+"0:0::")
+        self.do_update_AAAA_record( rec1, "whooooodfijasf1", osu_block+"0:1:23::")
+        self.do_update_AAAA_record( rec2, "lliasdflsafwhooooop1", osu_block+":")
+        self.do_update_AAAA_record( rec1, "whooooopsjafasf1", osu_block+"0::")
+        self.do_update_AAAA_record( rec2, None, osu_block+":")
+        self.do_update_AAAA_record( rec1, "whooooopsjafasf1", None)
+        self.do_update_AAAA_record( rec0, None, osu_block+"0:0:123:321::")
+        self.do_update_AAAA_record( rec1, None, osu_block+"0:0:123:321::")
 
     def test_update_invalid_ip_A_record(self):
         osu_block = "7620:105:F000:"
         rec0 = add_A_record( 'z', self.g_o_e , "128.193.254.1")
         # BAD Names
         try:
-            self.do_update_A_record_test( rec0, " sdfsa ", None)
+            self.do_update_A_record( rec0, " sdfsa ", None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
         e = None
         try:
-            self.do_update_A_record_test( rec0, -1, None)
+            self.do_update_A_record( rec0, -1, None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
         e = None
         try:
-            self.do_update_A_record_test( rec0, 34871, None)
+            self.do_update_A_record( rec0, 34871, None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
         e = None
         try:
-            self.do_update_A_record_test( rec0, None, None)
+            self.do_update_A_record( rec0, None, None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
@@ -184,50 +184,50 @@ class AddressRecordTests(TestCase):
 
         # BAD IPs
         try:
-            self.do_update_A_record_test( rec0, None, 71134)
+            self.do_update_A_record( rec0, None, 71134)
         except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         e = None
         try:
-            self.do_update_A_record_test( rec0, None, "19.193.23.1.2")
+            self.do_update_A_record( rec0, None, "19.193.23.1.2")
         except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         e = None
         try:
-            self.do_update_A_record_test( rec0, None, 12314123)
+            self.do_update_A_record( rec0, None, 12314123)
         except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         e = None
         try:
-            self.do_update_A_record_test( rec0, "narf", 1214123)
+            self.do_update_A_record( rec0, "narf", 1214123)
         except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         e = None
         try:
-            self.do_update_A_record_test( rec0, "%asdfsaf", "1928.193.23.1")
+            self.do_update_A_record( rec0, "%asdfsaf", "1928.193.23.1")
         except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         e = None
         try:
-            self.do_update_A_record_test( rec0, None, "1928.193.23.1")
+            self.do_update_A_record( rec0, None, "1928.193.23.1")
         except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         e = None
 
         try:
-            self.do_update_A_record_test( None, "asdfa", osu_block+":1")
+            self.do_update_A_record( None, "asdfa", osu_block+":1")
         except RecordNotFoundError, e:
             pass
         self.assertEqual(RecordNotFoundError, type(e))
         e = None
         try:
-            self.do_update_A_record_test( rec0, "asdfa", "88.67.67.67")
+            self.do_update_A_record( rec0, "asdfa", "88.67.67.67")
         except ReverseDomainNotFoundError, e:
             pass
         self.assertEqual(ReverseDomainNotFoundError, type(e))
@@ -238,68 +238,68 @@ class AddressRecordTests(TestCase):
         boot_strap_add_ipv6_reverse_domain("7.6.2.0")
         rec0 = add_AAAA_record( '', self.g_o_e , osu_block+":1")
         try:
-            self.do_update_AAAA_record_test( rec0, None, 71134)
+            self.do_update_AAAA_record( rec0, None, 71134)
         except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         e = None
         try:
-            self.do_update_AAAA_record_test( rec0, None, osu_block+":::")
+            self.do_update_AAAA_record( rec0, None, osu_block+":::")
         except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         e = None
         try:
-            self.do_update_AAAA_record_test( rec0, "%asdfsaf", osu_block)
+            self.do_update_AAAA_record( rec0, "%asdfsaf", osu_block)
         except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         e = None
         try:
-            self.do_update_AAAA_record_test( rec0, "sdfsa", 1239812472934623847)
+            self.do_update_AAAA_record( rec0, "sdfsa", 1239812472934623847)
         except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         e = None
         try:
-            self.do_update_AAAA_record_test( rec0, None, "128.193.1.1")
+            self.do_update_AAAA_record( rec0, None, "128.193.1.1")
         except AddressValueError, e:
             pass
         self.assertEqual(AddressValueError, type(e))
         e = None
         try:
-            self.do_update_AAAA_record_test( rec0, -1, None)
+            self.do_update_AAAA_record( rec0, -1, None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
         e = None
         try:
-            self.do_update_AAAA_record_test( rec0, None, None)
+            self.do_update_AAAA_record( rec0, None, None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
         e = None
         try:
-            self.do_update_AAAA_record_test( rec0, "%asdfsaf", osu_block+":1")
+            self.do_update_AAAA_record( rec0, "%asdfsaf", osu_block+":1")
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
         e = None
         try:
-            self.do_update_AAAA_record_test( rec0, " sdfsa ", None)
+            self.do_update_AAAA_record( rec0, " sdfsa ", None)
         except InvalidRecordNameError, e:
             pass
         self.assertEqual(InvalidRecordNameError, type(e))
         e = None
         try:
-            self.do_update_AAAA_record_test( None, "asdfa", osu_block+":1")
+            self.do_update_AAAA_record( None, "asdfa", osu_block+":1")
         except RecordNotFoundError, e:
             pass
         self.assertEqual(RecordNotFoundError, type(e))
         e = None
 
         try:
-            self.do_update_AAAA_record_test( rec0, "asdfa", "6435:234:"+":1")
+            self.do_update_AAAA_record( rec0, "asdfa", "6435:234:"+":1")
         except ReverseDomainNotFoundError, e:
             pass
         self.assertEqual(ReverseDomainNotFoundError, type(e))
@@ -309,7 +309,7 @@ class AddressRecordTests(TestCase):
     ######################
     ### Removing Tests ###
     ######################
-    def do_remove_A_record_test(self, aname, domain, ip ):
+    def do_remove_A_record(self, aname, domain, ip ):
         ip_int= ipaddr.IPv4Address(ip).__int__()
         add_A_record( aname, domain , ip )
         aret  = Address_Record.objects.filter( name = aname )
@@ -324,7 +324,7 @@ class AddressRecordTests(TestCase):
         self.assertFalse(aret)
         self.assertFalse(ipret)
 
-    def do_remove_AAAA_record_test(self, aname, domain, ip ):
+    def do_remove_AAAA_record(self, aname, domain, ip ):
         ip_upper, ip_lower= ipv6_to_longs(ip)
         add_AAAA_record( aname, domain , ip )
         aret  = Address_Record.objects.filter( name = aname )
@@ -339,43 +339,44 @@ class AddressRecordTests(TestCase):
         self.assertFalse(aret)
         self.assertFalse(ipret)
 
+
     def test_remove_A_address_records(self):
-        self.do_remove_A_record_test("", self.o_e, "128.193.0.1" )
-        self.do_remove_A_record_test("far", self.o_e, "128.193.0.2" )
-        self.do_remove_A_record_test("fetched", self.o_e, "128.193.1.1" )
-        self.do_remove_A_record_test("drum", self.o_e, "128.193.2.1" )
-        self.do_remove_A_record_test("and", self.o_e, "128.193.0.3" )
-        self.do_remove_A_record_test("bass", self.o_e, "128.193.2.2" )
-        self.do_remove_A_record_test("dude", self.o_e, "128.193.5.1" )
-        self.do_remove_A_record_test("man", self.o_e, "128.193.1.4" )
-        self.do_remove_A_record_test("right", self.o_e, "128.193.2.6" )
-        self.do_remove_A_record_test("", self.f_o_e, "128.193.0.1" )
-        self.do_remove_A_record_test("far", self.f_o_e, "128.193.0.2" )
-        self.do_remove_A_record_test("fetched", self.f_o_e, "128.193.1.1" )
-        self.do_remove_A_record_test("drum", self.f_o_e, "128.193.2.1" )
-        self.do_remove_A_record_test("and", self.f_o_e, "128.193.0.3" )
-        self.do_remove_A_record_test("bass", self.f_o_e, "128.193.2.2" )
-        self.do_remove_A_record_test("dude", self.f_o_e, "128.193.5.1" )
-        self.do_remove_A_record_test("man", self.f_o_e, "128.193.1.4" )
-        self.do_remove_A_record_test("right", self.f_o_e, "128.193.2.6" )
+        self.do_remove_A_record("", self.o_e, "128.193.0.1" )
+        self.do_remove_A_record("far", self.o_e, "128.193.0.2" )
+        self.do_remove_A_record("fetched", self.o_e, "128.193.1.1" )
+        self.do_remove_A_record("drum", self.o_e, "128.193.2.1" )
+        self.do_remove_A_record("and", self.o_e, "128.193.0.3" )
+        self.do_remove_A_record("bass", self.o_e, "128.193.2.2" )
+        self.do_remove_A_record("dude", self.o_e, "128.193.5.1" )
+        self.do_remove_A_record("man", self.o_e, "128.193.1.4" )
+        self.do_remove_A_record("right", self.o_e, "128.193.2.6" )
+        self.do_remove_A_record("", self.f_o_e, "128.193.0.1" )
+        self.do_remove_A_record("far", self.f_o_e, "128.193.0.2" )
+        self.do_remove_A_record("fetched", self.f_o_e, "128.193.1.1" )
+        self.do_remove_A_record("drum", self.f_o_e, "128.193.2.1" )
+        self.do_remove_A_record("and", self.f_o_e, "128.193.0.3" )
+        self.do_remove_A_record("bass", self.f_o_e, "128.193.2.2" )
+        self.do_remove_A_record("dude", self.f_o_e, "128.193.5.1" )
+        self.do_remove_A_record("man", self.f_o_e, "128.193.1.4" )
+        self.do_remove_A_record("right", self.f_o_e, "128.193.2.6" )
 
     def test_remove_AAAA_address_records(self):
         osu_block = "4620:105:F000:"
         boot_strap_add_ipv6_reverse_domain("4.6.2.0")
-        self.do_remove_AAAA_record_test("", self.o_e, osu_block+":1" )
-        self.do_remove_AAAA_record_test("please", self.o_e, osu_block+":2" )
-        self.do_remove_AAAA_record_test("visit", self.o_e, osu_block+":4" )
-        self.do_remove_AAAA_record_test("from", self.o_e, osu_block+":2" )
-        self.do_remove_AAAA_record_test("either", self.o_e, osu_block+":1" )
-        self.do_remove_AAAA_record_test("webpages", self.o_e, osu_block+":1" )
-        self.do_remove_AAAA_record_test("read", self.o_e, osu_block+":1" )
-        self.do_remove_AAAA_record_test("", self.f_o_e, osu_block+":1" )
-        self.do_remove_AAAA_record_test("please", self.f_o_e, osu_block+":2" )
-        self.do_remove_AAAA_record_test("visit", self.f_o_e, osu_block+":4" )
-        self.do_remove_AAAA_record_test("from", self.f_o_e, osu_block+":2" )
-        self.do_remove_AAAA_record_test("either", self.f_o_e, osu_block+":1" )
-        self.do_remove_AAAA_record_test("webpages", self.f_o_e, osu_block+":1" )
-        self.do_remove_AAAA_record_test("read", self.f_o_e, osu_block+":1" )
+        self.do_remove_AAAA_record("", self.o_e, osu_block+":1" )
+        self.do_remove_AAAA_record("please", self.o_e, osu_block+":2" )
+        self.do_remove_AAAA_record("visit", self.o_e, osu_block+":4" )
+        self.do_remove_AAAA_record("from", self.o_e, osu_block+":2" )
+        self.do_remove_AAAA_record("either", self.o_e, osu_block+":1" )
+        self.do_remove_AAAA_record("webpages", self.o_e, osu_block+":1" )
+        self.do_remove_AAAA_record("read", self.o_e, osu_block+":1" )
+        self.do_remove_AAAA_record("", self.f_o_e, osu_block+":1" )
+        self.do_remove_AAAA_record("please", self.f_o_e, osu_block+":2" )
+        self.do_remove_AAAA_record("visit", self.f_o_e, osu_block+":4" )
+        self.do_remove_AAAA_record("from", self.f_o_e, osu_block+":2" )
+        self.do_remove_AAAA_record("either", self.f_o_e, osu_block+":1" )
+        self.do_remove_AAAA_record("webpages", self.f_o_e, osu_block+":1" )
+        self.do_remove_AAAA_record("read", self.f_o_e, osu_block+":1" )
 
     def test_remove_nonexistant_A_address_records(self):
         try:
