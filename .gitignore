@@ -6,3 +6,4 @@ cyder/settings.py
 doc_build/
 make.bat
 cyder/Makefile
+settings/
