@@ -18,7 +18,7 @@ from cyder.cydns.domain.models import Domain, add_domain, DomainExistsError, Mas
 from cyder.cydns.domain.models import remove_domain_str, remove_domain, remove_domain, DomainNotFoundError
 
 #from cyder.cydns.address_record.models import remove_domain_str, remove_domain, remove_domain, RecordExistsError
-from cyder.cydns.address_record.models import InvalidRecordNameError
+from cyder.cydns.models import InvalidRecordNameError
 
 import ipaddr
 import pdb

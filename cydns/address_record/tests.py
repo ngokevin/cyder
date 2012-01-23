@@ -16,7 +16,8 @@ from cyder.cydns.ip.models import add_str_ipv4, add_str_ipv6, ipv6_to_longs, Ip
 from cyder.cydns.domain.models import Domain, add_domain, DomainExistsError, MasterDomainNotFoundError
 from cyder.cydns.domain.models import remove_domain_str, remove_domain, remove_domain, DomainNotFoundError
 
-from cyder.cydns.address_record.models import InvalidRecordNameError,RecordNotFoundError,add_AAAA_record,add_A_record
+from cyder.cydns.models import InvalidRecordNameError
+from cyder.cydns.address_record.models import RecordNotFoundError,add_AAAA_record,add_A_record
 from cyder.cydns.address_record.models import remove_A_record,remove_AAAA_record, update_A_record, update_AAAA_record
 from cyder.cydns.address_record.models import Address_Record,AddressValueError,RecordExistsError
 

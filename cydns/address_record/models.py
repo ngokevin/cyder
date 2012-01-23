@@ -1,4 +1,5 @@
 from django.db import models
+from cyder.cydns.models import _validate_label, InvalidRecordNameError
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.ip.models import Ip, add_str_ipv4, add_str_ipv6, ipv6_to_longs
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
@@ -33,14 +34,6 @@ class Address_Record( models.Model ):
     class Meta:
         db_table = 'address_record'
 
-class InvalidRecordNameError(Exception):
-    """This exception is thrown when an attempt is made to create/update a record with an invlaid name."""
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.__repr__()
-    def __repr__(self):
-        return self.msg
 
 class AddressValueError(Exception):
     """This exception is thrown when an attempt is made to create/update a record with an invlaid IP."""
@@ -74,20 +67,7 @@ class RecordNotFoundError(Exception):
         return self.msg
 
 def _validate_domain_name( record_name ):
-    """Run test on a record to make sure that the new name is constructed with valid syntax.
-
-        :param record_name: The name to be tested.
-        :type record_name: str
-    """
-    if type(record_name) is not type(''):
-            raise InvalidRecordNameError("Error: The supplied name '%s' is not of type 'str'." % (record_name) )
-    valid_chars = string.ascii_letters+"0123456789"+"-"
-    for char in record_name:
-        if char == '.':
-            raise InvalidRecordNameError("Error: Ivalid name %s . Please do not span multiple domains when creating A records." % (record_name) )
-        if valid_chars.find(char) < 0:
-            raise InvalidRecordNameError("Error: Ivalid name %s . Character '%s' is invalid." % (record_name, char) )
-    return
+    return _validate_label( record_name )
 
 def _add_generic_record( name, domain, ip, ip_type ):
     # Does this record exists?
