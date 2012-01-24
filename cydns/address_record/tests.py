@@ -16,10 +16,10 @@ from cyder.cydns.ip.models import add_str_ipv4, add_str_ipv6, ipv6_to_longs, Ip
 from cyder.cydns.domain.models import Domain, add_domain, DomainExistsError, MasterDomainNotFoundError
 from cyder.cydns.domain.models import remove_domain_str, remove_domain, remove_domain, DomainNotFoundError
 
-from cyder.cydns.models import InvalidRecordNameError
+from cyder.cydns.models import InvalidRecordNameError, CyAddressValueError
 from cyder.cydns.address_record.models import RecordNotFoundError,add_AAAA_record,add_A_record
 from cyder.cydns.address_record.models import remove_A_record,remove_AAAA_record, update_A_record, update_AAAA_record
-from cyder.cydns.address_record.models import Address_Record,RecordAddressValueError,RecordExistsError
+from cyder.cydns.address_record.models import Address_Record,RecordExistsError
 
 import ipaddr
 import pdb
@@ -135,6 +135,7 @@ class AddressRecordTests(TestCase):
         self.do_update_A_record( rec1, "whoooasfdasdflasdfjoop3", None)
 
     def test_update_AAAA_record(self):
+        boot_strap_add_ipv6_reverse_domain("8.6.2.0")
         osu_block = "8620:105:F000:"
         rec0 = add_AAAA_record( '', self.z_o_e , osu_block+":1")
         rec1 = add_AAAA_record( 'foo', self.z_o_e , osu_block+":1")
@@ -185,39 +186,39 @@ class AddressRecordTests(TestCase):
         # BAD IPs
         try:
             self.do_update_A_record( rec0, None, 71134)
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             self.do_update_A_record( rec0, None, "19.193.23.1.2")
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             self.do_update_A_record( rec0, None, 12314123)
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             self.do_update_A_record( rec0, "narf", 1214123)
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             self.do_update_A_record( rec0, "%asdfsaf", "1928.193.23.1")
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             self.do_update_A_record( rec0, None, "1928.193.23.1")
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
 
         try:
@@ -239,33 +240,33 @@ class AddressRecordTests(TestCase):
         rec0 = add_AAAA_record( '', self.g_o_e , osu_block+":1")
         try:
             self.do_update_AAAA_record( rec0, None, 71134)
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             self.do_update_AAAA_record( rec0, None, osu_block+":::")
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             self.do_update_AAAA_record( rec0, "%asdfsaf", osu_block)
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             self.do_update_AAAA_record( rec0, "sdfsa", 1239812472934623847)
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             self.do_update_AAAA_record( rec0, None, "128.193.1.1")
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             self.do_update_AAAA_record( rec0, -1, None)
@@ -495,28 +496,28 @@ class AddressRecordTests(TestCase):
         osu_block = "2620:105:F000:"
         try:
             add_A_record( 'asdf0', self.o_e , osu_block+":1")
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
 
         try:
             add_A_record( 'asdf1', self.o_e , 123142314)
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
 
         try:
             add_A_record( 'asdf1', self.o_e , "128.193.0.1.22")
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         try:
             add_A_record( 'asdf2', self.o_e , "128.193.8")
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             add_A_record( 'asdf3', self.o_e , "99.193.8.1")
@@ -530,22 +531,22 @@ class AddressRecordTests(TestCase):
         osu_block = "2620:105:F000:"
         try:
             add_AAAA_record( 'asdf5', self.o_e , "128.193.8.1")
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
         try:
             add_AAAA_record( 'asdf4', self.o_e , osu_block+":::")
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
 
         try:
             add_AAAA_record( 'asdf4', self.o_e , 123213487823762347612346)
-        except RecordAddressValueError, e:
+        except CyAddressValueError, e:
             pass
-        self.assertEqual(RecordAddressValueError, type(e))
+        self.assertEqual(CyAddressValueError, type(e))
         e = None
 
         try:
