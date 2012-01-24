@@ -3,7 +3,7 @@ from cyder.cydns.soa.models import Soa
 import pdb
 
 class Domain( models.Model ):
-    """A Domain is used to most DNS records."""
+    """A Domain is used for most DNS records."""
     id              = models.AutoField(primary_key=True)
     name            = models.CharField(max_length=100)
     master_domain   = models.ForeignKey("self", null=True)

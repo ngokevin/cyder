@@ -1,5 +1,5 @@
 from django.db import models
-from cyder.cydns.models import _validate_label, InvalidRecordNameError
+from cyder.cydns.models import _validate_label, InvalidRecordNameError, CyAddressValueError
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.ip.models import Ip, add_str_ipv4, add_str_ipv6, ipv6_to_longs
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
@@ -35,14 +35,6 @@ class Address_Record( models.Model ):
         db_table = 'address_record'
 
 
-class AddressValueError(Exception):
-    """This exception is thrown when an attempt is made to create/update a record with an invlaid IP."""
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.__repr__()
-    def __repr__(self):
-        return self.msg
 
 class RecordExistsError(Exception):
     """This exception is thrown when an attempt is made to create a record that already exists."""
@@ -83,7 +75,7 @@ def _add_generic_record( name, domain, ip, ip_type ):
         else:
             ip = add_str_ipv6( ip ) # This runs sanity checks on the ip. Raises exceptions if the ip is invalid.
     except ipaddr.AddressValueError, e:
-        raise AddressValueError("Invalid ip %s for IPv%s." % (ip,ip_type) )
+        raise CyAddressValueError("Invalid ip %s for IPv%s." % (ip,ip_type) )
 
     if name == '':
         # Create TLD record
@@ -108,7 +100,7 @@ def add_A_record( name, domain, ip ):
         :param ip: The ip the A record should point to.
         :type ip: str
         :returns: address_record instance that was created.
-        :raises: InvalidRecordNameError, AddressValueError, ReverseDomainNotFoundError
+        :raises: InvalidRecordNameError, CyAddressValueError, ReverseDomainNotFoundError
 
         note::
             If you are attemping to create a TLD record, pass name=''
@@ -128,7 +120,7 @@ def add_AAAA_record( name, domain, ip ):
         :param ip: The ip the AAAA record should point to.
         :type ip: str
         :returns: new address_record instance
-        :raises: InvalidRecordNameError, AddressValueError, ReverseDomainNotFoundError
+        :raises: InvalidRecordNameError, CyAddressValueError, ReverseDomainNotFoundError
     """
     return _add_generic_record( name, domain, str(ip), '6' )
 
@@ -144,7 +136,7 @@ def _remove_generic_record( name, domain, ip, ip_type ):
     # This check is redundant, but it might save people if they use this function directly.
     # But they should never do that.
     if type(ip) != type(''):
-        raise AddressValueError("Error: %s was not type 'str'" % (ip) )
+        raise CyAddressValueError("Error: %s was not type 'str'" % (ip) )
 
     try:
         if ip_type == '4':
@@ -205,7 +197,7 @@ def _update_generic_record( address_record, new_name, new_ip, ip_type ):
     # Validate the new_ip if there is one.
     if new_ip:
         if type(new_ip) is not type(''):
-            raise AddressValueError("Error: %s is not type 'str'." % (new_ip) )
+            raise CyAddressValueError("Error: %s is not type 'str'." % (new_ip) )
         new_ip = new_ip.lower()
         exist = Address_Record.objects.filter( name = new_name, domain = address_record.domain, ip_type = ip_type ).select_related('ip')
         if exist and exist[0].ip.__str__() == new_ip:
@@ -218,7 +210,7 @@ def _update_generic_record( address_record, new_name, new_ip, ip_type ):
                 ip = add_str_ipv6( new_ip ) # This runs sanity checks on the ip. Raises exceptions if the ip is invalid.
 
         except ipaddr.AddressValueError, e:
-            raise AddressValueError("Error: %s is not a valid IPv%s address." % (new_ip, ip_type) )
+            raise CyAddressValueError("Error: %s is not a valid IPv%s address." % (new_ip, ip_type) )
 
     # Validate the new_name if there is one.
     if new_name:

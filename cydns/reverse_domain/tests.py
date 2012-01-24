@@ -53,7 +53,7 @@ class ReverseDomainTests(TestCase):
 
 
     def test_master_reverse_ipv4_domains(self):
-        rd1 =add_reverse_domain('128', ip_type='4')
+        rd1 = add_reverse_domain('128', ip_type='4')
         rd2 = add_reverse_domain('128.193', ip_type='4')
         rd3 = add_reverse_domain('128.193.8', ip_type='4')
         self.assertEqual( rd3.master_reverse_domain, rd2 )

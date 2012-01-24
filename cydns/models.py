@@ -4,6 +4,14 @@ import string
 .. module:: cydns
 
 """
+class CyAddressValueError(Exception):
+    """This exception is thrown when an attempt is made to create/update a record with an invlaid IP."""
+    def __init__(self, msg):
+        self.msg = msg
+    def __str__(self):
+        return self.__repr__()
+    def __repr__(self):
+        return self.msg
 
 class InvalidRecordNameError(Exception):
     """This exception is thrown when an attempt is made to create/update a record with an invlaid name."""
