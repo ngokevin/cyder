@@ -83,6 +83,7 @@ def add_A_record( name, domain, ip ):
             Check ``ip.add_str_ipv4`` for exceptions that might be thrown if **ip** is invalid.
 
     """
+    #TODO. The checking of the ip is done in _add_generic_record. No need for this.
     try:
         ip = ipaddr.IPv4Address(str(ip)).__str__()
     except ipaddr.AddressValueError, e:
