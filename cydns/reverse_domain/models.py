@@ -23,22 +23,37 @@ class Reverse_Domain( models.Model ):
 class ReverseDomainNotFoundError(Exception):
     """This exception is thrown when you are trying to add an Ip to the database and it cannot be paired with a reverse domain. The solution is to create a reverse domain for the Ip to live in.
     """
+    def __init__(self, msg ):
+        self.msg = msg
     def __str__(self):
-        return "No reverse domain found. Condisder creating one."
-
+        return self.msg
+    def __repr__(self):
+        return  self.__str__()
 class ReverseDomainExistsError(Exception):
     """This exception is thrown when you try to create a reverse domain that already exists."""
+    def __init__(self, msg ):
+        self.msg = msg
     def __str__(self):
-        return "Reverse domain already exists."
-
+        return self.msg
+    def __repr__(self):
+        return  self.__str__()
 class ReverseChildDomainExistsError(Exception):
     """This exception is thrown when you try to delete a reverse domain that has child reverese domains. A reverse domain should only be deleted when it has no child reverse domains."""
+    def __init__(self, msg ):
+        self.msg = msg
     def __str__(self):
-        return "Child domains exist for this reverse domain."
+        return self.msg
+    def __repr__(self):
+        return  self.__str__()
+
 class MasterReverseDomainNotFoundError(Exception):
     """All reverse domains should have a logical master (or parent) reverse domain. If you try to create a reverse domain that should have a master reverse domain and *doesn't* this exception is thrown."""
+    def __init__(self, msg ):
+        self.msg = msg
     def __str__(self):
-        return "Master Reverse Domain not found. Please create it."
+        return self.msg
+    def __repr__(self):
+        return  self.__str__()
 
 def ip_to_reverse_domain( ip, ip_type ):
     """Given an ip return the most specific reverse domain that the ip can belong to.
@@ -64,7 +79,7 @@ def ip_to_reverse_domain( ip, ip_type ):
     if reverse_domain:
         return reverse_domain
     else:
-        raise ReverseDomainNotFoundError
+        raise ReverseDomainNotFoundError("Error: Could not find reverse domain for ip '%s'" % (ip))
 
 def _dname_to_master_reverse_domain( dname, ip_type="4" ):
     """Given an name return the most specific reverse_domain that the ip can belong to.
@@ -86,23 +101,16 @@ def _dname_to_master_reverse_domain( dname, ip_type="4" ):
         parent_dname = '.'.join(tokens[:-i])
         possible_master_reverse_domain = Reverse_Domain.objects.filter( name = parent_dname, ip_type=ip_type )
         if not possible_master_reverse_domain:
-            raise MasterReverseDomainNotFoundError
+            raise MasterReverseDomainNotFoundError("Error: Coud not find master domain for %s.\
+                                                                Consider creating it." % (dname))
         else:
             master_reverse_domain = possible_master_reverse_domain[0]
     return master_reverse_domain
 
 
-def add_reverse_domain( dname, ip_type ):
-    """This function adds a an IPv4 or IPv6 reverse domain.
-
-    :param dname: The reverse domain to be added.
-    :type dname: str
-    :param ip_type: The type of reverse domain. It should be either an IPv4 or IPv6 address.
-    :type ip_type: str -- '4' or '6'
-    :raises: ReverseDomainExistsError
-    """
+def _add_generic_reverse_domain( dname, ip_type ):
     if Reverse_Domain.objects.filter( name = dname ):
-        raise ReverseDomainExistsError
+        raise ReverseDomainExistsError( "Error: The reverse domain %s already exists." % (dname) )
     #For now just add it. MUST ADD LOGIC HERE TODO
     if ip_type == '6':
         dname = dname.lower()
@@ -118,23 +126,19 @@ def add_reverse_domain( dname, ip_type ):
     _reassign_reverse_ips( reverse_domain, master_reverse_domain, ip_type )
     return reverse_domain
 
-def remove_reverse_domain( dname, ip_type ):
-    """This function removes an IPv4 or IPv6 reverse domain.
-
-    :param dname: The reverse domain to be removed.
-    :type dname: str
-    :param ip_type: The type of reverse domain. It should be either an IPv4 or IPv6 address.
-    :type ip_type: str -- '4' or '6'
-    :raises: ReverseDomainExistsError
-
-    .. note::
-        Think about reverse_domains (and domains for that matter) as a tree. This function is only
-        defined to work on *leaf nodes*. If you attempt to remove a none leaf reverse_domain a
-        ReverseChildDomainExistsError will be thrown.
-    """
+def _remove_generic_reverse_domain( dname, ip_type ):
     if not Reverse_Domain.objects.filter( name = dname, ip_type = ip_type ):
-        raise ReverseDomainNotFoundError
+        raise ReverseDomainNotFoundError( "Error: %s was not found." % (dname))
     reverse_domain = Reverse_Domain.objects.filter( name = dname, ip_type = ip_type )[0] # It's cached
+
+    # Check if it has children.
+    children = Reverse_Domain.objects.filter( master_reverse_domain = reverse_domain )
+    if children:
+        error = ""
+        for child in children:
+            error += child.__str__()+", "
+        raise ReverseChildDomainExistsError("Error: Domain %s has children: %s" % (dname, error))
+
     ips = reverse_domain.ip_set.iterator()
     for ip in ips:
         ip.reverse_domain = reverse_domain.master_reverse_domain
@@ -172,7 +176,7 @@ def boot_strap_add_ipv6_reverse_domain( ip ):
     """
     for i in range(1,len(ip)+1,2):
         cur_reverse_domain = ip[:i]
-        reverse_domain = add_reverse_domain( cur_reverse_domain, ip_type='6' )
+        reverse_domain = add_reverse_ipv6_domain( cur_reverse_domain )
     return reverse_domain
 
 
@@ -197,3 +201,54 @@ def nibblize( addr ):
     """
     ip_str = ipaddr.IPv6Address(addr).exploded
     return '.'.join(list(ip_str.replace(':','')))
+
+def add_reverse_ipv4_domain( dname ):
+    """This function adds a an IPv4 reverse domain.
+
+    :param dname: The reverse domain to be added.
+    :type dname: str
+    :param ip_type: The type of reverse domain. It should be either an IPv4 or IPv6 address.
+    :type ip_type: str -- '4' or '6'
+    :raises: ReverseDomainExistsError
+    """
+    return _add_generic_reverse_domain( dname, '4' )
+def remove_reverse_ipv4_domain( dname ):
+    """This function removes an IPv4 reverse domain.
+
+    :param dname: The reverse domain to be removed.
+    :type dname: str
+    :param ip_type: The type of reverse domain. It should be either an IPv4 or IPv6 address.
+    :type ip_type: str -- '4' or '6'
+    :raises: ReverseDomainExistsError
+
+    .. note::
+        Think about reverse_domains (and domains for that matter) as a tree. This function is only
+        defined to work on *leaf nodes*. If you attempt to remove a none leaf reverse_domain a
+        ReverseChildDomainExistsError will be thrown.
+    """
+    return _remove_generic_reverse_domain( dname, '4' )
+def add_reverse_ipv6_domain( dname ):
+    """This function adds a an IPv6 reverse domain.
+
+    :param dname: The reverse domain to be added.
+    :type dname: str
+    :param ip_type: The type of reverse domain. It should be either an IPv4 or IPv6 address.
+    :type ip_type: str -- '4' or '6'
+    :raises: ReverseDomainExistsError
+    """
+    return _add_generic_reverse_domain( dname, '6' )
+def remove_reverse_ipv6_domain( dname ):
+    """This function removes an IPv6 reverse domain.
+
+    :param dname: The reverse domain to be removed.
+    :type dname: str
+    :param ip_type: The type of reverse domain. It should be either an IPv4 or IPv6 address.
+    :type ip_type: str -- '4' or '6'
+    :raises: ReverseDomainExistsError
+
+    .. note::
+        Think about reverse_domains (and domains for that matter) as a tree. This function is only
+        defined to work on *leaf nodes*. If you attempt to remove a none leaf reverse_domain a
+        ReverseChildDomainExistsError will be thrown.
+    """
+    return _remove_generic_reverse_domain( dname, '6' )

@@ -1,5 +1,6 @@
 from django.db import models
 from cyder.cydns.soa.models import Soa
+from cyder.cydns.models import _validate_name
 import pdb
 
 class Domain( models.Model ):
@@ -19,20 +20,29 @@ class Domain( models.Model ):
 
 class DomainNotFoundError(Exception):
     """This exception is thrown when an attempt is made to reference a domain that doesn't exist."""
+    def __init__(self, msg):
+        self.msg = msg
     def __str__(self):
-        return "No domain found. Condisder creating one."
+        return self.msg
+
 class DomainExistsError(Exception):
     """This exception is thrown when an attempt is made to create a domain that already exists."""
+    def __init__(self, msg):
+        self.msg = msg
     def __str__(self):
-        return "Domain already exists."
+        return self.msg
 class MasterDomainNotFoundError(Exception):
     """This exception is thrown when an attempt is made to add a domain that doesn't have a valid master domain."""
+    def __init__(self, msg):
+        self.msg = msg
     def __str__(self):
-        return "Master domain not found. Please create it."
+        return self.msg
 class DomainHasChildDomains(Exception):
     """This exception is thrown when an attempt is made to delete a domain that has children domains."""
+    def __init__(self, msg):
+        self.msg = msg
     def __str__(self):
-        return "Domain has child domains."
+        return self.msg
 
 """
 Given an name return the most specific domain that the ip can belong to.
@@ -60,10 +70,19 @@ def _dname_to_master_domain( dname ):
         parent_dname = '.'.join(tokens[i+1:])
         possible_master_domain = Domain.objects.filter( name = parent_dname )
         if not possible_master_domain:
-            raise MasterDomainNotFoundError
+            raise MasterDomainNotFoundError("Master Domain for domain %s, not found." % (dname))
         else:
             master_domain = possible_master_domain[0]
     return master_domain
+
+def _name_to_domain( fqdn ):
+    labels = fqdn.split('.')
+    for i in range(len(labels)):
+        name = '.'.join(labels[i:])
+        longest_match = Domain.objects.filter( name = name )
+        if longest_match:
+            return longest_match[0]
+    return None
 
 def remove_domain_str( dname ):
     """Given a dname make sure that it does not have any childern.
@@ -75,7 +94,7 @@ def remove_domain_str( dname ):
     """
     domain = Domain.objects.filter( name = dname )
     if not domain:
-        raise DomainNotFoundError
+        raise DomainNotFoundError("The domain '%s' was not found" % (dname))
     remove_domain( domain[0] )
     return True
 
@@ -88,9 +107,9 @@ def remove_domain( domain ):
         :raises: DomainNotFoundError, DomainHasChildDomains
     """
     if not domain:
-        raise DomainNotFoundError
+        raise DomainNotFoundError("The domain '%s' was not found" % (dname))
     if Domain.objects.filter( master_domain = domain ):
-        raise DomainHasChildDomains
+        raise DomainHasChildDomains("Before deleting this domain, please remove it's children.")
     else:
         domain.delete()
         return True
@@ -113,7 +132,7 @@ def add_domain( dname, default_soa=None ):
                 2) A DomainExistsError *will* be thrown if you try to add a domain that exists.
     """
     if Domain.objects.filter( name = dname ):
-        raise DomainExistsError
+        raise DomainExistsError("The %s domain already exists." % (dname))
 
     master_domain = _dname_to_master_domain( dname )
 

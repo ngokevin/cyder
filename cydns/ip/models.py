@@ -1,5 +1,6 @@
 from django.db import models
 from cyder.cydns.reverse_domain.models import Reverse_Domain, ip_to_reverse_domain,ReverseDomainNotFoundError
+from cyder.cydns.models import CyAddressValueError
 import ipaddr
 import pdb
 
@@ -45,7 +46,7 @@ def add_str_ipv4(addr):
     :raises: ValueError, AddressValueError, ReverseDomainNotFoundError
     """
     if type(addr) is not type(''):
-        raise ValueError
+        raise CyAddressValueError("Invalid ip %s for IPv4s." % (addr) )
     ip = ipaddr.IPv4Address(addr)
     try:
         ip_str = ip.__str__()
@@ -67,7 +68,12 @@ def add_str_ipv6(addr):
     :returns: new_ip -- Ip object
     :raises: AddressValueError, ReverseDomainNotFoundError
     """
-    ip = ipaddr.IPv6Address(addr)
+    if type(addr) is not type(''):
+        raise CyAddressValueError("Invalid ip %s for IPv6s." % (addr) )
+    try:
+        ip = ipaddr.IPv6Address(addr)
+    except ipaddr.AddressValueError, e:
+        raise CyAddressValueError("Invalid ip %s for IPv6s." % (addr) )
 
     ip_upper, ip_lower = ipv6_to_longs( ip.__str__() )
     try:

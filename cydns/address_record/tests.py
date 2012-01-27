@@ -6,10 +6,11 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from cyder.cydns.cydns import trace
 
-from cyder.cydns.reverse_domain.models import Reverse_Domain, add_reverse_domain,ReverseDomainNotFoundError
+from cyder.cydns.reverse_domain.models import Reverse_Domain, ReverseDomainNotFoundError, add_reverse_ipv4_domain
 from cyder.cydns.reverse_domain.models import ReverseDomainExistsError,MasterReverseDomainNotFoundError
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain,remove_reverse_domain
+from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain,add_reverse_ipv6_domain
 
 from cyder.cydns.ip.models import add_str_ipv4, add_str_ipv6, ipv6_to_longs, Ip
 
@@ -27,7 +28,7 @@ import pdb
 class AddressRecordTests(TestCase):
     def setUp(self):
         try:
-            add_domain('edu')
+            self.e = add_domain('edu')
         except DomainExistsError, e:
             pass
         try:
@@ -60,13 +61,13 @@ class AddressRecordTests(TestCase):
             pass
 
         try:
-            self._128 = add_reverse_domain('128', ip_type='4')
+            self._128 = add_reverse_ipv4_domain('128')
         except ReverseDomainExistsError, e:
             self._128 = Reverse_Domain.objects.filter( name = '128' )[0]
             pass
 
         try:
-             self._128._193 = add_reverse_domain('128.193', ip_type='4')
+             self._128._193 = add_reverse_ipv4_domain('128.193')
         except ReverseDomainExistsError, e:
             self._128._193 = Reverse_Domain.objects.filter( name = '128.193' )[0]
             pass
@@ -157,7 +158,14 @@ class AddressRecordTests(TestCase):
     def test_update_invalid_ip_A_record(self):
         osu_block = "7620:105:F000:"
         rec0 = add_A_record( 'z', self.g_o_e , "128.193.254.1")
+        rec1 = add_A_record( 'nerf', self.o_e , "128.193.254.1")
         # BAD Names
+        try:
+            self.do_update_A_record( rec1, "foo", None)
+        except InvalidRecordNameError, e:
+            pass
+        self.assertEqual(InvalidRecordNameError, type(e))
+
         try:
             self.do_update_A_record( rec0, " sdfsa ", None)
         except InvalidRecordNameError, e:
@@ -238,6 +246,17 @@ class AddressRecordTests(TestCase):
         osu_block = "7620:105:F000:"
         boot_strap_add_ipv6_reverse_domain("7.6.2.0")
         rec0 = add_AAAA_record( '', self.g_o_e , osu_block+":1")
+        rec1 = add_AAAA_record( '', self.o_e , osu_block+":1")
+        try:
+            self.do_update_AAAA_record( rec1, "foo", osu_block+":1")
+        except InvalidRecordNameError, e:
+            pass
+        self.assertEqual(InvalidRecordNameError, type(e))
+        try:
+            self.do_update_AAAA_record( rec1, "george", osu_block+":1")
+        except InvalidRecordNameError, e:
+            pass
+        self.assertEqual(InvalidRecordNameError, type(e))
         try:
             self.do_update_AAAA_record( rec0, None, 71134)
         except CyAddressValueError, e:
@@ -382,9 +401,9 @@ class AddressRecordTests(TestCase):
     def test_remove_nonexistant_A_address_records(self):
         try:
             remove_A_record("pretty_sure_it_doesn_exist0", self.f_o_e, "128.193.0.1")
-        except RecordNotFoundError, e:
+        except InvalidRecordNameError, e:
             pass
-        self.assertEqual(RecordNotFoundError, type(e))
+        self.assertEqual(InvalidRecordNameError, type(e))
         e = None
 
         try:
@@ -396,9 +415,9 @@ class AddressRecordTests(TestCase):
 
         try:
             remove_A_record("pretty_sure_it_doesn_exist0", self.o_e, "128.193.1.1")
-        except RecordNotFoundError, e:
+        except InvalidRecordNameError, e:
             pass
-        self.assertEqual(RecordNotFoundError, type(e))
+        self.assertEqual(InvalidRecordNameError, type(e))
         e = None
 
         try:
@@ -420,9 +439,9 @@ class AddressRecordTests(TestCase):
         boot_strap_add_ipv6_reverse_domain("5.6.2.0")
         try:
             remove_AAAA_record("pretty_sure_it_doesn_exist0", self.f_o_e, osu_block+":1")
-        except RecordNotFoundError, e:
+        except InvalidRecordNameError, e:
             pass
-        self.assertEqual(RecordNotFoundError, type(e))
+        self.assertEqual(InvalidRecordNameError, type(e))
         e = None
         #++++++++++++++++
         try:
@@ -438,9 +457,9 @@ class AddressRecordTests(TestCase):
         #++++++++++++++++
         try:
             remove_AAAA_record("pretty_sure_it_doesn_exist0", self.o_e, osu_block+":1")
-        except RecordNotFoundError, e:
+        except InvalidRecordNameError, e:
             pass
-        self.assertEqual(RecordNotFoundError, type(e))
+        self.assertEqual(InvalidRecordNameError, type(e))
         e = None
         #++++++++++++++++
         try:
@@ -596,6 +615,16 @@ class AddressRecordTests(TestCase):
             pass
         self.assertEqual(RecordExistsError, type(e))
         e = None
+
+        add_AAAA_record( 'new', self.f_o_e,osu_block+":9")
+        try:
+            add_AAAA_record( 'new', self.f_o_e ,osu_block+":0:9")
+        except RecordExistsError, e:
+            pass
+        self.assertEqual(RecordExistsError, type(e))
+        e = None
+
+
         add_AAAA_record( 'nope', self.o_e ,osu_block+":4")
         try:
             add_AAAA_record( 'nope', self.o_e ,osu_block+":4")
@@ -605,6 +634,18 @@ class AddressRecordTests(TestCase):
         e = None
 
     def test_add_A_invalid_address_records(self):
+        try:
+            add_A_record( "oregonstate", self.e, "128.193.0.2")
+        except InvalidRecordNameError, e:
+            pass
+        self.assertEqual(InvalidRecordNameError, type(e))
+
+        try:
+            add_A_record( "foo", self.o_e, "128.193.0.2")
+        except InvalidRecordNameError, e:
+            pass
+        self.assertEqual(InvalidRecordNameError, type(e))
+
         try:
             add_A_record( 'foo.nas', self.o_e ,"128.193.0.2" )
         except InvalidRecordNameError, e:
