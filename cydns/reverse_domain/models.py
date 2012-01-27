@@ -20,6 +20,7 @@ class Reverse_Domain( models.Model ):
     class Meta:
         db_table = 'reverse_domain'
 
+#TODO. Subclass These exceptions.
 class ReverseDomainNotFoundError(Exception):
     """This exception is thrown when you are trying to add an Ip to the database and it cannot be paired with a reverse domain. The solution is to create a reverse domain for the Ip to live in.
     """
@@ -94,7 +95,7 @@ def _dname_to_master_reverse_domain( dname, ip_type="4" ):
     :returns: Reverse_Domain or None -- None if the reverse domain is a TLD
     :raises: MasterReverseDomainNotFoundError
     """
-    dname = dname.rstrip('.')
+    dname = dname.rstrip('.') #TODO, do we need this?
     tokens = dname.split('.')
     master_reverse_domain = None
     for i in reversed(range(1,len(tokens))):
@@ -111,7 +112,8 @@ def _dname_to_master_reverse_domain( dname, ip_type="4" ):
 def _add_generic_reverse_domain( dname, ip_type ):
     if Reverse_Domain.objects.filter( name = dname ):
         raise ReverseDomainExistsError( "Error: The reverse domain %s already exists." % (dname) )
-    #For now just add it. MUST ADD LOGIC HERE TODO
+
+    #TODO, validate dname
     if ip_type == '6':
         dname = dname.lower()
 
@@ -127,6 +129,7 @@ def _add_generic_reverse_domain( dname, ip_type ):
     return reverse_domain
 
 def _remove_generic_reverse_domain( dname, ip_type ):
+    #TODO, validate dname
     if not Reverse_Domain.objects.filter( name = dname, ip_type = ip_type ):
         raise ReverseDomainNotFoundError( "Error: %s was not found." % (dname))
     reverse_domain = Reverse_Domain.objects.filter( name = dname, ip_type = ip_type )[0] # It's cached
@@ -137,7 +140,7 @@ def _remove_generic_reverse_domain( dname, ip_type ):
         error = ""
         for child in children:
             error += child.__str__()+", "
-        raise ReverseChildDomainExistsError("Error: Domain %s has children: %s" % (dname, error))
+        raise ReverseChildDomainExistsError("Error: Domain %s has children: %s" % (dname, error)) #TODO, error[:-2]?
 
     ips = reverse_domain.ip_set.iterator()
     for ip in ips:
@@ -174,6 +177,7 @@ def boot_strap_add_ipv6_reverse_domain( ip ):
     :type ip: str
     :raises: ReverseDomainNotFoundError
     """
+    #TODO, validate ip
     for i in range(1,len(ip)+1,2):
         cur_reverse_domain = ip[:i]
         reverse_domain = add_reverse_ipv6_domain( cur_reverse_domain )
@@ -199,7 +203,7 @@ def nibblize( addr ):
     :param addr: The ip address to convert
     :type addr: str
     """
-    ip_str = ipaddr.IPv6Address(addr).exploded
+    ip_str = ipaddr.IPv6Address(addr).exploded #TODO, surround this in try except, catch CyAddressValueError
     return '.'.join(list(ip_str.replace(':','')))
 
 def add_reverse_ipv4_domain( dname ):
