@@ -47,10 +47,12 @@ def add_str_ipv4(addr):
     """
     if type(addr) is not type(''):
         raise CyAddressValueError("Invalid ip %s for IPv4s." % (addr) )
-    ip = ipaddr.IPv4Address(addr) # TODO, this needs a try catch, which catches CyAddressValueError
     try:
-        ip_str = ip.__str__() # TODO. Skip this and just use ip.__str__()
-        reverse_domain = ip_to_reverse_domain( ip_str, ip_type='4' )
+        ip = ipaddr.IPv4Address(addr)
+    except ipaddr.AddressValueError, e:
+        raise CyAddressValueError("Error: Invalid Ip address %s" % (addr))
+    try:
+        reverse_domain = ip_to_reverse_domain( ip.__str__(), ip_type='4' )
     except ReverseDomainNotFoundError:
         raise
 
@@ -75,10 +77,8 @@ def add_str_ipv6(addr):
     except ipaddr.AddressValueError, e:
         raise CyAddressValueError("Invalid ip %s for IPv6s." % (addr) )
 
-    ip_upper, ip_lower = ipv6_to_longs( ip.__str__() ) # Don't do this twice. (remove)
     try:
-        ip_str = ip.__str__() # TODO skip this step.
-        reverse_domain = ip_to_reverse_domain( ip_str, ip_type='6' )
+        reverse_domain = ip_to_reverse_domain( ip.__str__(), ip_type='6' )
     except ReverseDomainNotFoundError:
         raise
     ip_upper, ip_lower = ipv6_to_longs(ip.__int__())
@@ -98,7 +98,7 @@ def ipv6_to_longs(addr):
     try:
         ip = ipaddr.IPv6Address(addr)
     except ipaddr.AddressValueError, e:
-        raise # TODO, this needs to be CyAddressValueError
+        raise CyAddressValueError("Error: Invalid Ip address %s" % (addr))
     ip_upper = ip._ip >> 64 # Put the last 64 bits in the first 64
     ip_lower = ip._ip & (1 << 64)-1 # Mask off the last sixty four bits
     return (ip_upper, ip_lower)

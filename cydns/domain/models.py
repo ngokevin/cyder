@@ -64,7 +64,6 @@ def _dname_to_master_domain( dname ):
     :returns: domain -- Domain object
     :raises: MasterDomainNotFoundError
     """
-    dname = dname.rstrip('.') #TODO is this needed?
     tokens = dname.split('.')
     master_domain = None
     for i in reversed(range(len(tokens)-1)):
@@ -94,8 +93,6 @@ def remove_domain_str( dname ):
     :raises: DomainNotFoundError
     """
     _validate_name( dname )
-    if type(dname) != type(''): # TODO, this is uneeded. _validate_name does this check.
-        raise InvalidRecordNameError("Error: dname must be of type str.")
     domain = Domain.objects.filter( name = dname )
     if not domain:
         raise DomainNotFoundError("The domain '%s' was not found" % (dname))
@@ -135,9 +132,7 @@ def add_domain( dname, default_soa=None ):
                     MasterDomainNotFoundError *will* be thrown.
                 2) A DomainExistsError *will* be thrown if you try to add a domain that exists.
     """
-    _validate_name( dname ) 
-    if type(dname) != type(''): # TODO, this is uneeded. _validate_name does this check.
-        raise InvalidRecordNameError("Error: dname must be of type str.")
+    _validate_name( dname )
     if Domain.objects.filter( name = dname ):
         raise DomainExistsError("The %s domain already exists." % (dname))
 

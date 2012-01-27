@@ -10,7 +10,7 @@ from cyder.cydns.domain.tests import *
 from cyder.cydns.ip.tests import *
 #from cyder.cydns.mx.tests import *
 #from cyder.cydns.nameserver.tests import *
-#from cyder.cydns.ptr.tests import *
+from cyder.cydns.ptr.tests import *
 from cyder.cydns.reverse_domain.tests import *
 #from cyder.cydns.soa.tests import *
 #from cyder.cydns.srv.tests import *

@@ -318,13 +318,13 @@ class PTRTests(TestCase):
 
         ip = "128.255.51..2"
         fqdn = "oregonstate.edu"
-        self.do_generic_invalid_remove( ip, fqdn, '6', RecordNotFoundError )
+        self.do_generic_invalid_remove( ip, fqdn, '6', CyAddressValueError )
         ip = 1234124
-        self.do_generic_invalid_remove( ip, fqdn, '6', RecordNotFoundError )
+        self.do_generic_invalid_remove( ip, fqdn, '6', CyAddressValueError )
         ip = True
-        self.do_generic_invalid_remove( ip, fqdn, '6', RecordNotFoundError )
+        self.do_generic_invalid_remove( ip, fqdn, '6', CyAddressValueError )
         ip = None
-        self.do_generic_invalid_remove( ip, fqdn, '6', RecordNotFoundError )
+        self.do_generic_invalid_remove( ip, fqdn, '6', CyAddressValueError )
         ip = self.osu_block+":dead"
         self.do_generic_invalid_remove( ip, fqdn, '6', RecordNotFoundError )
 

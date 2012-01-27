@@ -83,12 +83,6 @@ def add_A_record( name, domain, ip ):
             Check ``ip.add_str_ipv4`` for exceptions that might be thrown if **ip** is invalid.
 
     """
-    #TODO. The checking of the ip is done in _add_generic_record. No need for this.
-    try:
-        ip = ipaddr.IPv4Address(str(ip)).__str__()
-    except ipaddr.AddressValueError, e:
-        raise CyAddressValueError("Invalid ip %s for IPv%s." % (ip, '4') )
-
     return _add_generic_record( name, domain, ip, '4' )
 
 
@@ -104,10 +98,6 @@ def add_AAAA_record( name, domain, ip ):
         :returns: new address_record instance
         :raises: InvalidRecordNameError, CyAddressValueError, ReverseDomainNotFoundError
     """
-    try:
-        ip = ipaddr.IPv6Address(str(ip)).__str__()
-    except ipaddr.AddressValueError, e:
-        raise CyAddressValueError("Invalid ip %s for IPv%s." % (ip, '6') )
     return _add_generic_record( name, domain, ip, '6' )
 
 def _remove_generic_record( name, domain, ip, ip_type ):
@@ -176,10 +166,6 @@ def _update_generic_record( address_record, new_name, new_ip, ip_type ):
         raise RecordNotFoundError("Error: address_record required")
     if not new_name and not new_ip:
         raise InvalidRecordNameError("Error: A new_name or new_ip is required for updating a address record.")
-    if new_name or new_name == '': #TODO this is wrong. You are going to end up with something like .domain.name.com
-        fqdn = str(new_name)+"."+address_record.domain.name
-    else:
-        fqdn = address_record.__fqdn__()
 
     # Validate the new_ip if there is one.
     if new_ip:
@@ -189,27 +175,30 @@ def _update_generic_record( address_record, new_name, new_ip, ip_type ):
         exist = Address_Record.objects.filter( name = new_name, domain = address_record.domain, ip_type = ip_type ).select_related('ip')
         if exist and exist[0].ip.__str__() == new_ip:
             raise RecordExistsError("Error: The record %s already exists." % (exist.__str__()) )
-        try:
-            if ip_type == '4':
-                ip = add_str_ipv4( new_ip ) # This runs sanity checks on the ip.
-            else:
-                ip = add_str_ipv6( new_ip ) # This runs sanity checks on the ip.
+        if ip_type == '4':
+            ip = add_str_ipv4( new_ip ) # This runs sanity checks on the ip.
+        else:
+            ip = add_str_ipv6( new_ip ) # This runs sanity checks on the ip.
 
-        except ipaddr.AddressValueError, e: #TODO, again this exception is caught in add_str_ip*
-            raise CyAddressValueError("Error: %s is not a valid IPv%s address." % (new_ip, ip_type) )
 
     # Validate the new_name if there is one.
     if new_name or new_name == '':
         _validate_label( new_name ) # Will throw errors if new_name is invalid
+        if new_name:
+            fqdn = str(new_name)+"."+address_record.domain.name
+        else:
+            fqdn = address_record.domain.name
+
         if Domain.objects.filter( name = fqdn ):
             raise InvalidRecordNameError( "You cannot create a TLD A record for another domain." )
 
     # Everything is valid. Update.
     if new_ip:
-        old_ip = address_record.ip #TODO, delete this old_ip?
+        old_ip = address_record.ip
         address_record.ip = ip
         # Race conditions?
         address_record.ip.save()
+        old_ip.delete()
     if new_name:
         address_record.name = new_name
         # Race conditions?

@@ -1,5 +1,6 @@
 from django.db import models
 import string
+import pdb
 """
 .. module:: cydns
 
@@ -74,4 +75,28 @@ def _validate_name( fqdn ):
             raise InvalidRecordNameError("Error: Ivalid name %s . Empty label." % (label) )
         _validate_label( label )
 
+
+def _validate_reverse_name( reverse_name, ip_type ):
+    """Run test on a name to make sure that the new name is constructed with valid syntax.
+
+        :param fqdn: The fqdn to be tested.
+        :type fqdn: str
+    """
+    if type(reverse_name) != type(''):
+        raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (reverse_name) )
+
+    valid_ipv6 = "0123456789AaBbCcDdEeFf"
+
+    for chunk in reverse_name.split('.'):
+        try:
+            if ip_type == '6':
+                if valid_ipv6.find(chunk) < 0:
+                    raise InvalidRecordNameError("Error: Ivalid Ipv6 name %s . Character '%s' is invalid." %\
+                                                                                    (reverse_name, chunk) )
+            else:
+                if not( int(chunk) <= 255 and int(chunk) >= 0):
+                    raise InvalidRecordNameError("Error: Ivalid Ipv4 name %s . Character '%s' is invalid." %\
+                                                                                    (reverse_name, chunk) )
+        except Exception:
+            raise InvalidRecordNameError("Error: Ivalid Ipv%s name %s." % (ip_type, reverse_name) )
 

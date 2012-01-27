@@ -1,5 +1,7 @@
 from django.db import models
 from cyder.cydns.soa.models import Soa
+from cyder.cydns.models import _validate_name, _validate_reverse_name, CyAddressValueError
+from cyder.cydns.cydns import trace
 import ipaddr
 import pdb
 
@@ -30,6 +32,7 @@ class ReverseDomainNotFoundError(Exception):
         return self.msg
     def __repr__(self):
         return  self.__str__()
+
 class ReverseDomainExistsError(Exception):
     """This exception is thrown when you try to create a reverse domain that already exists."""
     def __init__(self, msg ):
@@ -95,7 +98,6 @@ def _dname_to_master_reverse_domain( dname, ip_type="4" ):
     :returns: Reverse_Domain or None -- None if the reverse domain is a TLD
     :raises: MasterReverseDomainNotFoundError
     """
-    dname = dname.rstrip('.') #TODO, do we need this?
     tokens = dname.split('.')
     master_reverse_domain = None
     for i in reversed(range(1,len(tokens))):
@@ -110,10 +112,10 @@ def _dname_to_master_reverse_domain( dname, ip_type="4" ):
 
 
 def _add_generic_reverse_domain( dname, ip_type ):
+    _validate_reverse_name( dname, ip_type )
     if Reverse_Domain.objects.filter( name = dname ):
         raise ReverseDomainExistsError( "Error: The reverse domain %s already exists." % (dname) )
 
-    #TODO, validate dname
     if ip_type == '6':
         dname = dname.lower()
 
@@ -129,7 +131,7 @@ def _add_generic_reverse_domain( dname, ip_type ):
     return reverse_domain
 
 def _remove_generic_reverse_domain( dname, ip_type ):
-    #TODO, validate dname
+    _validate_reverse_name( dname, ip_type )
     if not Reverse_Domain.objects.filter( name = dname, ip_type = ip_type ):
         raise ReverseDomainNotFoundError( "Error: %s was not found." % (dname))
     reverse_domain = Reverse_Domain.objects.filter( name = dname, ip_type = ip_type )[0] # It's cached
@@ -140,7 +142,7 @@ def _remove_generic_reverse_domain( dname, ip_type ):
         error = ""
         for child in children:
             error += child.__str__()+", "
-        raise ReverseChildDomainExistsError("Error: Domain %s has children: %s" % (dname, error)) #TODO, error[:-2]?
+        raise ReverseChildDomainExistsError("Error: Domain %s has children: %s" % (dname, error))
 
     ips = reverse_domain.ip_set.iterator()
     for ip in ips:
@@ -173,11 +175,12 @@ def boot_strap_add_ipv6_reverse_domain( ip ):
         Every nibble in the reverse domain should not exists for this function to exit successfully.
 
 
-    :param ip: The ip addres to be converted to nibble format.
+    :param ip: The ip address in nibble format
     :type ip: str
     :raises: ReverseDomainNotFoundError
     """
-    #TODO, validate ip
+    _validate_reverse_name( ip, '6' )
+
     for i in range(1,len(ip)+1,2):
         cur_reverse_domain = ip[:i]
         reverse_domain = add_reverse_ipv6_domain( cur_reverse_domain )
@@ -203,7 +206,11 @@ def nibblize( addr ):
     :param addr: The ip address to convert
     :type addr: str
     """
-    ip_str = ipaddr.IPv6Address(addr).exploded #TODO, surround this in try except, catch CyAddressValueError
+    try:
+        ip_str = ipaddr.IPv6Address(addr).exploded
+    except ipaddr.AddressValueError, e:
+        raise CyAddressValueError("Error: Invalid IPv6 address %s." % (addr))
+
     return '.'.join(list(ip_str.replace(':','')))
 
 def add_reverse_ipv4_domain( dname ):
@@ -215,7 +222,7 @@ def add_reverse_ipv4_domain( dname ):
     :type ip_type: str -- '4' or '6'
     :raises: ReverseDomainExistsError
     """
-    return _add_generic_reverse_domain( str(dname), '4' )
+    return _add_generic_reverse_domain( dname, '4' )
 def remove_reverse_ipv4_domain( dname ):
     """This function removes an IPv4 reverse domain.
 
@@ -230,7 +237,7 @@ def remove_reverse_ipv4_domain( dname ):
         defined to work on *leaf nodes*. If you attempt to remove a none leaf reverse_domain a
         ReverseChildDomainExistsError will be thrown.
     """
-    return _remove_generic_reverse_domain( str(dname), '4' )
+    return _remove_generic_reverse_domain( dname, '4' )
 def add_reverse_ipv6_domain( dname ):
     """This function adds a an IPv6 reverse domain.
 
@@ -240,7 +247,7 @@ def add_reverse_ipv6_domain( dname ):
     :type ip_type: str -- '4' or '6'
     :raises: ReverseDomainExistsError
     """
-    return _add_generic_reverse_domain( str(dname), '6' )
+    return _add_generic_reverse_domain( dname, '6' )
 def remove_reverse_ipv6_domain( dname ):
     """This function removes an IPv6 reverse domain.
 
@@ -255,4 +262,4 @@ def remove_reverse_ipv6_domain( dname ):
         defined to work on *leaf nodes*. If you attempt to remove a none leaf reverse_domain a
         ReverseChildDomainExistsError will be thrown.
     """
-    return _remove_generic_reverse_domain( str(dname), '6' )
+    return _remove_generic_reverse_domain( dname, '6' )
