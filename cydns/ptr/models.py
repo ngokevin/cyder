@@ -37,6 +37,7 @@ def _add_generic_ptr( ip, name, ip_type ):
         notes::
     """
     _validate_name( name )
+    # Leaving myself a comment. This exception handling is done int add_st_ipv*. It's not needed.
     try:
         if ip_type == '4':
             ip = add_str_ipv4( ip )
