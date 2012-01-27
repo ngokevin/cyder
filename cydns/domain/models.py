@@ -1,6 +1,6 @@
 from django.db import models
 from cyder.cydns.soa.models import Soa
-from cyder.cydns.models import _validate_name
+from cyder.cydns.models import _validate_name, InvalidRecordNameError
 import pdb
 
 class Domain( models.Model ):
@@ -92,6 +92,9 @@ def remove_domain_str( dname ):
     :returns: bool -- True on success
     :raises: DomainNotFoundError
     """
+    _validate_name( dname )
+    if type(dname) != type(''):
+        raise InvalidRecordNameError("Error: dname must be of type str.")
     domain = Domain.objects.filter( name = dname )
     if not domain:
         raise DomainNotFoundError("The domain '%s' was not found" % (dname))
@@ -131,6 +134,9 @@ def add_domain( dname, default_soa=None ):
                     MasterDomainNotFoundError *will* be thrown.
                 2) A DomainExistsError *will* be thrown if you try to add a domain that exists.
     """
+    _validate_name( dname )
+    if type(dname) != type(''):
+        raise InvalidRecordNameError("Error: dname must be of type str.")
     if Domain.objects.filter( name = dname ):
         raise DomainExistsError("The %s domain already exists." % (dname))
 

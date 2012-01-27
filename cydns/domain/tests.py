@@ -45,13 +45,13 @@ class DomainTests(TestCase):
         bad = 'asdfsa'
         self.do_generic_invalid(bad, remove_domain_str, DomainNotFoundError)
         bad = None
-        self.do_generic_invalid(bad, remove_domain_str, DomainNotFoundError)
+        self.do_generic_invalid(bad, remove_domain_str, InvalidRecordNameError)
         bad = True
-        self.do_generic_invalid(bad, remove_domain_str, DomainNotFoundError)
+        self.do_generic_invalid(bad, remove_domain_str, InvalidRecordNameError)
         bad = "!@#[34]"
-        self.do_generic_invalid(bad, remove_domain_str, DomainNotFoundError)
+        self.do_generic_invalid(bad, remove_domain_str, InvalidRecordNameError)
         bad = "e "
-        self.do_generic_invalid(bad, remove_domain_str, DomainNotFoundError)
+        self.do_generic_invalid(bad, remove_domain_str, InvalidRecordNameError)
 
     def test__name_to_master_domain(self):
         try:
@@ -88,6 +88,26 @@ class DomainTests(TestCase):
         b_f_c = add_domain('boo.foo.com')
         bad = 'foo.com'
         self.do_generic_invalid(bad, remove_domain_str, DomainHasChildDomains)
+
+    def test_invalid_add(self):
+        bad = 12324
+        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        bad = "asfda.asdf"
+        self.do_generic_invalid(bad, add_domain, MasterDomainNotFoundError)
+        bad = "asfda.as df"
+        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        bad = "."
+        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        bad = "edu. "
+        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        bad = None
+        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        bad = True
+        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        bad = False
+        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        bad = "!@#$"
+        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
 
     def test_remove_has_child_records(self):
         pass

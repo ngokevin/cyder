@@ -211,7 +211,7 @@ def add_reverse_ipv4_domain( dname ):
     :type ip_type: str -- '4' or '6'
     :raises: ReverseDomainExistsError
     """
-    return _add_generic_reverse_domain( dname, '4' )
+    return _add_generic_reverse_domain( str(dname), '4' )
 def remove_reverse_ipv4_domain( dname ):
     """This function removes an IPv4 reverse domain.
 
@@ -226,7 +226,7 @@ def remove_reverse_ipv4_domain( dname ):
         defined to work on *leaf nodes*. If you attempt to remove a none leaf reverse_domain a
         ReverseChildDomainExistsError will be thrown.
     """
-    return _remove_generic_reverse_domain( dname, '4' )
+    return _remove_generic_reverse_domain( str(dname), '4' )
 def add_reverse_ipv6_domain( dname ):
     """This function adds a an IPv6 reverse domain.
 
@@ -236,7 +236,7 @@ def add_reverse_ipv6_domain( dname ):
     :type ip_type: str -- '4' or '6'
     :raises: ReverseDomainExistsError
     """
-    return _add_generic_reverse_domain( dname, '6' )
+    return _add_generic_reverse_domain( str(dname), '6' )
 def remove_reverse_ipv6_domain( dname ):
     """This function removes an IPv6 reverse domain.
 
@@ -251,4 +251,4 @@ def remove_reverse_ipv6_domain( dname ):
         defined to work on *leaf nodes*. If you attempt to remove a none leaf reverse_domain a
         ReverseChildDomainExistsError will be thrown.
     """
-    return _remove_generic_reverse_domain( dname, '6' )
+    return _remove_generic_reverse_domain( str(dname), '6' )
