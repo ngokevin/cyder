@@ -176,7 +176,7 @@ def _update_generic_record( address_record, new_name, new_ip, ip_type ):
         raise RecordNotFoundError("Error: address_record required")
     if not new_name and not new_ip:
         raise InvalidRecordNameError("Error: A new_name or new_ip is required for updating a address record.")
-    if new_name or new_name == '':
+    if new_name or new_name == '': #TODO this is wrong. You are going to end up with something like .domain.name.com
         fqdn = str(new_name)+"."+address_record.domain.name
     else:
         fqdn = address_record.__fqdn__()
