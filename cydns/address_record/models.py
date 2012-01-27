@@ -206,7 +206,7 @@ def _update_generic_record( address_record, new_name, new_ip, ip_type ):
 
     # Everything is valid. Update.
     if new_ip:
-        old_ip = address_record.ip
+        old_ip = address_record.ip #TODO, delete this old_ip?
         address_record.ip = ip
         # Race conditions?
         address_record.ip.save()
