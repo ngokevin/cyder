@@ -4,6 +4,7 @@ import string
 .. module:: cydns
 
 """
+#TODO Subclass these Exceptions!
 class CyAddressValueError(Exception):
     """This exception is thrown when an attempt is made to create/update a record with an invlaid IP."""
     def __init__(self, msg):
