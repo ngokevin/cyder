@@ -195,7 +195,7 @@ def _update_generic_record( address_record, new_name, new_ip, ip_type ):
             else:
                 ip = add_str_ipv6( new_ip ) # This runs sanity checks on the ip.
 
-        except ipaddr.AddressValueError, e:
+        except ipaddr.AddressValueError, e: #TODO, again this exception is caught in add_str_ip*
             raise CyAddressValueError("Error: %s is not a valid IPv%s address." % (new_ip, ip_type) )
 
     # Validate the new_name if there is one.
