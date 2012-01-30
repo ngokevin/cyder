@@ -12,15 +12,15 @@ from cyder.cydns.reverse_domain.models import Reverse_Domain, ReverseDomainNotFo
 from cyder.cydns.reverse_domain.models import add_reverse_ipv4_domain, remove_reverse_ipv4_domain
 from cyder.cydns.reverse_domain.models import add_reverse_ipv6_domain, remove_reverse_ipv6_domain
 from cyder.cydns.reverse_domain.models import ReverseDomainExistsError,MasterReverseDomainNotFoundError
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
+from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain, nibblize
 
 from cyder.cydns.ip.models import add_str_ipv4, add_str_ipv6, ipv6_to_longs, Ip
 
 from cyder.cydns.domain.models import Domain, add_domain, DomainExistsError, MasterDomainNotFoundError
-from cyder.cydns.domain.models import remove_domain_str, remove_domain, remove_domain, DomainNotFoundError
+from cyder.cydns.domain.models import remove_domain_str,  DomainNotFoundError
 
 #from cyder.cydns.address_record.models import remove_domain_str, remove_domain, remove_domain, RecordExistsError
-from cyder.cydns.models import InvalidRecordNameError
+from cyder.cydns.models import InvalidRecordNameError, CyAddressValueError
 from cyder.cydns.cydns import trace
 
 import ipaddr
@@ -58,17 +58,28 @@ class ReverseDomainTests(TestCase):
         ip4 = Ip.objects.filter(ip_lower = ipaddr.IPv4Address('127.193.8.3').__int__(), ip_type = '4')[0]
         self.assertEqual( ip4.reverse_domain, rd1 )
 
-    def do_generic_invalid_operation( self, dname, ip_type, exception, function ):
+    def do_generic_invalid_operation( self, data, exception, function ):
         e = None
         try:
-            if ip_type == '4':
-                function(dname)
-            else:
-                function(dname, ip_type)
+            function(**data)
         except exception, e:
             pass
         self.assertEqual(exception, type(e))
 
+    def test_remomve_nonexistant_reverse_domain(self):
+        self.do_generic_invalid_operation( {'dname':"124.124"}, ReverseDomainNotFoundError, remove_reverse_ipv4_domain )
+
+    def test_bad_nibble(self):
+        bad_data = { 'addr' : "asdfas" }
+        self.do_generic_invalid_operation( bad_data, CyAddressValueError, nibblize )
+        bad_data = { 'addr' :12341245 }
+        self.do_generic_invalid_operation( bad_data, CyAddressValueError, nibblize )
+        bad_data = { 'addr' : "123.123.123.123" }
+        self.do_generic_invalid_operation( bad_data, CyAddressValueError, nibblize )
+        bad_data = { 'addr' : True }
+        self.do_generic_invalid_operation( bad_data, CyAddressValueError, nibblize )
+        bad_data = { 'addr' : False }
+        self.do_generic_invalid_operation( bad_data, CyAddressValueError, nibblize )
 
     def test_remove_invalid_reverse_domain(self):
         rd1 = add_reverse_ipv4_domain('130')

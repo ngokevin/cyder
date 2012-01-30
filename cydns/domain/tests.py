@@ -14,15 +14,17 @@ from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
 from cyder.cydns.ip.models import add_str_ipv4, add_str_ipv6, ipv6_to_longs, Ip
 
 from cyder.cydns.domain.models import Domain, add_domain, DomainExistsError, MasterDomainNotFoundError
-from cyder.cydns.domain.models import remove_domain_str, remove_domain, remove_domain, DomainNotFoundError, DomainHasChildDomains, _name_to_domain
+from cyder.cydns.domain.models import remove_domain_str, DomainNotFoundError, DomainHasChildDomains, _name_to_domain
 
-#from cyder.cydns.address_record.models import remove_domain_str, remove_domain, remove_domain, RecordExistsError
 from cyder.cydns.models import InvalidRecordNameError
 from cyder.cydns.cydns import trace
 
 import ipaddr
+import pdb
 
 class DomainTests(TestCase):
+    def test_save_override( self):
+        dom = Domain( name='com')
     def do_generic_invalid( self, name,  function, exception ):
         e = None
         try:
@@ -39,19 +41,6 @@ class DomainTests(TestCase):
         foo = add_domain('foo.com' )
         foo.__str__()
         foo.__repr__()
-        remove_domain(foo)
-
-    def test_remove_nonexistent_domain(self):
-        bad = 'asdfsa'
-        self.do_generic_invalid(bad, remove_domain_str, DomainNotFoundError)
-        bad = None
-        self.do_generic_invalid(bad, remove_domain_str, InvalidRecordNameError)
-        bad = True
-        self.do_generic_invalid(bad, remove_domain_str, InvalidRecordNameError)
-        bad = "!@#[34]"
-        self.do_generic_invalid(bad, remove_domain_str, InvalidRecordNameError)
-        bad = "e "
-        self.do_generic_invalid(bad, remove_domain_str, InvalidRecordNameError)
 
     def test__name_to_master_domain(self):
         try:

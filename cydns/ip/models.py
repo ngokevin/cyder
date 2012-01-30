@@ -14,6 +14,7 @@ class Ip( models.Model ):
     """
     IP_TYPE_CHOICES = ( ('4','ipv4'),('6','ipv6') )
     id              = models.AutoField(primary_key=True)
+    ip_str          = models.CharField(max_length=39, editable=True)
     ip_upper        = models.BigIntegerField(null=False)
     ip_lower        = models.BigIntegerField(null=False)
     reverse_domain  = models.ForeignKey(Reverse_Domain, null=False)

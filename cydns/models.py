@@ -82,7 +82,8 @@ def _validate_reverse_name( reverse_name, ip_type ):
         :param fqdn: The fqdn to be tested.
         :type fqdn: str
     """
-    if type(reverse_name) != type(''):
+    if type(reverse_name) != type(u'') and type(reverse_name) != type(''):
+        pdb.set_trace()
         raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (reverse_name) )
 
     valid_ipv6 = "0123456789AaBbCcDdEeFf"
@@ -100,3 +101,10 @@ def _validate_reverse_name( reverse_name, ip_type ):
         except Exception:
             raise InvalidRecordNameError("Error: Ivalid Ipv%s name %s." % (ip_type, reverse_name) )
 
+def do_generic_invalid( obj, data, exception, function ):
+    e = None
+    try:
+        function(**data)
+    except exception, e:
+        pass
+    obj.assertEqual(exception, type(e))

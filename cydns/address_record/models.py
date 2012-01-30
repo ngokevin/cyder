@@ -4,6 +4,8 @@ from cyder.cydns.models import _validate_name, RecordExistsError, RecordNotFound
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.ip.models import Ip, add_str_ipv4, add_str_ipv6, ipv6_to_longs
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
+
+from django.db.models.signals import pre_save, pre_delete, post_delete, post_save
 import ipaddr
 import string
 import pdb
@@ -17,6 +19,23 @@ class Address_Record( models.Model ):
     ip              = models.OneToOneField(Ip, null=False)
     domain          = models.ForeignKey(Domain, null=False)
     ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
+
+    def __init__(self, *args, **kwargs):
+        pre_save.connect(validate_record, sender=self.__class__)
+        super(Reverse_Domain, self).__init__(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        super(Reverse_Domain, self).delete(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        name = self.name
+        _validate_label( self.name ) #Runs sanity checks. It will raise exceptions if the fqdn is not valid.
+        _get_ip( self.ip, self.ip_type )
+        _check_exist( self )
+        fqdn = _get_fqdn
+        _validate_name( fqdn )
+        _check_TLD_condition( fqdn )
+        super(Reverse_Domain, self).save(*args, **kwargs)
 
     def __str__(self):
         if self.ip_type == '4':
@@ -39,6 +58,37 @@ class Address_Record( models.Model ):
         db_table = 'address_record'
 
 
+def validate_record(sender, **kwargs):
+    record = kwargs['instace']
+    name = record.name
+    _validate_label( name ) #Runs sanity checks. It will raise exceptions if the fqdn is not valid.
+    _get_ip( record.ip, record.ip_type )
+    _check_exist( record )
+    fqdn = _get_fqdn
+    _validate_name( fqdn )
+    _check_TLD_condition( fqdn )
+
+def _get_ip( name, ip_type ):
+    if ip_type == '4':
+        ip = add_str_ipv4( ip ) # This runs sanity checks on the ip.
+    else:
+        ip = add_str_ipv6( ip ) # This runs sanity checks on the ip.
+
+def _check_exist( record ):
+    exist = Address_Record.objects.filter( name = record.name, domain = record.domain, ip_type = record.ip_type ).select_related('ip')
+    for possible in exist:
+        if possible.ip.__str__() == record.ip.__str__() and possible.ip.id != record.ip.id:
+            raise RecordExistsError(possible.__str__()+" already exists.")
+
+def _get_fqdn( record ):
+    if record.name == '':
+        fqdn = record.domain.name
+    else:
+        fqdn = record.name+"."+record.domain.name
+
+def _check_TLD_condition( fqdn ):
+    if Domain.objects.filter( name = fqdn ):
+        raise InvalidRecordNameError( "You cannot create TLD A record for another domain." )
 
 def _add_generic_record( name, domain, ip, ip_type ):
     # Does this record exists?
@@ -172,17 +222,18 @@ def _update_generic_record( address_record, new_name, new_ip, ip_type ):
         if type(new_ip) is not type(''):
             raise CyAddressValueError("Error: %s is not type 'str'." % (new_ip) )
         new_ip = new_ip.lower()
-        exist = Address_Record.objects.filter( name = new_name, domain = address_record.domain, ip_type = ip_type ).select_related('ip')
-        if exist and exist[0].ip.__str__() == new_ip:
-            raise RecordExistsError("Error: The record %s already exists." % (exist.__str__()) )
+        test_ip = new_ip #Used later for existance checking
         if ip_type == '4':
             ip = add_str_ipv4( new_ip ) # This runs sanity checks on the ip.
         else:
             ip = add_str_ipv6( new_ip ) # This runs sanity checks on the ip.
+    else:
+        test_ip = address_record.ip.__str__()
 
 
     # Validate the new_name if there is one.
     if new_name or new_name == '':
+        test_name = new_name #Used later for existance checking
         _validate_label( new_name ) # Will throw errors if new_name is invalid
         if new_name:
             fqdn = str(new_name)+"."+address_record.domain.name
@@ -191,6 +242,13 @@ def _update_generic_record( address_record, new_name, new_ip, ip_type ):
 
         if Domain.objects.filter( name = fqdn ):
             raise InvalidRecordNameError( "You cannot create a TLD A record for another domain." )
+    else:
+        test_name = address_record.name
+
+    #Check to see if this record already exists.
+    exist = Address_Record.objects.filter( name = test_name, domain = address_record.domain, ip_type = ip_type ).select_related('ip')
+    if exist and exist[0].ip.__str__() == test_ip:
+        raise RecordExistsError("Error: The record %s already exists." % (exist.__str__()) )
 
     # Everything is valid. Update.
     if new_ip:

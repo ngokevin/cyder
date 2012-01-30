@@ -1,14 +1,22 @@
 from django.db import models
-from cyder.cydns.soa.models import Soa
+from cyder.cydns.soa.models import SOA
 from cyder.cydns.models import _validate_name, InvalidRecordNameError
 import pdb
+
+from django.db.models.signals import pre_save, pre_delete
+
 
 class Domain( models.Model ):
     """A Domain is used for most DNS records."""
     id              = models.AutoField(primary_key=True)
     name            = models.CharField(max_length=100)
     master_domain   = models.ForeignKey("self", null=True)
-    soa             = models.ForeignKey(Soa, null=True, default=None)
+    soa             = models.ForeignKey(SOA, null=True, default=None)
+
+    def __init__(self, *args, **kwargs):
+        pre_save.connect(validate_domain, sender=self.__class__)
+        pre_delete.connect(validate_domain_delete, sender=self.__class__)
+        super(Domain, self).__init__(*args, **kwargs)
 
     def __str__(self):
         return "<Domain '%s'>" % (self.name)
@@ -17,6 +25,20 @@ class Domain( models.Model ):
 
     class Meta:
         db_table = 'domain'
+
+def validate_domain(sender, **kwargs):
+    domain = kwargs['instance']
+    _validate_name( domain.name )
+    if Domain.objects.filter( name = domain.name ):
+        raise DomainExistsError("The %s domain already exists." % (domain.name))
+
+    master_domain = _dname_to_master_domain( domain.name )
+    domain.master_domain = master_domain
+
+def validate_domain_delete(sender, **kwargs):
+    if sender.objects.filter( master_domain = kwargs['instance'] ):
+        raise DomainHasChildDomains("Before deleting this domain, please remove it's children.")
+    pass
 
 # TODO subclass these exceptions.
 class DomainNotFoundError(Exception):
@@ -92,28 +114,9 @@ def remove_domain_str( dname ):
     :returns: bool -- True on success
     :raises: DomainNotFoundError
     """
-    _validate_name( dname )
     domain = Domain.objects.filter( name = dname )
-    if not domain:
-        raise DomainNotFoundError("The domain '%s' was not found" % (dname))
-    remove_domain( domain[0] )
+    domain.delete()
     return True
-
-def remove_domain( domain ):
-    """Exact same as remove_domain_str except it uses an object instead of a string.
-
-        :param dname: The domain to remove.
-        :type dname: str
-        :returns: bool -- True on success
-        :raises: DomainNotFoundError, DomainHasChildDomains
-    """
-    if not domain:
-        raise DomainNotFoundError("The domain '%s' was not found" % (dname))
-    if Domain.objects.filter( master_domain = domain ):
-        raise DomainHasChildDomains("Before deleting this domain, please remove it's children.")
-    else:
-        domain.delete()
-        return True
 
 def add_domain( dname, default_soa=None ):
     """Create a domain **dname** and attach the correct master domain.
@@ -132,17 +135,6 @@ def add_domain( dname, default_soa=None ):
                     MasterDomainNotFoundError *will* be thrown.
                 2) A DomainExistsError *will* be thrown if you try to add a domain that exists.
     """
-    _validate_name( dname )
-    if Domain.objects.filter( name = dname ):
-        raise DomainExistsError("The %s domain already exists." % (dname))
-
-    master_domain = _dname_to_master_domain( dname )
-
-    if master_domain is None or default_soa is not None:
-        soa = default_soa
-    else:
-        soa = master_domain.soa
-
-    domain = Domain( name=dname, master_domain=master_domain, soa=soa )
+    domain = Domain( name=dname, soa=default_soa )
     domain.save()
     return domain

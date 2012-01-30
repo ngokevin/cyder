@@ -9,8 +9,8 @@ import ipaddr
 
 class PTR( models.Model ):
     """A PTR is used to map an IP to a domain name"""
-    #IP_TYPE_CHOICES = ( ('4','ipv4'),('6','ipv6') )
-    #ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
+    IP_TYPE_CHOICES = ( ('4','ipv4'),('6','ipv6') )
+    ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
     id              = models.AutoField(primary_key=True)
     name            = models.CharField(max_length=256)
     ip              = models.OneToOneField(Ip, null=False)
@@ -23,6 +23,17 @@ class PTR( models.Model ):
 
     class Meta:
         db_table = 'ptr'
+
+    def update(self, new_fqdn ):
+        _validate_name( new_fqdn )
+        exist = _check_exists( new_fqdn, self.ip )
+        if exist:
+            raise RecordExistsError( "%s already exists." % (exist.__str__()) )
+        else:
+            domain = _name_to_domain( new_fqdn )
+            self.domain = domain
+            self.name = new_fqdn
+            self.save()
 
 
 def _add_generic_ptr( ip, name, ip_type ):

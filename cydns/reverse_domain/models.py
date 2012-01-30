@@ -1,26 +1,69 @@
 from django.db import models
-from cyder.cydns.soa.models import Soa
+from cyder.cydns.soa.models import SOA
 from cyder.cydns.models import _validate_name, _validate_reverse_name, CyAddressValueError
 from cyder.cydns.cydns import trace
 import ipaddr
 import pdb
 
-class Reverse_Domain( models.Model ):
+from django.db.models.signals import pre_save, pre_delete, post_delete, post_save
+
+class ReverseDomain( models.Model ):
     """A reverse DNS domain is used build reverse bind files."""
     IP_TYPE_CHOICES = ( ('4','IPv4'),('6','IPv6') )
     id                      = models.AutoField(primary_key=True)
-    name                    = models.CharField(max_length=100)
+    name                    = models.CharField(max_length=100, unique=True, validators=[_validate_name])
     master_reverse_domain   = models.ForeignKey("self", null=True)
-    soa                     = models.ForeignKey(Soa, null=True)
+    soa                     = models.ForeignKey(SOA, null=True)
     ip_type                 = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, default='4')
 
+    def __init__(self, *args, **kwargs):
+        super(ReverseDomain, self).__init__(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        _check_for_children( self )
+        # Reassign Ip's in my reverse domain to my parent's reverse domain.
+        _reassign_reverse_ips_delete(self)
+        super(ReverseDomain, self).delete(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        self.clean() #Validate
+        super(ReverseDomain, self).save(*args, **kwargs)
+        # Collect any ip's that belong to me.
+        _reassign_reverse_ips( self, self.master_reverse_domain, self.ip_type )
+
+    def clean(self):
+        _validate_reverse_name(self.name, self.ip_type )
+        _check_exists( self )
+        self.name = self.name.lower()
+        master_reverse_domain = _dname_to_master_reverse_domain( self.name,\
+                                                                 ip_type=self.ip_type )
+        self.master_reverse_domain = master_reverse_domain
+
+
     def __str__(self):
-        return "<Reverse_Domain '%s'>" % (self.name)
+        return "<ReverseDomain '%s'>" % (self.name)
     def __repr__(self):
         return  self.__str__()
-
     class Meta:
         db_table = 'reverse_domain'
+
+def _reassign_reverse_ips_delete( reverse_domain ):
+    ips = reverse_domain.ip_set.iterator()
+    for ip in ips:
+        ip.reverse_domain = reverse_domain.master_reverse_domain
+        ip.save()
+
+def _check_exists( reverse_domain ):
+    if ReverseDomain.objects.filter( name = reverse_domain.name ):
+        raise ReverseDomainExistsError( "Error: The reverse domain %s already exists." % (reverse_domain.name) )
+
+def _check_for_children( reverse_domain ):
+    children = ReverseDomain.objects.filter( master_reverse_domain = reverse_domain )
+    if children:
+        error = ""
+        for child in children:
+            error += child.__str__()+", "
+        raise ReverseChildDomainExistsError("Error: Domain %s has children: %s" % (reverse_domain.name, error))
 
 #TODO. Subclass These exceptions.
 class ReverseDomainNotFoundError(Exception):
@@ -66,7 +109,7 @@ def ip_to_reverse_domain( ip, ip_type ):
     :type ip: str
     :param ip_type: The type of Ip address ip is. It should be either an IPv4 or IPv6 address.
     :type ip_type: str -- '4' or '6'
-    :returns: reverse_domain -- Reverse_Domain object
+    :returns: reverse_domain -- ReverseDomain object
     :raises: ReverseDomainNotFoundError
     """
     if ip_type == '6':
@@ -75,7 +118,7 @@ def ip_to_reverse_domain( ip, ip_type ):
     reverse_domain = None
     for i in reversed(range(1,len(tokens))):
         search_reverse_domain = '.'.join(tokens[:-i])
-        tmp_reverse_domain = Reverse_Domain.objects.filter( name = search_reverse_domain, ip_type=ip_type )
+        tmp_reverse_domain = ReverseDomain.objects.filter( name = search_reverse_domain, ip_type=ip_type )
         if tmp_reverse_domain:
             reverse_domain = tmp_reverse_domain[0]
         else:
@@ -95,14 +138,14 @@ def _dname_to_master_reverse_domain( dname, ip_type="4" ):
     :type dname: str
     :param ip_type: The type of reverse domain. It should be either an IPv4 or IPv6 address.
     :type ip_type: str -- '4' or '6'
-    :returns: Reverse_Domain or None -- None if the reverse domain is a TLD
+    :returns: ReverseDomain or None -- None if the reverse domain is a TLD
     :raises: MasterReverseDomainNotFoundError
     """
     tokens = dname.split('.')
     master_reverse_domain = None
     for i in reversed(range(1,len(tokens))):
         parent_dname = '.'.join(tokens[:-i])
-        possible_master_reverse_domain = Reverse_Domain.objects.filter( name = parent_dname, ip_type=ip_type )
+        possible_master_reverse_domain = ReverseDomain.objects.filter( name = parent_dname, ip_type=ip_type )
         if not possible_master_reverse_domain:
             raise MasterReverseDomainNotFoundError("Error: Coud not find master domain for %s.\
                                                                 Consider creating it." % (dname))
@@ -112,42 +155,14 @@ def _dname_to_master_reverse_domain( dname, ip_type="4" ):
 
 
 def _add_generic_reverse_domain( dname, ip_type ):
-    _validate_reverse_name( dname, ip_type )
-    if Reverse_Domain.objects.filter( name = dname ):
-        raise ReverseDomainExistsError( "Error: The reverse domain %s already exists." % (dname) )
-
-    if ip_type == '6':
-        dname = dname.lower()
-
-    master_reverse_domain = _dname_to_master_reverse_domain( dname, ip_type=ip_type )
-    if not master_reverse_domain:
-        soa = None
-    else:
-        soa = master_reverse_domain.soa
-
-    reverse_domain = Reverse_Domain( name=dname, master_reverse_domain=master_reverse_domain, soa=soa, ip_type=ip_type )
+    reverse_domain = ReverseDomain( name=dname, ip_type=ip_type )
     reverse_domain.save()
-    _reassign_reverse_ips( reverse_domain, master_reverse_domain, ip_type )
     return reverse_domain
 
 def _remove_generic_reverse_domain( dname, ip_type ):
-    _validate_reverse_name( dname, ip_type )
-    if not Reverse_Domain.objects.filter( name = dname, ip_type = ip_type ):
+    if not ReverseDomain.objects.filter( name = dname, ip_type = ip_type ):
         raise ReverseDomainNotFoundError( "Error: %s was not found." % (dname))
-    reverse_domain = Reverse_Domain.objects.filter( name = dname, ip_type = ip_type )[0] # It's cached
-
-    # Check if it has children.
-    children = Reverse_Domain.objects.filter( master_reverse_domain = reverse_domain )
-    if children:
-        error = ""
-        for child in children:
-            error += child.__str__()+", "
-        raise ReverseChildDomainExistsError("Error: Domain %s has children: %s" % (dname, error))
-
-    ips = reverse_domain.ip_set.iterator()
-    for ip in ips:
-        ip.reverse_domain = reverse_domain.master_reverse_domain
-        ip.save()
+    reverse_domain = ReverseDomain.objects.filter( name = dname, ip_type = ip_type )[0] # It's cached
     reverse_domain.delete()
 
 def _reassign_reverse_ips( reverse_domain_1, reverse_domain_2, ip_type ):
@@ -207,7 +222,7 @@ def nibblize( addr ):
     :type addr: str
     """
     try:
-        ip_str = ipaddr.IPv6Address(addr).exploded
+        ip_str = ipaddr.IPv6Address(str(addr)).exploded
     except ipaddr.AddressValueError, e:
         raise CyAddressValueError("Error: Invalid IPv6 address %s." % (addr))
 
@@ -238,6 +253,7 @@ def remove_reverse_ipv4_domain( dname ):
         ReverseChildDomainExistsError will be thrown.
     """
     return _remove_generic_reverse_domain( dname, '4' )
+
 def add_reverse_ipv6_domain( dname ):
     """This function adds a an IPv6 reverse domain.
 

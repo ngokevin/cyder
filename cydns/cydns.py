@@ -1,4 +1,3 @@
-from cyder.cydns.soa.models import Soa
 
 import sys
 import pdb
