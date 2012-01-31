@@ -62,12 +62,6 @@ class AddressRecord( models.Model ):
         db_table = 'address_record'
 
 
-def _get_ip( name, ip_type ):
-    if ip_type == '4':
-        ip = add_str_ipv4( ip ) # This runs sanity checks on the ip.
-    else:
-        ip = add_str_ipv6( ip ) # This runs sanity checks on the ip.
-
 def _check_exist( record ):
     exist = AddressRecord.objects.filter( name = record.name, domain = record.domain, ip_type = record.ip_type ).select_related('ip')
     for possible in exist:
