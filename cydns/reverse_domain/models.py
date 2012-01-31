@@ -1,6 +1,6 @@
 from django.db import models
 from cyder.cydns.soa.models import SOA
-from cyder.cydns.models import _validate_name, _validate_reverse_name, CyAddressValueError
+from cyder.cydns.models import _validate_name, _validate_reverse_name, CyAddressValueError, InvalidRecordNameError
 from cyder.cydns.cydns import trace
 import ipaddr
 import pdb
@@ -32,7 +32,13 @@ class ReverseDomain( models.Model ):
         _reassign_reverse_ips( self, self.master_reverse_domain, self.ip_type )
 
     def clean(self):
-        _validate_reverse_name(self.name, self.ip_type )
+        if not self.name:
+            raise InvalidRecordNameError("Error: please provide a name")
+        if  type(self.name) != type('') and type(self.name) != type(u''):
+            raise InvalidRecordNameError("Error: name must be type str")
+        if self.ip_type not in ('4', '6'):
+            raise InvalidRecordNameError("Error: Plase provide the type of Address Record")
+        _validate_reverse_name( self.name, self.ip_type )
         _check_exists( self )
         self.name = self.name.lower()
         master_reverse_domain = _dname_to_master_reverse_domain( self.name,\
@@ -51,7 +57,7 @@ def _reassign_reverse_ips_delete( reverse_domain ):
     ips = reverse_domain.ip_set.iterator()
     for ip in ips:
         ip.reverse_domain = reverse_domain.master_reverse_domain
-        ip.save()
+        ip.save( **{'update_reverse_domain':False} )
 
 def _check_exists( reverse_domain ):
     if ReverseDomain.objects.filter( name = reverse_domain.name ):
@@ -198,7 +204,8 @@ def boot_strap_add_ipv6_reverse_domain( ip ):
 
     for i in range(1,len(ip)+1,2):
         cur_reverse_domain = ip[:i]
-        reverse_domain = add_reverse_ipv6_domain( cur_reverse_domain )
+        reverse_domain = ReverseDomain( name = cur_reverse_domain, ip_type='6' )
+        reverse_domain.save()
     return reverse_domain
 
 
@@ -228,54 +235,3 @@ def nibblize( addr ):
 
     return '.'.join(list(ip_str.replace(':','')))
 
-def add_reverse_ipv4_domain( dname ):
-    """This function adds a an IPv4 reverse domain.
-
-    :param dname: The reverse domain to be added.
-    :type dname: str
-    :param ip_type: The type of reverse domain. It should be either an IPv4 or IPv6 address.
-    :type ip_type: str -- '4' or '6'
-    :raises: ReverseDomainExistsError
-    """
-    return _add_generic_reverse_domain( dname, '4' )
-def remove_reverse_ipv4_domain( dname ):
-    """This function removes an IPv4 reverse domain.
-
-    :param dname: The reverse domain to be removed.
-    :type dname: str
-    :param ip_type: The type of reverse domain. It should be either an IPv4 or IPv6 address.
-    :type ip_type: str -- '4' or '6'
-    :raises: ReverseDomainExistsError
-
-    .. note::
-        Think about reverse_domains (and domains for that matter) as a tree. This function is only
-        defined to work on *leaf nodes*. If you attempt to remove a none leaf reverse_domain a
-        ReverseChildDomainExistsError will be thrown.
-    """
-    return _remove_generic_reverse_domain( dname, '4' )
-
-def add_reverse_ipv6_domain( dname ):
-    """This function adds a an IPv6 reverse domain.
-
-    :param dname: The reverse domain to be added.
-    :type dname: str
-    :param ip_type: The type of reverse domain. It should be either an IPv4 or IPv6 address.
-    :type ip_type: str -- '4' or '6'
-    :raises: ReverseDomainExistsError
-    """
-    return _add_generic_reverse_domain( dname, '6' )
-def remove_reverse_ipv6_domain( dname ):
-    """This function removes an IPv6 reverse domain.
-
-    :param dname: The reverse domain to be removed.
-    :type dname: str
-    :param ip_type: The type of reverse domain. It should be either an IPv4 or IPv6 address.
-    :type ip_type: str -- '4' or '6'
-    :raises: ReverseDomainExistsError
-
-    .. note::
-        Think about reverse_domains (and domains for that matter) as a tree. This function is only
-        defined to work on *leaf nodes*. If you attempt to remove a none leaf reverse_domain a
-        ReverseChildDomainExistsError will be thrown.
-    """
-    return _remove_generic_reverse_domain( dname, '6' )
