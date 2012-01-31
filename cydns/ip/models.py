@@ -1,5 +1,5 @@
 from django.db import models
-from cyder.cydns.reverse_domain.models import Reverse_Domain, ip_to_reverse_domain,ReverseDomainNotFoundError
+from cyder.cydns.reverse_domain.models import ReverseDomain, ip_to_reverse_domain,ReverseDomainNotFoundError
 from cyder.cydns.models import CyAddressValueError
 import ipaddr
 import pdb
@@ -17,19 +17,57 @@ class Ip( models.Model ):
     ip_str          = models.CharField(max_length=39, editable=True)
     ip_upper        = models.BigIntegerField(null=False)
     ip_lower        = models.BigIntegerField(null=False)
-    reverse_domain  = models.ForeignKey(Reverse_Domain, null=False)
+    reverse_domain  = models.ForeignKey(ReverseDomain, null=False)
     ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
 
-    def __str__(self):
+    def __init__(self, *args, **kwargs):
+        super(Ip, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        if self.ip_type not in ('4', '6'):
+            raise CyAddressValueError("Error: Plase provide the type of IP")
+        if not self.ip_str or type(self.ip_str) is not type(''):
+            raise CyAddressValueError("Error: Plase provide the string representation of the IP")
         if self.ip_type == '4':
-            return ipaddr.IPv4Address(self.ip_lower).__str__()
-        if self.ip_type == '6':
-            return ipaddr.IPv6Address((self.ip_upper*(2**64))+self.ip_lower).__str__()
+            try:
+                ip = ipaddr.IPv4Address(self.ip_str)
+                self.ip_str = ip.__str__()
+            except ipaddr.AddressValueError, e:
+                raise CyAddressValueError("Error: Invalid Ip address %s" % (self.ip_str))
+            try:
+                self.reverse_domain = ip_to_reverse_domain( self.ip_str, ip_type='4' )
+            except ReverseDomainNotFoundError:
+                raise
+            self.ip_upper = 0
+            self.ip_lower = ip.__int__()
+        else:
+            try:
+                ip = ipaddr.IPv6Address(self.ip_str)
+                self.ip_str = ip.__str__()
+            except ipaddr.AddressValueError, e:
+                raise CyAddressValueError("Invalid ip %s for IPv6s." % (self.ip_str) )
+
+            try:
+                self.reverse_domain = ip_to_reverse_domain( self.ip_str, ip_type='6' )
+            except ReverseDomainNotFoundError:
+                raise
+            self.ip_upper, self.ip_lower =  ipv6_to_longs(ip.__int__())
+
+
+    def delete(self, *args, **kwargs):
+        super(Ip, self).delete(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super(Ip, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.ip_str
     def __int__(self):
         if self.ip_type == '4':
-            return ipaddr.IPv4Address(self.ip_lower).__int__()
+            self.ip_lower
         if self.ip_type == '6':
-            return ipaddr.IPv6Address((self.ip_upper*(2**64))+self.ip_lower).__int__()
+            return (self.ip_upper*(2**64))+self.ip_lower
 
     def __repr__(self):
         return "<Ip '%s'>" % (self.__str__())
@@ -37,56 +75,6 @@ class Ip( models.Model ):
 
     class Meta:
         db_table = 'ip'
-
-def add_str_ipv4(addr):
-    """This function will add an IPv4 address to the database.
-
-    :param addr: IPv4 address to be added.
-    :type addr: str
-    :returns: new_ip -- Ip object
-    :raises: ValueError, AddressValueError, ReverseDomainNotFoundError
-    """
-    if type(addr) is not type(''):
-        raise CyAddressValueError("Invalid ip %s for IPv4s." % (addr) )
-    try:
-        ip = ipaddr.IPv4Address(addr)
-    except ipaddr.AddressValueError, e:
-        raise CyAddressValueError("Error: Invalid Ip address %s" % (addr))
-    try:
-        reverse_domain = ip_to_reverse_domain( ip.__str__(), ip_type='4' )
-    except ReverseDomainNotFoundError:
-        raise
-
-    new_ip = Ip( ip_upper = 0, ip_lower = ip.__int__(), reverse_domain = reverse_domain, ip_type = '4')
-    new_ip.save()
-    return new_ip
-
-
-
-def add_str_ipv6(addr):
-    """This function will add an IPv6 address to the database.
-
-    :param addr: IPv6 address to be added.
-    :type addr: str
-    :returns: new_ip -- Ip object
-    :raises: AddressValueError, ReverseDomainNotFoundError
-    """
-    if type(addr) is not type(''):
-        raise CyAddressValueError("Invalid ip %s for IPv6s." % (addr) )
-    try:
-        ip = ipaddr.IPv6Address(addr)
-    except ipaddr.AddressValueError, e:
-        raise CyAddressValueError("Invalid ip %s for IPv6s." % (addr) )
-
-    try:
-        reverse_domain = ip_to_reverse_domain( ip.__str__(), ip_type='6' )
-    except ReverseDomainNotFoundError:
-        raise
-    ip_upper, ip_lower = ipv6_to_longs(ip.__int__())
-    new_ip = Ip( ip_upper = ip_upper, ip_lower = ip_lower, reverse_domain = reverse_domain, ip_type='6')
-    new_ip.save()
-    return new_ip
-
 
 def ipv6_to_longs(addr):
     """This function will turn an IPv6 into two long. The first will be reprsenting the first 64 bits of the address and second will be the lower 64 bits.
