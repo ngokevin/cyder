@@ -7,14 +7,14 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase
 
-from cyder.cydns.reverse_domain.models import Reverse_Domain, ReverseDomainNotFoundError
+from cyder.cydns.reverse_domain.models import ReverseDomain, ReverseDomainNotFoundError
 from cyder.cydns.reverse_domain.models import ReverseDomainExistsError,MasterReverseDomainNotFoundError
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
 
-from cyder.cydns.ip.models import add_str_ipv4, add_str_ipv6, ipv6_to_longs, Ip
+from cyder.cydns.ip.models import ipv6_to_longs, Ip
 
-from cyder.cydns.domain.models import Domain, add_domain, DomainExistsError, MasterDomainNotFoundError
-from cyder.cydns.domain.models import remove_domain_str, DomainNotFoundError, DomainHasChildDomains, _name_to_domain
+from cyder.cydns.domain.models import Domain, DomainExistsError, MasterDomainNotFoundError
+from cyder.cydns.domain.models import DomainNotFoundError, DomainHasChildDomains, _name_to_domain
 
 from cyder.cydns.models import InvalidRecordNameError
 from cyder.cydns.cydns import trace
@@ -23,38 +23,48 @@ import ipaddr
 import pdb
 
 class DomainTests(TestCase):
-    def test_save_override( self):
-        dom = Domain( name='com')
-    def do_generic_invalid( self, name,  function, exception ):
-        e = None
-        try:
-            function(name)
-        except exception, e:
-            pass
-        self.assertEqual(exception, type(e))
-        e.__str__()
 
     def test_remove_domain(self):
-        add_domain('com')
-        add_domain('foo.com')
-        remove_domain_str('foo.com')
-        foo = add_domain('foo.com' )
+        c = Domain( name = 'com')
+        c.save()
+        f_c = Domain( name = 'foo.com')
+        f_c.save()
+        f_c.delete()
+        foo = Domain( name = 'foo.com' )
         foo.__str__()
         foo.__repr__()
 
+    def test_add_domain(self):
+        c = Domain( name = 'com')
+        c.save()
+
+        f_c = Domain( name = 'foo.com')
+        f_c.save()
+        self.assertTrue( f_c.master_domain == c)
+
+        b_c = Domain( name = 'bar.com')
+        b_c.save()
+        self.assertTrue( b_c.master_domain == c)
+
+        b_b_c = Domain( name = 'baz.bar.com')
+        b_b_c.save()
+        self.assertTrue( b_b_c.master_domain == b_c)
+
+
+
     def test__name_to_master_domain(self):
         try:
-            add_domain('foo.cn' )
+            Domain( name = 'foo.cn' ).save()
         except MasterDomainNotFoundError, e:
             pass
         self.assertEqual( MasterDomainNotFoundError, type(e))
         e.__str__()
         e = None
 
-        cn = add_domain('cn' )
-        add_domain('foo.cn')
+        Domain( name = 'cn' ).save()
+        Domain( name = 'foo.cn').save()
         try:
-            add_domain('foo.cn')
+            Domain( name = 'foo.cn').save()
         except DomainExistsError, e:
             pass
         self.assertEqual( DomainExistsError, type(e))
@@ -62,41 +72,54 @@ class DomainTests(TestCase):
 
 
     def test_create_domain(self):
-        edu = add_domain('edu')
-        add_domain('oregonstate.edu' )
+        edu = Domain( name = 'edu')
+        Domain( name = 'oregonstate.edu' )
         try:
-            add_domain('foo.bar.oregonstate.edu' )
+            Domain( name = 'foo.bar.oregonstate.edu' ).save()
         except MasterDomainNotFoundError, e:
             pass
         self.assertEqual( MasterDomainNotFoundError, type(e))
         e = None
 
     def test_remove_has_child_domain(self):
-        com = add_domain('com')
-        f_c = add_domain('foo.com')
-        b_f_c = add_domain('boo.foo.com')
-        bad = 'foo.com'
-        self.do_generic_invalid(bad, remove_domain_str, DomainHasChildDomains)
+        Domain( name = 'com').save()
+        f_c = Domain( name = 'foo.com')
+        f_c.save()
+        Domain( name = 'boo.foo.com').save()
+        self.assertRaises(DomainHasChildDomains, f_c.delete)
 
     def test_invalid_add(self):
         bad = 12324
-        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
-        bad = "asfda.asdf"
-        self.do_generic_invalid(bad, add_domain, MasterDomainNotFoundError)
+        dom = Domain( name = bad )
+        self.assertRaises(InvalidRecordNameError, dom.save)
+
         bad = "asfda.as df"
-        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        dom = Domain( name = bad )
+        self.assertRaises(InvalidRecordNameError, dom.save)
+
         bad = "."
-        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        dom = Domain( name = bad )
+        self.assertRaises(InvalidRecordNameError, dom.save)
+
         bad = "edu. "
-        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        dom = Domain( name = bad )
+        self.assertRaises(InvalidRecordNameError, dom.save)
+
         bad = None
-        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        dom = Domain( name = bad )
+        self.assertRaises(InvalidRecordNameError, dom.save)
+
         bad = True
-        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        dom = Domain( name = bad )
+        self.assertRaises(InvalidRecordNameError, dom.save)
+
         bad = False
-        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        dom = Domain( name = bad )
+        self.assertRaises(InvalidRecordNameError, dom.save)
+
         bad = "!@#$"
-        self.do_generic_invalid(bad, add_domain, InvalidRecordNameError)
+        dom = Domain( name = bad )
+        self.assertRaises(InvalidRecordNameError, dom.save)
 
     def test_remove_has_child_records(self):
         pass

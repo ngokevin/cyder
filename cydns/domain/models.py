@@ -14,9 +14,18 @@ class Domain( models.Model ):
     soa             = models.ForeignKey(SOA, null=True, default=None)
 
     def __init__(self, *args, **kwargs):
-        pre_save.connect(validate_domain, sender=self.__class__)
-        pre_delete.connect(validate_domain_delete, sender=self.__class__)
         super(Domain, self).__init__(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        _check_for_children( self )
+        super(Domain, self).delete(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super(Domain, self).save(*args, **kwargs)
+
+    def clean( self ):
+        _validate_domain( self )
 
     def __str__(self):
         return "<Domain '%s'>" % (self.name)
@@ -26,17 +35,15 @@ class Domain( models.Model ):
     class Meta:
         db_table = 'domain'
 
-def validate_domain(sender, **kwargs):
-    domain = kwargs['instance']
+def _validate_domain( domain ):
     _validate_name( domain.name )
     if Domain.objects.filter( name = domain.name ):
         raise DomainExistsError("The %s domain already exists." % (domain.name))
 
-    master_domain = _dname_to_master_domain( domain.name )
-    domain.master_domain = master_domain
+    domain.master_domain = _dname_to_master_domain( domain.name )
 
-def validate_domain_delete(sender, **kwargs):
-    if sender.objects.filter( master_domain = kwargs['instance'] ):
+def _check_for_children( domain ):
+    if Domain.objects.filter( master_domain = domain ):
         raise DomainHasChildDomains("Before deleting this domain, please remove it's children.")
     pass
 
@@ -106,35 +113,3 @@ def _name_to_domain( fqdn ):
             return longest_match[0]
     return None
 
-def remove_domain_str( dname ):
-    """Given a dname make sure that it does not have any childern.
-
-    :param dname: The domain to remove.
-    :type dname: str
-    :returns: bool -- True on success
-    :raises: DomainNotFoundError
-    """
-    domain = Domain.objects.filter( name = dname )
-    domain.delete()
-    return True
-
-def add_domain( dname, default_soa=None ):
-    """Create a domain **dname** and attach the correct master domain.
-
-        :param dname: The domain name to add.
-        :type dname: str
-        :param defualt_soa: An optional feild to tag a domain with a different Soa than it's master domain.
-        :returns: bool -- True on success
-        :raises: DomainExistsError
-
-        note::
-            Rules for creating a new domain:
-                1) The master domain has to exist.
-                    I.E. Say we want to create oregonstate.edu. The 'edu' domain has to exists first.
-                    If you ask to create a domain 'dname' and it doesn't have a valid master domain, a
-                    MasterDomainNotFoundError *will* be thrown.
-                2) A DomainExistsError *will* be thrown if you try to add a domain that exists.
-    """
-    domain = Domain( name=dname, soa=default_soa )
-    domain.save()
-    return domain
