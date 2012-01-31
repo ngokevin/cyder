@@ -23,10 +23,10 @@ class Ip( models.Model ):
     def __init__(self, *args, **kwargs):
         super(Ip, self).__init__(*args, **kwargs)
 
-    def clean(self):
+    def clean(self, update_reverse_domain=True):
         if self.ip_type not in ('4', '6'):
             raise CyAddressValueError("Error: Plase provide the type of IP")
-        if not self.ip_str or type(self.ip_str) is not type(''):
+        if type(self.ip_str) != type('') and type(self.ip_str) != type(u''):
             raise CyAddressValueError("Error: Plase provide the string representation of the IP")
         if self.ip_type == '4':
             try:
@@ -34,10 +34,8 @@ class Ip( models.Model ):
                 self.ip_str = ip.__str__()
             except ipaddr.AddressValueError, e:
                 raise CyAddressValueError("Error: Invalid Ip address %s" % (self.ip_str))
-            try:
+            if update_reverse_domain:
                 self.reverse_domain = ip_to_reverse_domain( self.ip_str, ip_type='4' )
-            except ReverseDomainNotFoundError:
-                raise
             self.ip_upper = 0
             self.ip_lower = ip.__int__()
         else:
@@ -47,10 +45,8 @@ class Ip( models.Model ):
             except ipaddr.AddressValueError, e:
                 raise CyAddressValueError("Invalid ip %s for IPv6s." % (self.ip_str) )
 
-            try:
+            if update_reverse_domain:
                 self.reverse_domain = ip_to_reverse_domain( self.ip_str, ip_type='6' )
-            except ReverseDomainNotFoundError:
-                raise
             self.ip_upper, self.ip_lower =  ipv6_to_longs(ip.__int__())
 
 
@@ -58,7 +54,12 @@ class Ip( models.Model ):
         super(Ip, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
-        self.clean()
+        if kwargs.has_key('update_reverse_domain'):
+            urd = kwargs.pop('update_reverse_domain')
+        else:
+            urd = True # Defualt
+
+        self.clean( update_reverse_domain = urd )
         super(Ip, self).save(*args, **kwargs)
 
     def __str__(self):
