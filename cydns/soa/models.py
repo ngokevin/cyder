@@ -4,43 +4,41 @@ from cyder.cydns.models import RecordExistsError, RecordNotFoundError
 import time
 import pdb
 
+ONE_WEEK = 604800
+DEFAULT_EXPIRE = ONE_WEEK*2
+DEFAULT_RETRY = ONE_WEEK/7 # One day
+DEFAULT_REFRESH = 180 # 3 min
+
 class SOA( models.Model ):
     id              = models.AutoField(primary_key=True)
     primary         = models.CharField(max_length=100)
     contact         = models.CharField(max_length=100)
     serial          = models.PositiveIntegerField(null=False)
-    expire          = models.PositiveIntegerField(null=False)
-    retry           = models.PositiveIntegerField(null=False)
-    refresh         = models.PositiveIntegerField(null=False)
+    # Indicates when the zone data is no longer authoritative. Used by slave.
+    expire          = models.PositiveIntegerField(null=False, default = DEFAULT_EXPIRE)
+    # The time between retries if a slave fails to contact the master when refresh (below) has expired.
+    retry           = models.PositiveIntegerField(null=False, default = DEFAULT_RETRY)
+    # The time when the slave will try to refresh the zone from the master
+    refresh         = models.PositiveIntegerField(null=False, default = DEFAULT_REFRESH)
+    # This indicates if this zone needs to be rebuilt
+    dirty           = models.BooleanField( default = False )
     class Meta:
         db_table = 'soa'
 
-# Need to think about how to do this.
-DEFAULT_SERIAL = 0
+    def delete(self, *args, **kwargs):
+        super(SOA, self).delete(*args, **kwargs)
 
-def add_soa( primary, contact, retry, refresh ):
-    """Add an SOA record to the database.
+    def clean( self ):
+        _validate_name( self.primary )
+        _validate_name( self.contact )
 
-        :param  primary: The priary NS for the zone the SOA is being assigned to.
-        :type   primary: str. A valid DNS name.
-        :param  contact: contact info for the zone.
-        :type   contact: str
-        :param  retry: Retry interval
-        :type   retry: int
-        :param  retry: Refresh interval
-        :type   retry: int
-        :rases: InvalidRecordNameError, RecordExistsError
-    """
+    def save(self, *args, **kwargs):
+        self.serial = int(time.time())
+        self.clean()
+        super(SOA, self).save(*args, **kwargs)
 
-def remove_soa( soa ):
-    """Remove SOA record.
-        :param  soa: SOA to be deleted.
-        :type   soa: SOA object
-    """
-    # Go though and set all domains with SOA as their soa, to domain.soa = None
+    def __str__(self):
+        return "%s %s %s" % ( self.domain.__str__(), 'NS', self.server )
 
-def update_soa( soa, contact=None, serial=None, expire=None, retry=None, refresh=None, ):
-    """Update SOA record.
-        :param  soa: SOA to be updated.
-        :type   soa: SOA object
-    """
+    def __repr__(self):
+        return "<SOA Record '%s'>" % (self.__str__())
