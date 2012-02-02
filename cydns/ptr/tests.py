@@ -266,7 +266,8 @@ class PTRTests(TestCase):
 
     def do_generic_update( self, ptr, new_fqdn, ip_type, domain = None ):
         ptr.name = new_fqdn
-        ptr.domain = domain
+        if domain:
+            ptr.domain = domain
         ptr.save()
 
         ptr = PTR.objects.filter( name=new_fqdn, ip__ip_upper = ptr.ip.ip_upper , ip__ip_lower = ptr.ip.ip_lower, domain = ptr.domain )
