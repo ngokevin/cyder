@@ -66,7 +66,7 @@ class NSTests(TestCase):
     def testtest_add_ns_in_domain(self):
         ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
         ip.save()
-        glue = AddressRecord( name='ns2', domain = self.r, ip = ip, ip_type='4' )
+        glue = AddressRecord( label='ns2', domain = self.r, ip = ip, ip_type='4' )
         glue.save()
         data = { 'domain':self.r , 'server':'ns2.ru', 'glue':glue }
         ns = self.do_add( **data )
@@ -75,7 +75,7 @@ class NSTests(TestCase):
 
         ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
         ip.save()
-        glue = AddressRecord( name='ns3', domain = self.f_r, ip = ip, ip_type='4' )
+        glue = AddressRecord( label='ns3', domain = self.f_r, ip = ip, ip_type='4' )
         glue.save()
         data = { 'domain':self.f_r , 'server':'ns3.foo.ru', 'glue':glue }
         ns = self.do_add( **data )
@@ -90,7 +90,7 @@ class NSTests(TestCase):
     def test_update_glue_to_no_glue(self):
         ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
         ip.save()
-        glue = AddressRecord( name='ns3', domain = self.r, ip = ip, ip_type='4' )
+        glue = AddressRecord( label='ns3', domain = self.r, ip = ip, ip_type='4' )
         glue.save()
         data = { 'domain':self.r , 'server':'ns3.ru', 'glue':glue }
         ns = self.do_add( **data )
@@ -114,7 +114,7 @@ class NSTests(TestCase):
     def test_delete_ns(self):
         ip = Ip( ip_str = '128.196.1.10', ip_type = '4' )
         ip.save()
-        glue = AddressRecord( name='ns4', domain = self.f_r, ip = ip, ip_type='4' )
+        glue = AddressRecord( label='ns4', domain = self.f_r, ip = ip, ip_type='4' )
         glue.save()
         data = { 'domain':self.f_r , 'server':'ns4.foo.ru', 'glue':glue }
         ns = self.do_add( **data )
@@ -128,7 +128,7 @@ class NSTests(TestCase):
     def test_invalid_create(self):
         ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
         ip.save()
-        glue = AddressRecord( name='ns2', domain = self.r, ip = ip, ip_type = '4' )
+        glue = AddressRecord( label='ns2', domain = self.r, ip = ip, ip_type = '4' )
         glue.save()
 
         data = { 'domain':self.r , 'server':'ns2 .ru', 'glue':glue }

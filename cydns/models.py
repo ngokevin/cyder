@@ -51,7 +51,7 @@ def _validate_label( label ):
         :param label: The name to be tested.
         :type label: str
     """
-    if type(label) is not type(''):
+    if type(label) not in ( type(u''), type('') ):
             raise InvalidRecordNameError("Error: The supplied name '%s' is not of type 'str'." % (label) )
     valid_chars = string.ascii_letters+"0123456789"+"-"
     for char in label:
@@ -67,7 +67,7 @@ def _validate_name( fqdn ):
         :param fqdn: The fqdn to be tested.
         :type fqdn: str
     """
-    if type(fqdn) != type(''):
+    if type(fqdn) not in ( type(u''), type('') ):
         raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (fqdn) )
 
     for label in fqdn.split('.'):
@@ -83,7 +83,6 @@ def _validate_reverse_name( reverse_name, ip_type ):
         :type fqdn: str
     """
     if type(reverse_name) != type(u'') and type(reverse_name) != type(''):
-        pdb.set_trace()
         raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (reverse_name) )
 
     valid_ipv6 = "0123456789AaBbCcDdEeFf"

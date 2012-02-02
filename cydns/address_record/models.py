@@ -15,7 +15,7 @@ class AddressRecord( models.Model ):
     """AddressRecord is the class that generates A and AAAA records."""
     IP_TYPE_CHOICES = ( ('4','ipv4'),('6','ipv6') )
     id              = models.AutoField(primary_key=True)
-    name            = models.CharField(max_length=100)
+    label            = models.CharField(max_length=100)
     ip              = models.OneToOneField(Ip, null=False)
     domain          = models.ForeignKey(Domain, null=False)
     ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
@@ -28,11 +28,11 @@ class AddressRecord( models.Model ):
         super(AddressRecord, self).delete(*args, **kwargs)
 
     def clean( self ):
-        if type(self.name) != type(''):
+        if type(self.label) != type(''):
             raise InvalidRecordNameError("Error: name must be type str")
         if self.ip_type not in ('4', '6'):
             raise CyAddressValueError("Error: Plase provide the type of Address Record")
-        _validate_label( self.name )
+        _validate_label( self.label )
         _validate_name( self.__fqdn__() )
         _check_exist( self )
         _check_TLD_condition( self )
@@ -49,10 +49,10 @@ class AddressRecord( models.Model ):
         return "%s %s %s" % ( self.__fqdn__(), record_type, self.ip.__str__() )
 
     def __fqdn__(self):
-        if self.name == '':
+        if self.label == '':
             fqdn = self.domain.name
         else:
-            fqdn = self.name+"."+self.domain.name
+            fqdn = self.label+"."+self.domain.name
         return fqdn
 
     def __repr__(self):
@@ -63,7 +63,7 @@ class AddressRecord( models.Model ):
 
 
 def _check_exist( record ):
-    exist = AddressRecord.objects.filter( name = record.name, domain = record.domain, ip_type = record.ip_type ).select_related('ip')
+    exist = AddressRecord.objects.filter( label = record.label, domain = record.domain, ip_type = record.ip_type ).select_related('ip')
     for possible in exist:
         if possible.ip.__str__() == record.ip.__str__() and possible.ip.pk != record.ip.pk:
             raise RecordExistsError(possible.__str__()+" already exists.")
@@ -73,7 +73,7 @@ def _check_TLD_condition( record ):
     domain = Domain.objects.filter( name = record.__fqdn__() )
     if not domain:
         return
-    if record.name == '' and domain[0] == record.domain:
+    if record.label == '' and domain[0] == record.domain:
         return #This is allowed
     else:
         raise InvalidRecordNameError( "You cannot create TLD A record for another domain." )

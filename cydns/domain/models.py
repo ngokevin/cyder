@@ -40,7 +40,7 @@ def _validate_domain( domain ):
     if Domain.objects.filter( name = domain.name ):
         raise DomainExistsError("The %s domain already exists." % (domain.name))
 
-    domain.master_domain = _dname_to_master_domain( domain.name )
+    domain.master_domain = _name_to_master_domain( domain.name )
 
 def _check_for_children( domain ):
     if Domain.objects.filter( master_domain = domain ):
@@ -85,7 +85,7 @@ A name x.y.z can be split up into x y and z. The domains, 'y.z' and 'z' shoud ex
         None if invalid master domain
 """
 
-def _dname_to_master_domain( dname ):
+def _name_to_master_domain( dname ):
     """Given an domain name, this function returns the appropriate master domain.
 
     :param dname: The domain for which we are using to search for a master domain.
