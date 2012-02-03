@@ -3,7 +3,6 @@ from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.reverse_domain.models import ip_to_reverse_domain, ReverseDomainNotFoundError
 from cyder.cydns.ip.models import Ip, ipv6_to_longs
 from cyder.cydns.models import CyAddressValueError, _validate_name, RecordExistsError, RecordNotFoundError, InvalidRecordNameError
-from cyder.cydns.cydns import trace
 import ipaddr
 
 class PTR( models.Model ):
@@ -27,10 +26,7 @@ class PTR( models.Model ):
     def clean( self ):
         if type(self.name) not in (type(''), type(u'')):
             raise InvalidRecordNameError("Error: name must be type str")
-        if self.domain:
-            _validate_name( self.name+"."+self.domain.name )
-        else:
-            _validate_name( self.name )
+        _validate_name( self.name )
 
         _check_exists( self )
         self.domain = _name_to_domain( self.name )
