@@ -11,7 +11,7 @@ from cyder.cydns.models import InvalidRecordNameError
 from cyder.cydns.domain.models import Domain
 
 
-class SOATest(TestCase):
+class SOATests(TestCase):
     def setUp(self):
         pass
 

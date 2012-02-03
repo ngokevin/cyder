@@ -107,3 +107,7 @@ def do_generic_invalid( obj, data, exception, function ):
     except exception, e:
         pass
     obj.assertEqual(exception, type(e))
+
+def _validate_ttl( ttl ):
+    if ttl < 0 or ttl > 2147483647: # See RFC 2181
+        raise InvalidRecordNameError("Error: TTLs must be within the 0 to 2147483647 range.")

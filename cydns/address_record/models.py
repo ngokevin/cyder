@@ -15,7 +15,7 @@ class AddressRecord( models.Model ):
     """AddressRecord is the class that generates A and AAAA records."""
     IP_TYPE_CHOICES = ( ('4','ipv4'),('6','ipv6') )
     id              = models.AutoField(primary_key=True)
-    label            = models.CharField(max_length=100)
+    label           = models.CharField(max_length=100)
     ip              = models.OneToOneField(Ip, null=False)
     domain          = models.ForeignKey(Domain, null=False)
     ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)

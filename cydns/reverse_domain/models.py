@@ -1,7 +1,6 @@
 from django.db import models
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.models import _validate_name, _validate_reverse_name, CyAddressValueError, InvalidRecordNameError
-from cyder.cydns.cydns import trace
 import ipaddr
 import pdb
 
