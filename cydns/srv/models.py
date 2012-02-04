@@ -1,13 +1,71 @@
 from django.db import models
 from cyder.cydns.domain.models import Domain
+from cyder.cydns.cydns import CommonRecord
+from cyder.cydns.models import InvalidRecordNameError, RecordExistsError, _validate_name, _validate_label, _validate_ttl
 
-class SRV( models.Model ):
+class SRV( CommonRecord ):
     id              = models.AutoField(primary_key=True)
-    name            = models.CharField(max_length=100)
     target          = models.CharField(max_length=100)
-    domain          = models.ForeignKey(Domain, null=False)
+    port            = models.PositiveIntegerField(null=False)
     priority        = models.PositiveIntegerField(null=False)
     weight          = models.PositiveIntegerField(null=False)
 
+    def delete(self, *args, **kwargs):
+        super(SRV, self).delete(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super(SRV, self).save(*args, **kwargs)
+
+    def clean( self ):
+        if type(self.target) not in (type(''), type(u'')):
+            raise InvalidRecordNameError("Error: target must be type str")
+        if self.label and self.label[0] != '_':
+            raise InvalidRecordNameError("Error: SRV label must start with '_'")
+        _validate_label( self.label[1:] ) # Get rid of '_'
+        _validate_name( self.target )
+        _validate_srv_port( self.port )
+        _validate_srv_priority( self.priority )
+        _validate_srv_weight( self.weight )
+        _check_exists( self )
+        _check_TLD_condition( self )
+
+    def __str__(self):
+        return "%s %s %s %s %s %s %s" % ( self.__fqdn__(), 'IN', 'SRV', self.priority,self.weight, self.port, self.target)
+
+    def __fqdn__(self):
+        if self.label == '':
+            fqdn = self.domain.name
+        else:
+            fqdn = str(self.label)+"."+self.domain.name
+        return fqdn
+
     class Meta:
         db_table = 'srv'
+
+def _validate_srv_port( port ):
+    if port > 65535 or port < 0:
+        raise InvalidRecordNameError("Error: SRV port must be within the 0 to 65535 range. See RFC 1035")
+
+def _validate_srv_priority( prio ):
+    if prio > 65535 or prio < 0:
+        raise InvalidRecordNameError("Error: SRV priority must be within the 0 to 65535 range. See RFC 1035")
+
+def _validate_srv_weight( weight ):
+    if weight > 65535 or weight < 0:
+        raise InvalidRecordNameError("Error: SRV priority must be within the 0 to 65535 range. See RFC 1035")
+
+def _check_exists( srv ):
+    exist = SRV.objects.filter( label = srv.label, target = srv.target, priority = srv.priority, weight = srv.weight, port = srv.port, domain = srv.domain )
+    for possible in exist:
+        if possible.pk != srv.pk:
+            raise RecordExistsError("Error: This SRV record already exists.")
+
+def _check_TLD_condition( srv ):
+    domain = Domain.objects.filter( name = srv.__fqdn__() )
+    if not domain:
+        return
+    if srv.label == '' and domain[0] == srv.domain:
+        return #This is allowed
+    else:
+        raise InvalidRecordNameError( "You cannot create a SRV record with a non empty label that points to a TLD." )
