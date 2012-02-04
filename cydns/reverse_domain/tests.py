@@ -18,7 +18,6 @@ from cyder.cydns.domain.models import Domain, DomainExistsError, MasterDomainNot
 
 #from cyder.cydns.address_record.models import remove_domain_str, remove_domain, remove_domain, RecordExistsError
 from cyder.cydns.models import InvalidRecordNameError, CyAddressValueError
-from cyder.cydns.cydns import trace
 
 import ipaddr
 import pdb

@@ -17,7 +17,6 @@ from cyder.cydns.domain.models import Domain, DomainExistsError, MasterDomainNot
 from cyder.cydns.domain.models import DomainNotFoundError, DomainHasChildDomains, _name_to_domain
 
 from cyder.cydns.models import InvalidRecordNameError
-from cyder.cydns.cydns import trace
 
 import ipaddr
 import pdb

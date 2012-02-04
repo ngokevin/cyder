@@ -84,7 +84,6 @@ class SOATests(TestCase):
         d0.save()
         d1 = Domain( name = 'foo.com', soa = soa )
         d1.save()
-        pdb.set_trace()
         self.assertTrue( soa == d1.soa )
         d2 = Domain( name = 'bar.foo.com', soa = soa )
         d2.save()

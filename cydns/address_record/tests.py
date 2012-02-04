@@ -6,7 +6,6 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from cyder.cydns.cydns import trace
 
 from cyder.cydns.reverse_domain.models import ReverseDomain, ReverseDomainNotFoundError
 from cyder.cydns.reverse_domain.models import ReverseDomainExistsError,MasterReverseDomainNotFoundError
