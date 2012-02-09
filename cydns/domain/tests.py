@@ -39,6 +39,7 @@ class DomainTests(TestCase):
 
         f_c = Domain( name = 'foo.com')
         f_c.save()
+        f_c.save()
         self.assertTrue( f_c.master_domain == c)
 
         b_c = Domain( name = 'bar.com')

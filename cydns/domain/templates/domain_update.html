@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+Name: {{ domain_form.instance.name }} <br />
+{% if domain_form.instance.master_domain %}
+Master Domain: {{ domain_form.instance.master_domain.name }} <br />
+{% endif %}
+<form method="post" action="">
+{{ domain_form }}
+{{ domain_form.DELETE }}
+<input type="submit" name="submit" value="Submit" />
+<input type="submit" name="delete" value="Delete" />
+</form>
+
+<form method="delete" action="">
+{{ domain_form.DELETE }}
+</form>
+{% endblock %}

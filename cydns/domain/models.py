@@ -1,17 +1,19 @@
 from django.db import models
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.models import _validate_name, InvalidRecordNameError
-import pdb
+from django.views.decorators.csrf import csrf_exempt
 
-from django.db.models.signals import pre_save, pre_delete
+from django.forms import ModelForm
+from django import forms
+import pdb
 
 
 class Domain( models.Model ):
     """A Domain is used for most DNS records."""
     id              = models.AutoField(primary_key=True)
     name            = models.CharField(max_length=100)
-    master_domain   = models.ForeignKey("self", null=True)
-    soa             = models.ForeignKey(SOA, null=True, default=None)
+    master_domain   = models.ForeignKey("self", null=True, default=None, blank=True)
+    soa             = models.ForeignKey(SOA, null=True, default=None, blank=True)
 
     def __init__(self, *args, **kwargs):
         super(Domain, self).__init__(*args, **kwargs)
@@ -35,9 +37,24 @@ class Domain( models.Model ):
     class Meta:
         db_table = 'domain'
 
+class DomainUpdateForm( ModelForm ):
+    class Meta:
+        model   = Domain
+        exclude = ('name','master_domain',)
+
+class DomainForm( ModelForm ):
+    choices = ( (1,'Yes'),
+                (0,'No'),
+              )
+    inherit_soa = forms.ChoiceField(widget=forms.RadioSelect, choices=choices)
+    class Meta:
+        model   = Domain
+        exclude = ('master_domain',)
+
 def _validate_domain( domain ):
     _validate_name( domain.name )
-    if Domain.objects.filter( name = domain.name ):
+    possible = Domain.objects.filter( name = domain.name )
+    if possible and possible[0].pk != domain.pk:
         raise DomainExistsError("The %s domain already exists." % (domain.name))
 
     domain.master_domain = _name_to_master_domain( domain.name )

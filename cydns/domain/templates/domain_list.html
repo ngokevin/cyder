@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+    {% for domain in domains %}
+    <a href="/cyder/cydns/domain/{{domain.pk}}/update">{{ domain.name }}</a> {{domain.soa}} 
+        <br />
+    {% endfor %}
+{% endblock %}
+
