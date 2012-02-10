@@ -4,6 +4,9 @@ from cyder.cydns.models import _validate_name, _validate_reverse_name, CyAddress
 import ipaddr
 import pdb
 
+from django.forms import ModelForm
+from django import forms
+
 from django.db.models.signals import pre_save, pre_delete, post_delete, post_save
 
 class ReverseDomain( models.Model ):
@@ -11,8 +14,8 @@ class ReverseDomain( models.Model ):
     IP_TYPE_CHOICES = ( ('4','IPv4'),('6','IPv6') )
     id                      = models.AutoField(primary_key=True)
     name                    = models.CharField(max_length=100, unique=True, validators=[_validate_name])
-    master_reverse_domain   = models.ForeignKey("self", null=True)
-    soa                     = models.ForeignKey(SOA, null=True)
+    master_reverse_domain   = models.ForeignKey("self", null=True, blank=True)
+    soa                     = models.ForeignKey(SOA, null=True, blank=True)
     ip_type                 = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, default='4')
 
     def __init__(self, *args, **kwargs):
@@ -52,6 +55,21 @@ class ReverseDomain( models.Model ):
     class Meta:
         db_table = 'reverse_domain'
 
+class ReverseDomainUpdateForm( ModelForm ):
+    class Meta:
+        model   = ReverseDomain
+        exclude = ('name','master_reverse_domain', 'ip_type')
+
+
+class ReverseDomainForm( ModelForm ):
+    choices = ( (1,'Yes'),
+                (0,'No'),
+              )
+    inherit_soa = forms.ChoiceField(widget=forms.RadioSelect, choices=choices, required=False)
+    class Meta:
+        model   = ReverseDomain
+        exclude = ('master_reverse_domain',)
+
 def _reassign_reverse_ips_delete( reverse_domain ):
     ips = reverse_domain.ip_set.iterator()
     for ip in ips:
@@ -59,7 +77,8 @@ def _reassign_reverse_ips_delete( reverse_domain ):
         ip.save( **{'update_reverse_domain':False} )
 
 def _check_exists( reverse_domain ):
-    if ReverseDomain.objects.filter( name = reverse_domain.name ):
+    possible = ReverseDomain.objects.filter( name = reverse_domain.name, ip_type = reverse_domain.ip_type )
+    if possible and possible[0].pk != reverse_domain.pk:
         raise ReverseDomainExistsError( "Error: The reverse domain %s already exists." % (reverse_domain.name) )
 
 def _check_for_children( reverse_domain ):

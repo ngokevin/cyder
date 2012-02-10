@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Reverse IPv{{ reverse_domain_form.instance.ip_type }} Domain: {{ reverse_domain_form.instance.name }}</h3>
+{% if reverse_domain_form.instance.master_reverse_domain %}
+Master Reverse Domain: {{ reverse_domain_form.instance.master_reverse_domain.name }} <br />
+{% endif %}
+<form method="post" action="">
+{{ reverse_domain_form }}
+<input type="submit" name="submit" value="Submit" />
+<input type="submit" name="delete" value="Delete" />
+</form>
+{% endblock %}
