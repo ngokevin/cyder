@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html LANG="{{ LANG }}" dir="{{ DIR }}">
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <a href="/cyder/cydns/domain">Domains</a>
+        <a href="/cyder/cydns/domain/create">Create New Domain</a>
+
+        <a href="/cyder/cydns/reverse_domain">Reverse Domains</a>
+        <a href="/cyder/cydns/reverse_domain/create">Create New Reverse Domain</a>
+        <a href="/cyder/cydns/reverse_domain/bootstrap6">Bootstrap v6</a>
+        <br />
+        <br />
+    </head>
+    {% block content %}{% endblock %}
+
+    <div id="footer">
+    </div>
+    {% block site_js %}
+    {% endblock %}
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>
+
