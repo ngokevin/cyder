@@ -18,6 +18,7 @@ class SOATests(TestCase):
     def do_generic_add(self, primary, contact, retry, refresh):
         soa = SOA( primary = primary, contact = contact, retry = retry, refresh = refresh)
         soa.save()
+        soa.save()
         rsoa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh=refresh )
         self.assertTrue( len(rsoa) == 1 )
         return soa
@@ -29,6 +30,7 @@ class SOATests(TestCase):
         refresh = 1234123
         self.do_generic_add(primary, contact,retry, refresh)
         soa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh = refresh )
+        soa[0].save()
         self.assertTrue( soa )
         soa.__repr__()
 
