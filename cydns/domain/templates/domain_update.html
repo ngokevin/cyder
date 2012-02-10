@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-Name: {{ domain_form.instance.name }} <br />
+<h3>Domain {{ domain_form.instance.name }}</h3>
 {% if domain_form.instance.master_domain %}
 Master Domain: {{ domain_form.instance.master_domain.name }} <br />
 {% endif %}
