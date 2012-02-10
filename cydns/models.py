@@ -87,6 +87,11 @@ def _validate_reverse_name( reverse_name, ip_type ):
 
     valid_ipv6 = "0123456789AaBbCcDdEeFf"
 
+    if ip_type == '4' and len(reverse_name.split('.')) > 4:
+        raise InvalidRecordNameError("Error: IPv4 reverse domains should be a maximum of 4 octets")
+    if ip_type == '6' and len(reverse_name.split('.')) > 32:
+        raise InvalidRecordNameError("Error: IPv6 reverse domains should be a maximum of 32 nibbles")
+
     for chunk in reverse_name.split('.'):
         try:
             if ip_type == '6':
