@@ -7,3 +7,4 @@ class CommonRecord(models.Model):
 
     class Meta:
         abstract = True
+

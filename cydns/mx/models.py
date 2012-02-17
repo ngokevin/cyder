@@ -1,7 +1,13 @@
 from django.db import models
+from django.forms import ModelForm
+from django import forms
+
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.cydns import CommonRecord
 from cyder.cydns.models import InvalidRecordNameError, RecordExistsError, _validate_name, _validate_label, _validate_ttl
+from cyder.settings.local import CYDNS_BASE_URL
+
+import pdb
 
 class MX( CommonRecord ):
     id              = models.AutoField(primary_key=True)
@@ -10,11 +16,13 @@ class MX( CommonRecord ):
     priority        = models.PositiveIntegerField(null=False)
     ttl             = models.PositiveIntegerField(null=False)
 
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/mx/%s/detail" % (self.pk)
+
     def delete(self, *args, **kwargs):
         super(MX, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
-        self.clean()
         super(MX, self).save(*args, **kwargs)
 
     def clean( self ):
@@ -44,6 +52,10 @@ class MX( CommonRecord ):
 
     class Meta:
         db_table = 'mx'
+
+class MXForm( ModelForm ):
+    class Meta:
+        model   = MX
 
 def _validate_mx_priority( prio ):
     if prio > 65535 or prio < 0:

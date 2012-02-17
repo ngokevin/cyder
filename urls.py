@@ -1,5 +1,6 @@
 from django.conf.urls.defaults import patterns, include, url
-from cyder.cydns.soa.views import SOADetailView, SOACreateView, SOAUpdateView
+from cyder.cydns.common.views import SOADetailView, SOACreateView, SOAUpdateView
+from cyder.cydns.common.views import MXDetailView, MXCreateView, MXUpdateView
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -10,6 +11,11 @@ urlpatterns = patterns('',
     #########
     # CYDNS #
     #########
+    # MX
+    url(r'^cyder/cydns/mx/create$', MXCreateView.as_view()),
+    url(r'^cyder/cydns/mx/(?P<pk>[\w-]+)/update$', MXUpdateView.as_view() ),
+    url(r'^cyder/cydns/mx/(?P<pk>[\w-]+)/detail$', MXDetailView.as_view() ),
+
     # SOA
     url(r'^cyder/cydns/soa/create$', SOACreateView.as_view() ),
     url(r'^cyder/cydns/soa/(?P<pk>[\w-]+)/update$', SOAUpdateView.as_view() ),
