@@ -1,8 +1,4 @@
 # Create your views here.
-from cyder.cydns.domain.models import Domain, DomainForm, DomainUpdateForm, DomainHasChildDomains
-from cyder.cydns.domain.models import DomainExistsError, MasterDomainNotFoundError
-
-from cyder.cydns.soa.models import SOA
 
 from django.template import RequestContext
 from django.shortcuts import render_to_response, render
@@ -12,11 +8,19 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect
 from session_csrf import anonymous_csrf
 from django.forms.formsets import formset_factory
-
 from django.contrib import messages
+
+
+from cyder.cydns.domain.models import Domain, DomainForm, DomainUpdateForm, DomainHasChildDomains
+from cyder.cydns.domain.models import DomainExistsError, MasterDomainNotFoundError
+from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.soa.models import SOA
+
 import pdb
+from operator import itemgetter
 
 DNS_BASE = '/cyder/cydns'
+
 @csrf_exempt
 def domain_list(request):
     domains = Domain.objects.all()
@@ -60,6 +64,9 @@ def domain_create(request):
 
 @csrf_exempt
 def domain_update(request, pk):
+    # Construct tables of the child objects.
+    tables = []
+    #gen_table( AddressRecord.objects.all(), ['__fqdn__', 'ip'] '/cyder/address_record/%s/update' )
     domain = Domain.objects.get( pk = pk )
     if request.method == 'POST':
         try:
@@ -92,7 +99,17 @@ def domain_update(request, pk):
         resp_param = ("domain_update.html", { "domain_form": domain_form })
         return render_to_response(*resp_param, context_instance = c )
     else:
+        objects = AddressRecord.objects.filter( domain = domain )
+        adr_headers, adr_matrix, adr_urls = AddressRecord.tablefy( objects, '/cyder/cydns/address_record/%s/update')
+
         domain_form = DomainUpdateForm(instance=domain)
         c = RequestContext(request)
-        resp_param = ("domain_update.html", { "domain_form": domain_form })
+
+        params = { "domain_form": domain_form,
+                   "address_headers":adr_headers,
+                   "address_matrix": adr_matrix,
+                   "address_urls": adr_urls
+                 }
+        resp_param = ("domain_update.html", params )
         return render_to_response(*resp_param, context_instance = c )
+

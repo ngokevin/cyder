@@ -55,6 +55,17 @@ def reverse_domain_list(request):
     return render( request, 'reverse_domain_list.html', {'reverse_domains': reverse_domains} )
 
 @csrf_exempt
+def inheirit_soa(request, pk):
+    reverse_domain = ReverseDomain.objects.get( pk = pk )
+    if request.method == 'POST':
+        if reverse_domain.master_reverse_domain:
+            reverse_domain.soa = reverse_domain.master_reverse_domain.soa
+            reverse_domain.save() # Clean gets called in save()
+            messages.success(request, '%s was successfully updated.' % (reverse_domain.name))
+    return redirect('cyder.cydns.reverse_domain.views.reverse_domain_list' )
+
+
+@csrf_exempt
 def reverse_domain_create(request):
     if request.method == 'POST':
         reverse_domain_form = ReverseDomainForm(request.POST)

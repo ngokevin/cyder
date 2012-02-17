@@ -1,6 +1,9 @@
 from django.db import models
+from cyder.settings.local import CYDNS_BASE_URL
 from cyder.cydns.models import _validate_name, CyAddressValueError, InvalidRecordNameError
 from cyder.cydns.models import RecordExistsError, RecordNotFoundError
+from django.forms import ModelForm
+from django import forms
 import time
 import pdb
 
@@ -25,6 +28,9 @@ class SOA( models.Model ):
     class Meta:
         db_table = 'soa'
 
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/soa/%s/detail" % (self.pk)
+
     def delete(self, *args, **kwargs):
         super(SOA, self).delete(*args, **kwargs)
 
@@ -42,3 +48,8 @@ class SOA( models.Model ):
 
     def __repr__(self):
         return "<SOA Record '%s'>" % (self.__str__())
+
+class SOAForm( ModelForm ):
+    class Meta:
+        model   = SOA
+        exclude = ('serial','dirty',)

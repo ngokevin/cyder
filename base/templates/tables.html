@@ -1,0 +1,24 @@
+{% macro render_table(headers, matrix, urls) %}
+<table>
+    <tr>
+    {% for header in headers %}
+        {# print header #}
+        <th>{{ header }}</th>
+    {% endfor %}
+    </tr>
+
+    {% for row in matrix %}
+    <tr>
+        <th><a href='{{ urls[loop.index0] }}'>{{ row[0] }}</a></th>
+        {% for col in row %}
+            {% if loop.first %}
+                {# Do nothing #}
+            {% else %}
+                {# print data #}
+                <th>{{ col }}</th>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+{% endmacro %}
