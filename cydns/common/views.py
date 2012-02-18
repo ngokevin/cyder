@@ -108,20 +108,22 @@ class MXListView(MXView, CommonListView):
 #   SOA   #
 ###########
 
-class SOADetailView(CommonDetailView):
-    template_name = "soa_detail.html"
-    queryset = SOA.objects.all()
-
-class SOACreateView(CommonCreateView):
+class SOAView(object):
     model = SOA
     form_class = SOAForm
-
-class SOAUpdateView(CommonUpdateView):
-    form_class = SOAForm
     queryset = SOA.objects.all()
 
-class SOAListView(CommonListView):
-    queryset   = SOA.objects.all()
+class SOADetailView(SOAView, CommonDetailView):
+    pass
+
+class SOACreateView(SOAView, CommonCreateView):
+    pass
+
+class SOAUpdateView(SOAView, CommonUpdateView):
+    pass
+
+class SOAListView(SOAView, CommonListView):
+    pass
 
 """
 class XXXDetailView(CommonDetailView):

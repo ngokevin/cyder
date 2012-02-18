@@ -28,8 +28,21 @@ class SOA( models.Model ):
     class Meta:
         db_table = 'soa'
 
+    def details(self):
+        return  (
+                    ('Primary', self.primary),
+                    ('Contact', self.contact),
+                    ('Serial', self.serial),
+                    ('Expire', self.expire),
+                    ('Retry', self.retry),
+                    ('Refresh', self.refresh),
+                )
+
     def get_absolute_url(self):
         return CYDNS_BASE_URL + "/soa/%s/detail" % (self.pk)
+
+    def get_edit_url(self):
+        return CYDNS_BASE_URL + "/soa/%s/update" % (self.pk)
 
     def delete(self, *args, **kwargs):
         super(SOA, self).delete(*args, **kwargs)
