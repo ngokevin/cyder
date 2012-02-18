@@ -5,7 +5,6 @@ from django import forms
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.cydns import CommonRecord
 from cyder.cydns.models import InvalidRecordNameError, RecordExistsError, _validate_name, _validate_label, _validate_ttl
-from cyder.settings.local import CYDNS_BASE_URL
 
 import pdb
 
@@ -16,14 +15,22 @@ class MX( CommonRecord ):
     priority        = models.PositiveIntegerField(null=False)
     ttl             = models.PositiveIntegerField(null=False)
 
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/mx/%s/detail" % (self.pk)
+    def details(self):
+        return  (
+                    ('FQDN', self.__fqdn__()),
+                    ('Record Type', 'MX'),
+                    ('Server', self.server),
+                    ('Priority', self.priority),
+                    ('TTL', self.ttl)
+                )
 
     def delete(self, *args, **kwargs):
         super(MX, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
+        self.clean()
         super(MX, self).save(*args, **kwargs)
+        pdb.set_trace()
 
     def clean( self ):
         if type(self.label) not in (type(''), type(u'')):

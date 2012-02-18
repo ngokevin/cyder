@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ form_title }}</h3>
+    <table>
+    {% for item, value in common.details() %}
+        <th>{{ item }}</th>
+    {% endfor %}
+    <tr>
+    {% for item, value in common.details() %}
+        <td>{{ value }}</td>
+    {% endfor %}
+    </tr>
+    </table>
+    <br />
+    <a href='{{ common.get_edit_url() }}'>Edit</a>
+{% endblock %}

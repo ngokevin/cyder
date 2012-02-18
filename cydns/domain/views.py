@@ -15,6 +15,8 @@ from cyder.cydns.domain.models import Domain, DomainForm, DomainUpdateForm, Doma
 from cyder.cydns.domain.models import DomainExistsError, MasterDomainNotFoundError
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.soa.models import SOA
+from cyder.cydns.mx.models import MX
+from cyder.cydns.common.utils import tablefy
 
 import pdb
 from operator import itemgetter
@@ -99,16 +101,25 @@ def domain_update(request, pk):
         resp_param = ("domain_update.html", { "domain_form": domain_form })
         return render_to_response(*resp_param, context_instance = c )
     else:
-        objects = AddressRecord.objects.filter( domain = domain )
-        adr_headers, adr_matrix, adr_urls = AddressRecord.tablefy( objects, '/cyder/cydns/address_record/%s/update')
+        address_objects = AddressRecord.objects.filter( domain = domain )
+        adr_headers, adr_matrix, adr_urls = tablefy( address_objects )
+
+        mx_objects = MX.objects.filter( domain = domain )
+        mx_headers, mx_matrix, mx_urls = tablefy( mx_objects )
 
         domain_form = DomainUpdateForm(instance=domain)
         c = RequestContext(request)
 
-        params = { "domain_form": domain_form,
-                   "address_headers":adr_headers,
-                   "address_matrix": adr_matrix,
-                   "address_urls": adr_urls
+        params = {
+                "domain_form": domain_form,
+                # A and AAAA
+                "address_headers": adr_headers,
+                "address_matrix": adr_matrix,
+                "address_urls": adr_urls,
+                # MX
+                "mx_headers": mx_headers,
+                "mx_matrix": mx_matrix,
+                "mx_urls": mx_urls
                  }
         resp_param = ("domain_update.html", params )
         return render_to_response(*resp_param, context_instance = c )

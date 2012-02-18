@@ -22,29 +22,19 @@ class AddressRecord( models.Model ):
     domain          = models.ForeignKey(Domain, null=False)
     ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
 
-    @staticmethod
-    def tablefy( objects, url ):
-        """Given a list of objects, build a matrix that is can be printed as a table. Also return
-        the headers for that table. Populate the given url with the pk of the object. Return all
-        headers, field array, and urls in a seperate lists.
 
-        :param  objects: A list of objects to make the matrix out of.
-        :type   objects: AddressRecords
-        :param      url: A string containing one '%s'
-        :type       url: str
-        """
-        matrix = []
-        urls   = []
-        headers = ['FQDN', 'Record Type', 'IP']
-        for obj in objects:
-            row = []
-            urls.append( url % (obj.pk) )
-            row.append( obj.__fqdn__() ) #Add fqdn to the row
-            row.append( 'A' if obj.ip.ip_type == '4' else 'AAAA' ) # Either 'A' or 'AAAA'
-            row.append( str(obj.ip) ) # The ip
-            matrix.append(row)
+    def get_absolute_url(self):
+        return "/cyder/cydns/address_record/%s/update" % (self.pk)
 
-        return (headers, matrix, urls)
+    def get_edit_url(self):
+        return "/cyder/cydns/address_record/%s/edit" % (self.pk)
+
+    def details(self):
+        return  (
+                    ('FQDN', self.__fqdn__()),
+                    ('Record Type', 'A' if self.ip.ip_type == '4' else 'AAAA' ),
+                    ('IP', str(self.ip)),
+                )
 
     def __init__(self, *args, **kwargs):
         super(AddressRecord, self).__init__(*args, **kwargs)

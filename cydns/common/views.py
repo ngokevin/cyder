@@ -1,15 +1,26 @@
 from cyder.cydns.mx.models import MX, MXForm
 from cyder.cydns.soa.models import SOA, SOAForm
-from django.views.generic import DetailView, CreateView, UpdateView
+from django.views.generic import DetailView, CreateView, UpdateView, ListView
 from django.contrib import messages
 import pdb
 
 class CommonDetailView(DetailView):
     context_object_name = "common"
+    template_name = "common_detail.html"
+    extra_context = None
+
+    def get_context_data(self, **kwargs):
+        context = super(DetailView, self).get_context_data(**kwargs)
+        context['form_title'] = "Update %s" % (self.form_class.Meta.model.__name__)
+        if self.extra_context:
+            # extra_context takes precidence over original values in context
+            context = dict(context.items() + self.extra_context.items())
+        return context
 
 class CommonCreateView(CreateView):
     template_name = "common_form.html"
     context_object_name = "common"
+    extra_context = None
 
     def get_form(self, form_class):
         form = super(CommonCreateView, self).get_form( form_class)
@@ -30,9 +41,25 @@ class CommonCreateView(CreateView):
     def get(self, request, *args, **kwargs ):
         return super(CommonCreateView, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(CreateView, self).get_context_data(**kwargs)
+        context['form_title'] = "Update %s" % (self.form_class.Meta.model.__name__)
+        if self.extra_context:
+            # extra_context takes precidence over original values in context
+            context = dict(context.items() + self.extra_context.items())
+        return context
+
 class CommonUpdateView(UpdateView):
     template_name = "common_form.html"
     context_object_name = "common"
+    extra_context = None
+
+    def __init__(self, *args, **kwargs):
+        super(UpdateView, self).__init__(*args, **kwargs)
+
+    def get_form(self, form_class):
+        form = super(CommonUpdateView, self).get_form( form_class)
+        return form
 
     def post(self, request, *args, **kwargs ):
         try:
@@ -41,22 +68,45 @@ class CommonUpdateView(UpdateView):
             messages.error( request, str(e) )
             request.method = 'GET'
             return super(CommonUpdateView, self).get(request, *args, **kwargs)
-        pdb.set_trace()
         return mx
     def get(self, request, *args, **kwargs ):
         return super(CommonUpdateView, self).get(request, *args, **kwargs)
 
-class MXDetailView(CommonDetailView):
-    template_name = "mx_detail.html"
-    queryset = MX.objects.all() # Eventually, do a filter here to make user specific views.
+    def get_context_data(self, **kwargs):
+        context = super(UpdateView, self).get_context_data(**kwargs)
+        context['form_title'] = "Update %s" % (self.form_class.Meta.model.__name__)
+        if self.extra_context:
+            # extra_context takes precidence over original values in context
+            context = dict(context.items() + self.extra_context.items())
+        return context
 
-class MXCreateView(CommonCreateView):
+class CommonListView(ListView):
+    template_name = "list.html"
+    context_object_name = "objects"
+
+############
+#    MX    #
+############
+class MXView(object):
     model      = MX
     form_class = MXForm
+    queryset   = MX.objects.all() # Eventually, do a filter here to make user specific views.
 
-class MXUpdateView(CommonUpdateView):
-    form_class = MXForm
-    queryset   = MX.objects.all()
+class MXDetailView(MXView, CommonDetailView):
+    pass
+
+class MXCreateView(MXView, CommonCreateView):
+    pass
+
+class MXUpdateView(MXView, CommonUpdateView):
+    pass
+
+class MXListView(MXView, CommonListView):
+    pass
+
+###########
+#   SOA   #
+###########
 
 class SOADetailView(CommonDetailView):
     template_name = "soa_detail.html"
@@ -70,6 +120,9 @@ class SOAUpdateView(CommonUpdateView):
     form_class = SOAForm
     queryset = SOA.objects.all()
 
+class SOAListView(CommonListView):
+    queryset   = SOA.objects.all()
+
 """
 class XXXDetailView(CommonDetailView):
     template_name =
@@ -78,8 +131,13 @@ class XXXDetailView(CommonDetailView):
 class XXXCreateView(CommonCreateView):
     model      =
     form_class =
+    form_title =
 
 class XXXUpdateView(CommonUpdateView):
     form_class =
+    queryset   =
+    form_title =
+
+class XXXListView(CommonListView):
     queryset   =
 """
