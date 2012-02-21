@@ -2,8 +2,8 @@
 {% block content %}
 <h3>Create Address Record</h3>
 <form method="post" action="">
-    {{ record_form }} <br />
-    {{ ip_form }} <br />
+    {{ record_form }}
+    {{ ip_form }}
     <tr><th><label for="id_ip_type">Ip type:</label></th><td><select name="ip_type" id="id_ip_type">
                 {% if ip_type == '' %}
                 <option value="" selected="selected">---------</option>

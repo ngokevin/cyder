@@ -24,10 +24,10 @@ class AddressRecord( models.Model ):
 
 
     def get_absolute_url(self):
-        return "/cyder/cydns/address_record/%s/update" % (self.pk)
+        return "/cyder/cydns/address_record/%s/detail" % (self.pk)
 
     def get_edit_url(self):
-        return "/cyder/cydns/address_record/%s/edit" % (self.pk)
+        return "/cyder/cydns/address_record/%s/update" % (self.pk)
 
     def details(self):
         return  (

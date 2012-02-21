@@ -1,9 +1,10 @@
 from django.db import models
 from cyder.cydns.soa.models import SOA
+from cyder.settings.local import CYDNS_BASE_URL
 from cyder.cydns.models import _validate_name, InvalidRecordNameError
 from django.views.decorators.csrf import csrf_exempt
 
-from django.forms import ModelForm
+from django.forms import ModelForm, ValidationError
 from django import forms
 import pdb
 
@@ -17,6 +18,12 @@ class Domain( models.Model ):
 
     def __init__(self, *args, **kwargs):
         super(Domain, self).__init__(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/domain/%s/detail" % (self.pk)
+
+    def get_edit_url(self):
+        return CYDNS_BASE_URL + "/domain/%s/update" % (self.pk)
 
     def delete(self, *args, **kwargs):
         _check_for_children( self )
@@ -64,32 +71,15 @@ def _check_for_children( domain ):
         raise DomainHasChildDomains("Before deleting this domain, please remove it's children.")
     pass
 
-# TODO subclass these exceptions.
-class DomainNotFoundError(Exception):
+class DomainNotFoundError(ValidationError):
     """This exception is thrown when an attempt is made to reference a domain that doesn't exist."""
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.msg
 
-class DomainExistsError(Exception):
+class DomainExistsError(ValidationError):
     """This exception is thrown when an attempt is made to create a domain that already exists."""
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.msg
-class MasterDomainNotFoundError(Exception):
+class MasterDomainNotFoundError(ValidationError):
     """This exception is thrown when an attempt is made to add a domain that doesn't have a valid master domain."""
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.msg
-class DomainHasChildDomains(Exception):
+class DomainHasChildDomains(ValidationError):
     """This exception is thrown when an attempt is made to delete a domain that has children domains."""
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.msg
 
 """
 Given an name return the most specific domain that the ip can belong to.

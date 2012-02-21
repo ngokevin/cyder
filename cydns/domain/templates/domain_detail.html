@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+{% from "tables.html" import render_table %}
+
+<h3>Domain {{ domain.name }}</h3>
+<a href='{{ domain.get_edit_url() }}'>Edit</a>
+<br/>
+{% if domain.soa %}
+SOA: <a href='{{ domain.soa.get_absolute_url() }}'>{{ domain.soa.primary }}</a>
+{% endif %}
+<br />
+
+{% if domain.master_domain %}
+Master Domain: <a href='{{ domain.master_domain.get_absolute_url() }}'>{{ domain.master_domain.name }}</a>
+{% endif %}
+<br/>
+
+{% if address_matrix %}
+    <h4> Address Records </h4>
+    {{ render_table( address_headers, address_matrix, address_urls ) }}
+{% endif %}
+{% if mx_matrix %}
+    <h4> MX Records </h4>
+    {{ render_table( mx_headers, mx_matrix, mx_urls ) }}
+{% endif %}
+{% endblock %}
+{# Print Address Records #}
+
+

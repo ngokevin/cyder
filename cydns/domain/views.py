@@ -1,7 +1,7 @@
 # Create your views here.
 
 from django.template import RequestContext
-from django.shortcuts import render_to_response, render
+from django.shortcuts import render_to_response, render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.list_detail import object_list
 from django.views.decorators.csrf import csrf_exempt
@@ -9,6 +9,7 @@ from django.shortcuts import redirect
 from session_csrf import anonymous_csrf
 from django.forms.formsets import formset_factory
 from django.contrib import messages
+from django.views.generic import DetailView, ListView, CreateView, UpdateView
 
 
 from cyder.cydns.domain.models import Domain, DomainForm, DomainUpdateForm, DomainHasChildDomains
@@ -21,12 +22,41 @@ from cyder.cydns.common.utils import tablefy
 import pdb
 from operator import itemgetter
 
-DNS_BASE = '/cyder/cydns'
+class DomainView(object):
+    queryset            = Domain.objects.all()
 
-@csrf_exempt
-def domain_list(request):
-    domains = Domain.objects.all()
-    return render( request, 'domain_list.html', {'domains': domains} )
+class DomainListView(DomainView, ListView):
+    template_name       = "domain_list.html"
+    context_object_name = "domains"
+
+
+class DomainDetailView(DomainView, DetailView):
+    context_object_name = "domain"
+    template_name       = "domain_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(DetailView, self).get_context_data(**kwargs)
+        domain = kwargs.get('object', False)
+        if not domain:
+            return context
+        address_objects = AddressRecord.objects.filter( domain = domain )
+        adr_headers, adr_matrix, adr_urls = tablefy( address_objects )
+
+        mx_objects = MX.objects.filter( domain = domain )
+        mx_headers, mx_matrix, mx_urls = tablefy( mx_objects )
+
+        # Join the two dicts
+        context = dict( {
+                    # A and AAAA
+                    "address_headers": adr_headers,
+                    "address_matrix": adr_matrix,
+                    "address_urls": adr_urls,
+                    # MX
+                    "mx_headers": mx_headers,
+                    "mx_matrix": mx_matrix,
+                    "mx_urls": mx_urls
+                        }.items() + context.items() )
+        return context
 
 @csrf_exempt
 def domain_create(request):
@@ -51,25 +81,18 @@ def domain_create(request):
             messages.error( request, e.__str__() )
             return render( request, "domain_create.html", { "domain_form": domain_form } )
 
-        # Success. Redirect to
+        # Success. Redirect.
         messages.success(request, '%s was successfully created.' % (domain.name))
-        domain_update_form = DomainUpdateForm(instance=domain)
-        c = RequestContext(request)
-        resp_param = ("domain_update.html", { 'domain_form': domain_update_form })
-        return redirect('cyder.cydns.domain.views.domain_update', pk = domain.pk )
+        return redirect( domain )
     else:
         domain_form = DomainForm()
-        c = RequestContext(request)
-        resp_param = ("domain_create.html", { "domain_form": domain_form })
-        return render_to_response(*resp_param, context_instance = c )
+        return render( request, "domain_create.html", { 'domain_form': domain_form } )
 
 
 @csrf_exempt
 def domain_update(request, pk):
     # Construct tables of the child objects.
-    tables = []
-    #gen_table( AddressRecord.objects.all(), ['__fqdn__', 'ip'] '/cyder/address_record/%s/update' )
-    domain = Domain.objects.get( pk = pk )
+    domain = get_object_or_404( Domain, pk = pk )
     if request.method == 'POST':
         try:
             domain_form = DomainUpdateForm(request.POST)
@@ -96,31 +119,7 @@ def domain_update(request, pk):
 
         messages.success(request, '%s was successfully updated.' % (domain.name))
 
-        domain_form = DomainUpdateForm(instance=domain)
-        c = RequestContext(request)
-        resp_param = ("domain_update.html", { "domain_form": domain_form })
-        return render_to_response(*resp_param, context_instance = c )
+        return redirect( domain )
     else:
-        address_objects = AddressRecord.objects.filter( domain = domain )
-        adr_headers, adr_matrix, adr_urls = tablefy( address_objects )
-
-        mx_objects = MX.objects.filter( domain = domain )
-        mx_headers, mx_matrix, mx_urls = tablefy( mx_objects )
-
         domain_form = DomainUpdateForm(instance=domain)
-        c = RequestContext(request)
-
-        params = {
-                "domain_form": domain_form,
-                # A and AAAA
-                "address_headers": adr_headers,
-                "address_matrix": adr_matrix,
-                "address_urls": adr_urls,
-                # MX
-                "mx_headers": mx_headers,
-                "mx_matrix": mx_matrix,
-                "mx_urls": mx_urls
-                 }
-        resp_param = ("domain_update.html", params )
-        return render_to_response(*resp_param, context_instance = c )
-
+        return render( request, "domain_update.html", { 'domain_form': domain_form } )

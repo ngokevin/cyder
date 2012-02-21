@@ -2,6 +2,7 @@ from cyder.cydns.mx.models import MX, MXForm
 from cyder.cydns.soa.models import SOA, SOAForm
 from django.views.generic import DetailView, CreateView, UpdateView, ListView
 from django.contrib import messages
+from django.forms import ValidationError
 import pdb
 
 class CommonDetailView(DetailView):
@@ -32,12 +33,12 @@ class CommonCreateView(CreateView):
 
     def post(self, request, *args, **kwargs ):
         try:
-            mx = super(CommonCreateView, self).post(request, *args, **kwargs)
-        except Exception, e:
+            obj = super(CommonCreateView, self).post(request, *args, **kwargs)
+        except ValidationError, e:
             messages.error( request, str(e) )
             request.method = 'GET'
             return super(CommonCreateView, self).get(request, *args, **kwargs)
-        return mx
+        return obj
     def get(self, request, *args, **kwargs ):
         return super(CommonCreateView, self).get(request, *args, **kwargs)
 
@@ -63,12 +64,12 @@ class CommonUpdateView(UpdateView):
 
     def post(self, request, *args, **kwargs ):
         try:
-            mx = super(CommonUpdateView, self).post(request, *args, **kwargs)
-        except Exception, e:
+            obj = super(CommonUpdateView, self).post(request, *args, **kwargs)
+        except ValidationError, e:
             messages.error( request, str(e) )
             request.method = 'GET'
             return super(CommonUpdateView, self).get(request, *args, **kwargs)
-        return mx
+        return obj
     def get(self, request, *args, **kwargs ):
         return super(CommonUpdateView, self).get(request, *args, **kwargs)
 

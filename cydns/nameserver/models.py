@@ -1,4 +1,6 @@
 from django.db import models
+from django.forms import ModelForm, ValidationError
+from cyder.settings.local import CYDNS_BASE_URL
 from cyder.cydns.address_record.models import Domain, _check_TLD_condition
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.models import _validate_label, _validate_name, InvalidRecordNameError, RecordExistsError
@@ -13,6 +15,19 @@ class Nameserver( models.Model ):
 
     class Meta:
         db_table = 'nameserver'
+
+    def details(self):
+        return  (
+                    ('Domain', self.domain),
+                    ('Server', self.server),
+                    ('Glue', self.glue),
+                )
+
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/nameserver/%s/detail" % (self.pk)
+
+    def get_edit_url(self):
+        return CYDNS_BASE_URL + "/nameserver/%s/update" % (self.pk)
 
     def __init__(self, *args, **kwargs):
         super(Nameserver, self).__init__(*args, **kwargs)
@@ -31,11 +46,12 @@ class Nameserver( models.Model ):
         needs_glue = _needs_glue( self )
         if self.glue and self.glue.__fqdn__() != self.server:
             if not needs_glue:
-                raise NSRecordMisconfiguredError("Error: %s does not need a glue record." % (self.__str__()))
+                raise NSRecordMisconfiguredError("Error: %s does not need a glue record." % (str(self)))
             else:
-                raise NSRecordMisconfiguredError("Error: %s needs a correct glue record." % (self.__str__()))
+                raise NSRecordMisconfiguredError("Error: %s needs a correct glue record." % (str(self)))
         if not self.glue and needs_glue:
-            raise NSRecordMisconfiguredError("Error: %s needs a correct glue record." % (self.__str__()))
+            raise NSRecordMisconfiguredError("Error: %s is in the %s domain. It needs a glue record." %\
+                    (self.server, self.domain.name))
 
 
     def save(self, *args, **kwargs):
@@ -43,20 +59,21 @@ class Nameserver( models.Model ):
         super(Nameserver, self).save(*args, **kwargs)
 
     def __str__(self):
-        return "%s %s %s" % ( self.domain.__str__(), 'NS', self.server )
+        return "%s %s %s" % ( self.domain.name, 'NS', self.server )
 
     def __repr__(self):
-        return "<NS Record '%s'>" % (self.__str__())
+        return "<NS Record '%s'>" % (str(self))
 
-class NSRecordMisconfiguredError(Exception):
+class NameserverForm( ModelForm ):
+    class Meta:
+        model   = Nameserver
+        exclude = ('glue',)
+        glue    = models.CharField(max_length=256, blank=True, help_text="Enter Glue record if the NS server is \
+                                                                within the domain you are assigning the NS server to.")
+
+class NSRecordMisconfiguredError(ValidationError):
     """This exception is thrown when an attempt is made to create an NS record that requires a glue, but
        a glue record is not found."""
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.__repr__()
-    def __repr__(self):
-        return self.msg
 
 def _needs_glue( ns ):
     # Replace the domain portion of the server with "".
@@ -81,4 +98,4 @@ def _check_exist( ns ):
     exist = Nameserver.objects.filter( server = ns.server, domain = ns.domain )
     for possible in exist:
         if possible.pk != ns.pk:
-            raise RecordExistsError(possible.__str__()+" already exists.")
+            raise RecordExistsError(str(possible)+" already exists.")

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ form_title }}</h3>
+    <table>
+        <tr>
+            <th>Domain</th>
+            <th>Server</th>
+            {% if object.glue %}
+                <th>Glue</th>
+            {% endif %}
+        </tr>
+        <tr>
+            <td>{{ object.domain.name }}</td>
+            <td>{{ object.server }}</td>
+            {% if object.glue %}
+            <td><a href='{{ object.glue.get_absolute_url() }}'>{{ object.glue.__fqdn__() }}</a></td>
+        </tr>
+
+        {% endif %}
+    </table>
+    <br />
+    <a href='{{ common.get_edit_url() }}'>Edit</a>
+{% endblock %}

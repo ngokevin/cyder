@@ -1,4 +1,5 @@
 from django.db import models
+from django.forms import ValidationError
 import string
 import pdb
 """
@@ -6,37 +7,19 @@ import pdb
 
 """
 #TODO Subclass these Exceptions!
-class CyAddressValueError(Exception):
+class CyAddressValueError(ValidationError):
     """This exception is thrown when an attempt is made to create/update a record with an invlaid IP."""
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.__repr__()
-    def __repr__(self):
-        return self.msg
 
-class InvalidRecordNameError(Exception):
+class InvalidRecordNameError(ValidationError):
     """This exception is thrown when an attempt is made to create/update a record with an invlaid name."""
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.__repr__()
-    def __repr__(self):
-        return self.msg
 
-class RecordExistsError(Exception):
+class RecordExistsError(ValidationError):
     """This exception is thrown when an attempt is made to create a record that already exists."""
-    def __init__(self, msg ):
-        self.msg = msg
-    def __str__(self):
-        return self.__repr__()
-    def __repr__(self):
-        return self.msg
 
-class RecordNotFoundError(Exception):
+class RecordNotFoundError(ValidationError):
     """This exception is thrown when an attempt is made to remove/update a record that does not       exists."""
     def __init__(self, msg ):
-        """Record Not Found Exception.
+        """Record Not Found ValidationError.
         """
         self.msg = msg
     def __str__(self):

@@ -4,7 +4,7 @@ from cyder.cydns.models import _validate_name, _validate_reverse_name, CyAddress
 import ipaddr
 import pdb
 
-from django.forms import ModelForm
+from django.forms import ModelForm, ValidationError
 from django import forms
 
 from django.db.models.signals import pre_save, pre_delete, post_delete, post_save
@@ -89,42 +89,16 @@ def _check_for_children( reverse_domain ):
             error += child.__str__()+", "
         raise ReverseChildDomainExistsError("Error: Domain %s has children: %s" % (reverse_domain.name, error))
 
-#TODO. Subclass These exceptions.
-class ReverseDomainNotFoundError(Exception):
+class ReverseDomainNotFoundError(ValidationError):
     """This exception is thrown when you are trying to add an Ip to the database and it cannot be paired with a reverse domain. The solution is to create a reverse domain for the Ip to live in.
     """
-    def __init__(self, msg ):
-        self.msg = msg
-    def __str__(self):
-        return self.msg
-    def __repr__(self):
-        return  self.__str__()
-
-class ReverseDomainExistsError(Exception):
+class ReverseDomainExistsError(ValidationError):
     """This exception is thrown when you try to create a reverse domain that already exists."""
-    def __init__(self, msg ):
-        self.msg = msg
-    def __str__(self):
-        return self.msg
-    def __repr__(self):
-        return  self.__str__()
-class ReverseChildDomainExistsError(Exception):
+class ReverseChildDomainExistsError(ValidationError):
     """This exception is thrown when you try to delete a reverse domain that has child reverese domains. A reverse domain should only be deleted when it has no child reverse domains."""
-    def __init__(self, msg ):
-        self.msg = msg
-    def __str__(self):
-        return self.msg
-    def __repr__(self):
-        return  self.__str__()
 
-class MasterReverseDomainNotFoundError(Exception):
+class MasterReverseDomainNotFoundError(ValidationError):
     """All reverse domains should have a logical master (or parent) reverse domain. If you try to create a reverse domain that should have a master reverse domain and *doesn't* this exception is thrown."""
-    def __init__(self, msg ):
-        self.msg = msg
-    def __str__(self):
-        return self.msg
-    def __repr__(self):
-        return  self.__str__()
 
 def ip_to_reverse_domain( ip, ip_type ):
     """Given an ip return the most specific reverse domain that the ip can belong to.
