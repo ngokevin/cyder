@@ -1,5 +1,6 @@
 from django.db import models
 from cyder.cydns.soa.models import SOA
+from cyder.settings.local import CYDNS_BASE_URL
 from cyder.cydns.models import _validate_name, _validate_reverse_name, CyAddressValueError, InvalidRecordNameError
 import ipaddr
 import pdb
@@ -20,6 +21,12 @@ class ReverseDomain( models.Model ):
 
     def __init__(self, *args, **kwargs):
         super(ReverseDomain, self).__init__(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/reverse_domain/%s/detail" % (self.pk)
+
+    def get_edit_url(self):
+        return CYDNS_BASE_URL + "/reverse_domain/%s/update" % (self.pk)
 
     def delete(self, *args, **kwargs):
         _check_for_children( self )

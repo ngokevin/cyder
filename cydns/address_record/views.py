@@ -35,7 +35,7 @@ class AddressRecordCreateView(AddressRecordView, CreateView):
 
             record.ip = ip
             record.save()
-        except Exception, e:
+        except ValueError, e:
             return render( request, "address_record_create.html", { "record_form": record_form, "ip_form": ip_form, 'ip_type': ip_type } )
 
         # Success. Redirect.

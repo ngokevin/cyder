@@ -67,7 +67,7 @@ class NSCreateView(CreateView):
 
         try:
             ns.save() # This calls clean
-        except Exception, e:
+        except ValidationError, e:
             return self.get(self, request, *args, **kwargs)
 
         # Success. Redirect.
@@ -109,7 +109,7 @@ class NSUpdateView(NSView, UpdateView):
         # If ns needs a glue record, find it. It we can't find it return and error.
         if _needs_glue( ns ):
             glue_label = server.split('.')[0] # foo.com -> foo
-            # This will cause a problem if there is more than one dns name here.
+            # This will cause a problem if there is more than one dns name.
             glue = AddressRecord.objects.filter( label = glue_label, domain = domain )
             if not glue:
                 form = NameserverForm( request.POST )

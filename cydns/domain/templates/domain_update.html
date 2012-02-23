@@ -1,27 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-{% from "tables.html" import render_table %}
-
-<h3>Domain {{ domain_form.instance.name }}</h3>
-
-{% if domain_form.instance.master_domain %}
-    Master Domain: {{ domain_form.instance.master_domain.name }} <br />
-{% endif %}
-
 <form method="post" action="">
-    {{ domain_form }}
-    <input type="submit" name="submit" value="Submit" />
-    <input type="submit" name="delete" value="Delete" />
-</form>
-
-{% if address_matrix %}
-    <h4> Address Records </h4>
-    {{ render_table( address_headers, address_matrix, address_urls ) }}
-{% endif %}
-{% if mx_matrix %}
-    <h4> MX Records </h4>
-    {{ render_table( mx_headers, mx_matrix, mx_urls ) }}
-{% endif %}
+    Name: {{ form.instance.name }} <br />
+    {{ form }}
+<input type="submit" value="Submit" />
 {% endblock %}
 {# Print Address Records #}
 

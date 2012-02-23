@@ -1,7 +1,10 @@
 from django.conf.urls.defaults import patterns, include, url
 from cyder.cydns.common.views import SOADetailView, SOACreateView, SOAUpdateView, SOAListView
 from cyder.cydns.common.views import MXDetailView, MXCreateView, MXUpdateView, MXListView
-from cyder.cydns.domain.views import DomainDetailView, DomainListView
+from cyder.cydns.domain.views import DomainDetailView, DomainListView, DomainCreateView
+from cyder.cydns.domain.views import DomainUpdateView
+from cyder.cydns.reverse_domain.views import ReverseDomainDetailView, ReverseDomainListView
+from cyder.cydns.reverse_domain.views import ReverseDomainUpdateView, ReverseDomainCreateView
 from cyder.cydns.nameserver.views import NSDetailView, NSCreateView, NSUpdateView, NSListView
 from cyder.cydns.address_record.views import AddressRecordDetailView, AddressRecordCreateView
 from cyder.cydns.address_record.views import AddressRecordUpdateView
@@ -36,14 +39,15 @@ urlpatterns = patterns('',
 
     # Domain
     url(r'^cyder/cydns/domain$', DomainListView.as_view()),
-    url(r'^cyder/cydns/domain/create$', 'cyder.cydns.domain.views.domain_create'),
-    url(r'^cyder/cydns/domain/(?P<pk>[\w-]+)/update$', 'cyder.cydns.domain.views.domain_update'),
+    url(r'^cyder/cydns/domain/create$', DomainCreateView.as_view()),
+    url(r'^cyder/cydns/domain/(?P<pk>[\w-]+)/update$', DomainUpdateView.as_view()),
     url(r'^cyder/cydns/domain/(?P<pk>[\w-]+)/detail$', DomainDetailView.as_view()),
 
     # Reverse Domain
-    url(r'^cyder/cydns/reverse_domain$', 'cyder.cydns.reverse_domain.views.reverse_domain_list'),
-    url(r'^cyder/cydns/reverse_domain/create$', 'cyder.cydns.reverse_domain.views.reverse_domain_create'),
-    url(r'^cyder/cydns/reverse_domain/(?P<pk>[\w-]+)/update$', 'cyder.cydns.reverse_domain.views.reverse_domain_update'),
+    url(r'^cyder/cydns/reverse_domain$', ReverseDomainListView.as_view()),
+    url(r'^cyder/cydns/reverse_domain/create$', ReverseDomainCreateView.as_view()),
+    url(r'^cyder/cydns/reverse_domain/(?P<pk>[\w-]+)/update$', ReverseDomainUpdateView.as_view()),
+    url(r'^cyder/cydns/reverse_domain/(?P<pk>[\w-]+)/detail$', ReverseDomainDetailView.as_view()),
     url(r'^cyder/cydns/reverse_domain/bootstrap6$', 'cyder.cydns.reverse_domain.views.bootstrap_ipv6'),
     url(r'^cyder/cydns/reverse_domain/(?P<pk>[\w-]+)/inheirit_soa$', 'cyder.cydns.reverse_domain.views.inheirit_soa'),
 

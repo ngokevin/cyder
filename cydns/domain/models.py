@@ -34,7 +34,12 @@ class Domain( models.Model ):
         super(Domain, self).save(*args, **kwargs)
 
     def clean( self ):
-        _validate_domain( self )
+        _validate_name( self.name )
+        possible = Domain.objects.filter( name = self.name )
+        if possible and possible[0].pk != self.pk:
+            raise DomainExistsError("The %s domain already exists." % (domain.name))
+
+        self.master_domain = _name_to_master_domain( self.name )
 
     def __str__(self):
         return "<Domain '%s'>" % (self.name)
@@ -58,13 +63,6 @@ class DomainForm( ModelForm ):
         model   = Domain
         exclude = ('master_domain',)
 
-def _validate_domain( domain ):
-    _validate_name( domain.name )
-    possible = Domain.objects.filter( name = domain.name )
-    if possible and possible[0].pk != domain.pk:
-        raise DomainExistsError("The %s domain already exists." % (domain.name))
-
-    domain.master_domain = _name_to_master_domain( domain.name )
 
 def _check_for_children( domain ):
     if Domain.objects.filter( master_domain = domain ):

@@ -1,15 +1,9 @@
 # Create your views here.
 
-from django.template import RequestContext
-from django.shortcuts import render_to_response, render, get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect
-from django.views.generic.list_detail import object_list
-from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import redirect
-from session_csrf import anonymous_csrf
-from django.forms.formsets import formset_factory
+from django.shortcuts import render_to_response, render, get_object_or_404, redirect
 from django.contrib import messages
 from django.views.generic import DetailView, ListView, CreateView, UpdateView
+from django.forms import ValidationError
 
 
 from cyder.cydns.domain.models import Domain, DomainForm, DomainUpdateForm, DomainHasChildDomains
@@ -58,48 +52,50 @@ class DomainDetailView(DomainView, DetailView):
                         }.items() + context.items() )
         return context
 
-@csrf_exempt
-def domain_create(request):
-    if request.method == 'POST':
+class DomainView(object):
+    model = Domain
+    queryset = Domain.objects.all()
+
+class DomainCreateView(DomainView, CreateView):
+    model_form = DomainForm
+    template_name = "domain_form.html"
+
+    def post( self, request, *args, **kwargs ):
         domain_form = DomainForm(request.POST)
         # Try to create the domain. Catch all exceptions.
         try:
-            # If there were errors collect them and render the page again, displaying the errors.
-            if domain_form.errors:
-                errors = ""
-                for k,v in domain_form.errors.items():
-                    for reason in v:
-                        errors += k+": "+reason+"\n"
-                messages.error( request, errors )
-                return render( request, "domain_create.html", { "domain_form": domain_form } )
-            domain_form.is_valid()
             domain = domain_form.save(commit=False)
-            if domain_form.cleaned_data['inherit_soa'] and domain.master_domain:
-                domain.soa = domain.master_domain.soa
-            domain.save()
-        except Exception, e:
-            messages.error( request, e.__str__() )
-            return render( request, "domain_create.html", { "domain_form": domain_form } )
+        except ValueError, e:
+            return render( request, "domain_form.html", { 'domain_form': domain_form } )
 
+        if domain_form.cleaned_data['inherit_soa'] and domain.master_domain:
+            domain.soa = domain.master_domain.soa
+        try:
+            domain.save()
+        except ValidationError, e:
+            return render( request, "domain_form.html", { 'domain_form': domain_form } )
         # Success. Redirect.
         messages.success(request, '%s was successfully created.' % (domain.name))
         return redirect( domain )
-    else:
+
+    def get( self, request, *args, **kwargs ):
         domain_form = DomainForm()
-        return render( request, "domain_create.html", { 'domain_form': domain_form } )
+        return render( request, "domain_form.html", { 'domain_form': domain_form } )
 
 
-@csrf_exempt
-def domain_update(request, pk):
-    # Construct tables of the child objects.
-    domain = get_object_or_404( Domain, pk = pk )
-    if request.method == 'POST':
+class DomainUpdateView( DomainView, UpdateView ):
+    form_class = DomainUpdateForm
+    template_name = "domain_update.html"
+    context_object_name = "domain"
+
+    def post( self, request, *args, **kwargs ):
+        domain = get_object_or_404( Domain, pk = kwargs.get('pk',0) )
         try:
             domain_form = DomainUpdateForm(request.POST)
             if domain_form.data.get('delete', False):
                 domain.delete()
                 messages.success(request, '%s was successfully deleted.' % (domain.name))
-                return redirect('cyder.cydns.domain.views.domain_list')
+                return DomainListView.as_view()
             new_soa_pk = domain_form.data.get('soa', None)
             if new_soa_pk:
                 new_soa = SOA.objects.get( pk = new_soa_pk )
@@ -112,7 +108,7 @@ def domain_update(request, pk):
                 domain.soa = domain.master_domain.soa
 
             domain.save() # Major exception handling logic goes here.
-        except Exception, e:
+        except ValidationError, e:
             domain_form = DomainUpdateForm(instance=domain)
             messages.error( request, e.__str__() )
             return render( request, "domain_update.html", { "domain_form": domain_form } )
@@ -120,6 +116,3 @@ def domain_update(request, pk):
         messages.success(request, '%s was successfully updated.' % (domain.name))
 
         return redirect( domain )
-    else:
-        domain_form = DomainUpdateForm(instance=domain)
-        return render( request, "domain_update.html", { 'domain_form': domain_form } )

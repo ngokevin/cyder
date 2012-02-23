@@ -3,7 +3,7 @@
     <h3>IPv4 Reverse Domains</h3>
     {% for reverse_domain in reverse_domains %}
         {% if reverse_domain.ip_type == '4' %}
-        <a href="/cyder/cydns/reverse_domain/{{reverse_domain.pk}}/update">{{ reverse_domain.name }}</a> {{reverse_domain.soa}}
+        <a href="/cyder/cydns/reverse_domain/{{reverse_domain.pk}}/detail">{{ reverse_domain.name }}</a> {{reverse_domain.soa}}
 
         {% if reverse_domain.master_reverse_domain and reverse_domain.soa != reverse_domain.master_reverse_domain.soa %} 
         <form method="post" action="/cyder/cydns/reverse_domain/{{reverse_domain.pk}}/inheirit_soa">
@@ -17,7 +17,7 @@
     <h3>IPv6 Reverse Domains</h3>
     {% for reverse_domain in reverse_domains %}
         {% if reverse_domain.ip_type == '6' %}
-        <a href="/cyder/cydns/reverse_domain/{{reverse_domain.pk}}/update">{{ reverse_domain.name }}</a> {{reverse_domain.soa}}
+        <a href="/cyder/cydns/reverse_domain/{{reverse_domain.pk}}/detail">{{ reverse_domain.name }}</a> {{reverse_domain.soa}}
 
         {% if reverse_domain.master_reverse_domain and reverse_domain.soa != reverse_domain.master_reverse_domain.soa %} 
         <form method="post" action="/cyder/cydns/reverse_domain/{{reverse_domain.pk}}/inheirit_soa">
