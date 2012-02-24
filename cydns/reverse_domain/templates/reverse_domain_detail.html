@@ -3,4 +3,5 @@
 <h3>Reverse Domain {{ reverse_domain.name }}</h3>
 SOA: {{ reverse_domain.soa }}<br />
 <a href='{{ reverse_domain.get_edit_url() }}'>Edit</a>
+<a href='{{ reverse_domain.get_delete_url() }}'>Delete</a>
 {% endblock %}

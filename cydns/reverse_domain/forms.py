@@ -1,6 +1,7 @@
 from django.forms import ModelForm
 from django import forms
 from cyder.cydns.reverse_domain.models import ReverseDomain
+from cyder.cydns.soa.models import SOA
 
 class ReverseDomainUpdateForm( ModelForm ):
     class Meta:
@@ -16,3 +17,13 @@ class ReverseDomainForm( ModelForm ):
     class Meta:
         model   = ReverseDomain
         exclude = ('master_reverse_domain',)
+
+class BootStrapForm( forms.Form ):
+    name = forms.CharField(max_length=100)
+    soa  = forms.ChoiceField( required=False )
+
+    def __init__(self, *args, **kwargs):
+        super(BootStrapForm, self).__init__(*args, **kwargs)
+        # Update the form with recent data
+        choices = [('','-----------' )]+[ (soa.pk,soa) for soa in SOA.objects.all() ]
+        self['soa'].field._choices += choices

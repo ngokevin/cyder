@@ -9,22 +9,14 @@ from django import forms
 import pdb
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.reverse_domain.models import ReverseDomain, boot_strap_add_ipv6_reverse_domain
-from cyder.cydns.reverse_domain.forms import ReverseDomainForm, ReverseDomainUpdateForm
+from cyder.cydns.reverse_domain.forms import ReverseDomainForm, ReverseDomainUpdateForm, BootStrapForm
 from cyder.cydns.common.views import CommonDeleteView
 
-class BootStrapForm( forms.Form ):
-    name = forms.CharField(max_length=100)
-    soa  = forms.ChoiceField( required=False )
-
-    def __init__(self, *args, **kwargs):
-        super(BootStrapForm, self).__init__(*args, **kwargs)
-        # Update the form with recent data
-        choices = [('','-----------' )]+[ (soa,soa) for soa in SOA.objects.all() ]
-        self['soa'].field._choices += choices
 
 
 class ReverseDomainView(object):
     queryset            = ReverseDomain.objects.all()
+    form_class          = ReverseDomainForm
 
 class ReverseDomainDeleteView(ReverseDomainView, CommonDeleteView):
     """ """
@@ -99,17 +91,22 @@ def bootstrap_ipv6(request):
     if request.method == 'POST':
         bootstrap_form = BootStrapForm(request.POST)
         if bootstrap_form.is_valid():
+            if bootstrap_form.data['soa'] == '':
+                soa = None
+            else:
+                soa = get_object_or_404(SOA, pk = bootstrap_form.data['soa'])
             try:
-                reverse_domain = boot_strap_add_ipv6_reverse_domain( bootstrap_form.cleaned_data['name'] )
-            except ReverseDomainExistsError, e:
+                reverse_domain = boot_strap_add_ipv6_reverse_domain( bootstrap_form.cleaned_data['name'], soa = soa )
+            except ValidationError, e:
                 messages.error( request, e.__str__() )
                 return render( request, 'bootstrap_ipv6.html', {'bootstrap_form': bootstrap_form} )
+        else:
+            return render( request, 'bootstrap_ipv6.html', {'bootstrap_form': bootstrap_form} )
+
 
         # Success redirect to the last domain created.
-        reverse_domain_form = ReverseDomainUpdateForm(instance=reverse_domain)
-        c = RequestContext(request)
-        resp_param = ("reverse_domain_update.html", { "reverse_domain_form": reverse_domain_form })
-        return render_to_response(*resp_param, context_instance = c )
+        messages.success(request, "Success! Bootstrap complete. You are now looking at the leaf reverse domain.")
+        return redirect(reverse_domain)
 
     else:
         bootstrap_form = BootStrapForm()

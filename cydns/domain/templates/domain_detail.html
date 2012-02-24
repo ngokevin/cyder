@@ -4,6 +4,7 @@
 
 <h3>Domain {{ domain.name }}</h3>
 <a href='{{ domain.get_edit_url() }}'>Edit</a>
+<a href='{{ domain.get_delete_url() }}'>Delete</a>
 <br/>
 {% if domain.soa %}
 SOA: <a href='{{ domain.soa.get_absolute_url() }}'>{{ domain.soa.primary }}</a>

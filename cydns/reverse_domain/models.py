@@ -177,7 +177,7 @@ def _reassign_reverse_ips( reverse_domain_1, reverse_domain_2, ip_type ):
             ip.reverse_domain = correct_reverse_domain
             ip.save()
 
-def boot_strap_add_ipv6_reverse_domain( ip ):
+def boot_strap_add_ipv6_reverse_domain( ip, soa=None ):
     """This function is here to help create IPv6 reverse domains.
 
     .. note::
@@ -193,6 +193,7 @@ def boot_strap_add_ipv6_reverse_domain( ip ):
     for i in range(1,len(ip)+1,2):
         cur_reverse_domain = ip[:i]
         reverse_domain = ReverseDomain( name = cur_reverse_domain, ip_type='6' )
+        reverse_domain.soa = soa
         reverse_domain.save()
     return reverse_domain
 

@@ -1,4 +1,5 @@
 from django.views.generic import DetailView, CreateView, UpdateView, ListView, DeleteView
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.forms import ValidationError
 from cyder.settings.local import CYDNS_BASE_URL
@@ -14,9 +15,14 @@ class CommonDeleteView(DeleteView):
         return obj
 
     def delete(self, request, *args, **kwargs):
-        object_type = self.form_class.Meta.model.__name__
-        view = super(CommonDeleteView, self).delete(request, *args, **kwargs)
-        messages.error( request, "Success! You've deleted the %s record." % (object_type) )
+        # Get the object that we are deleting
+        obj = get_object_or_404( self.form_class.Meta.model, pk = kwargs.get('pk', 0))
+        try:
+            view = super(CommonDeleteView, self).delete(request, *args, **kwargs)
+        except ValidationError, e:
+            messages.error( request, "Error: %s" % (' '.join(e.messages) ) )
+            return redirect( obj )
+        messages.success( request, "Deletion Successful" )
         return view
 
 class CommonDetailView(DetailView):

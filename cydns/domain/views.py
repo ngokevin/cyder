@@ -25,6 +25,7 @@ from operator import itemgetter
 
 class DomainView(object):
     queryset            = Domain.objects.all()
+    form_class          = DomainForm
 
 class DomainDeleteView(DomainView, CommonDeleteView):
     """ """
