@@ -43,6 +43,9 @@ class SOA( models.Model ):
     def get_edit_url(self):
         return CYDNS_BASE_URL + "/soa/%s/update" % (self.pk)
 
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/soa/%s/delete" % (self.pk)
+
     def delete(self, *args, **kwargs):
         super(SOA, self).delete(*args, **kwargs)
 

@@ -4,23 +4,6 @@
 <form method="post" action="">
     {{ record_form }}
     {{ ip_form }}
-    <tr><th><label for="id_ip_type">Ip type:</label></th><td><select name="ip_type" id="id_ip_type">
-                {% if ip_type == '' %}
-                <option value="" selected="selected">---------</option>
-                {% else %}
-                <option value="" >---------</option>
-                {% endif %}
-                {% if ip_type == '4' %}
-                <option value="4" selected="selected">ipv4</option>
-                {% else %}
-                <option value="4">ipv4</option>
-                {% endif %}
-                {% if ip_type == '6' %}
-                <option value="6" selected="selected">ipv6</option>
-                {% else %}
-                <option value="6">ipv6</option>
-                {% endif %}
-    </select></td></tr> <br />
 <input type="submit" value="Submit" />
 </form>
 {% endblock %}

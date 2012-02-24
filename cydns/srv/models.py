@@ -27,6 +27,9 @@ class SRV( CommonRecord ):
     def get_edit_url(self):
         return CYDNS_BASE_URL + "/srv/%s/update" % (self.pk)
 
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/srv/%s/delete" % (self.pk)
+
     def delete(self, *args, **kwargs):
         super(SRV, self).delete(*args, **kwargs)
 

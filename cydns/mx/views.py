@@ -1,7 +1,7 @@
 # Create your views here.
 from cyder.cydns.mx.models import MX
 from cyder.cydns.mx.forms import MXForm
-from cyder.cydns.common.views import CommonDetailView, CommonCreateView, CommonUpdateView, CommonListView
+from cyder.cydns.common.views import CommonDetailView, CommonCreateView, CommonUpdateView, CommonListView, CommonDeleteView
 ############
 #    MX    #
 ############
@@ -9,6 +9,9 @@ class MXView(object):
     model      = MX
     form_class = MXForm
     queryset   = MX.objects.all() # Eventually, do a filter here to make user specific views.
+
+class MXDeleteView(MXView, CommonDeleteView):
+    """ """
 
 class MXDetailView(MXView, CommonDetailView):
     pass

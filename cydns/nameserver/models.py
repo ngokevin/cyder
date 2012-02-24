@@ -30,6 +30,9 @@ class Nameserver( models.Model ):
     def get_edit_url(self):
         return CYDNS_BASE_URL + "/nameserver/%s/update" % (self.pk)
 
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/nameserver/%s/delete" % (self.pk)
+
     def __init__(self, *args, **kwargs):
         super(Nameserver, self).__init__(*args, **kwargs)
 

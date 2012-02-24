@@ -25,6 +25,9 @@ class Domain( models.Model ):
     def get_edit_url(self):
         return CYDNS_BASE_URL + "/domain/%s/update" % (self.pk)
 
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/domain/%s/delete" % (self.pk)
+
     def delete(self, *args, **kwargs):
         _check_for_children( self )
         super(Domain, self).delete(*args, **kwargs)

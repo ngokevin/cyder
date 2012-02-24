@@ -28,6 +28,9 @@ class ReverseDomain( models.Model ):
     def get_edit_url(self):
         return CYDNS_BASE_URL + "/reverse_domain/%s/update" % (self.pk)
 
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/reverse_domain/%s/delete" % (self.pk)
+
     def delete(self, *args, **kwargs):
         _check_for_children( self )
         # Reassign Ip's in my reverse domain to my parent's reverse domain.

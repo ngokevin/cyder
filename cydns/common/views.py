@@ -1,7 +1,23 @@
-from django.views.generic import DetailView, CreateView, UpdateView, ListView
+from django.views.generic import DetailView, CreateView, UpdateView, ListView, DeleteView
 from django.contrib import messages
 from django.forms import ValidationError
+from cyder.settings.local import CYDNS_BASE_URL
 import pdb
+
+class CommonDeleteView(DeleteView):
+    context_object_name = "common"
+    template_name = "common_delete.html"
+    success_url = "/cyder/cydns"
+    def get_object(self, queryset=None):
+        obj = super(CommonDeleteView, self).get_object()
+        # Object permissions here
+        return obj
+
+    def delete(self, request, *args, **kwargs):
+        object_type = self.form_class.Meta.model.__name__
+        view = super(CommonDeleteView, self).delete(request, *args, **kwargs)
+        messages.error( request, "Success! You've deleted the %s record." % (object_type) )
+        return view
 
 class CommonDetailView(DetailView):
     context_object_name = "common"
@@ -10,7 +26,7 @@ class CommonDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
-        context['form_title'] = "Update %s" % (self.form_class.Meta.model.__name__)
+        context['form_title'] = "%s Details" % (self.form_class.Meta.model.__name__)
         if self.extra_context:
             # extra_context takes precidence over original values in context
             context = dict(context.items() + self.extra_context.items())
@@ -42,7 +58,7 @@ class CommonCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(CreateView, self).get_context_data(**kwargs)
-        context['form_title'] = "Update %s" % (self.form_class.Meta.model.__name__)
+        context['form_title'] = "Create %s" % (self.form_class.Meta.model.__name__)
         if self.extra_context:
             # extra_context takes precidence over original values in context
             context = dict(context.items() + self.extra_context.items())

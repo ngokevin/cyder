@@ -23,6 +23,9 @@ class CNAME( CommonRecord ):
     def get_edit_url(self):
         return CYDNS_BASE_URL + "/cname/%s/update" % (self.pk)
 
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/cname/%s/delete" % (self.pk)
+
     class Meta:
         db_table = 'cname'
 

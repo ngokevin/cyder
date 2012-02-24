@@ -21,7 +21,7 @@ class Ip( models.Model ):
     ip_upper        = models.BigIntegerField(null=False)
     ip_lower        = models.BigIntegerField(null=False)
     reverse_domain  = models.ForeignKey(ReverseDomain, null=False)
-    ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
+    ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=True)
 
     def __init__(self, *args, **kwargs):
         super(Ip, self).__init__(*args, **kwargs)

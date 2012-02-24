@@ -10,6 +10,7 @@ import pdb
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.reverse_domain.models import ReverseDomain, boot_strap_add_ipv6_reverse_domain
 from cyder.cydns.reverse_domain.forms import ReverseDomainForm, ReverseDomainUpdateForm
+from cyder.cydns.common.views import CommonDeleteView
 
 class BootStrapForm( forms.Form ):
     name = forms.CharField(max_length=100)
@@ -21,8 +22,12 @@ class BootStrapForm( forms.Form ):
         choices = [('','-----------' )]+[ (soa,soa) for soa in SOA.objects.all() ]
         self['soa'].field._choices += choices
 
+
 class ReverseDomainView(object):
     queryset            = ReverseDomain.objects.all()
+
+class ReverseDomainDeleteView(ReverseDomainView, CommonDeleteView):
+    """ """
 
 class ReverseDomainListView(ReverseDomainView, ListView):
     template_name       = "reverse_domain_list.html"
@@ -66,10 +71,6 @@ class ReverseDomainUpdateView(ReverseDomainView, UpdateView):
         reverse_domain = get_object_or_404( ReverseDomain, pk = kwargs.get('pk',0 ))
         try:
             reverse_domain_form = ReverseDomainUpdateForm(request.POST)
-            if reverse_domain_form.data.get('delete', False):
-                reverse_domain.delete()
-                messages.success(request, '%s was successfully deleted.' % (reverse_domain.name))
-                return redirect('/cyder/cydns/reverse_domain')
             new_soa_pk = reverse_domain_form.data.get('soa', None)
             if new_soa_pk:
                 new_soa = SOA.objects.get( pk = new_soa_pk )

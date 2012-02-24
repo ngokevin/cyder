@@ -1,7 +1,7 @@
 # Create your views here.
 from cyder.cydns.nameserver.models import Nameserver, _needs_glue
 from cyder.cydns.nameserver.forms import NameserverForm
-from cyder.cydns.common.views import CommonDetailView, CommonListView
+from cyder.cydns.common.views import CommonDetailView, CommonListView, CommonDeleteView
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.address_record.models import AddressRecord
 from django.shortcuts import render, redirect, get_object_or_404
@@ -14,6 +14,9 @@ class NSView(object):
     model      = Nameserver
     form_class = NameserverForm
     queryset   = Nameserver.objects.all() # Eventually, do a filter here to make user specific views.
+
+class NSDeleteView(NSView, CommonDeleteView):
+    """ """
 
 class NSDetailView(NSView, CommonDetailView):
     template_name = "ns_detail.html"

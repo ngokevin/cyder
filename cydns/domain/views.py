@@ -11,6 +11,7 @@ from cyder.cydns.domain.forms import DomainForm, DomainUpdateForm
 from cyder.cydns.domain.models import DomainExistsError, MasterDomainNotFoundError
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.common.utils import tablefy
+from cyder.cydns.common.views import CommonDeleteView
 
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.mx.models import MX
@@ -24,6 +25,9 @@ from operator import itemgetter
 
 class DomainView(object):
     queryset            = Domain.objects.all()
+
+class DomainDeleteView(DomainView, CommonDeleteView):
+    """ """
 
 class DomainListView(DomainView, ListView):
     template_name       = "domain_list.html"
@@ -56,7 +60,7 @@ class DomainDetailView(DomainView, DetailView):
         cname_objects = CNAME.objects.filter( domain = domain )
         cname_headers, cname_matrix, cname_urls = tablefy( cname_objects )
 
-        ptr_objects = CNAME.objects.filter( domain = domain )
+        ptr_objects = PTR.objects.filter( domain = domain )
         ptr_headers, ptr_matrix, ptr_urls = tablefy( ptr_objects )
 
         # Join the two dicts
@@ -130,10 +134,6 @@ class DomainUpdateView( DomainView, UpdateView ):
         domain = get_object_or_404( Domain, pk = kwargs.get('pk',0) )
         try:
             domain_form = DomainUpdateForm(request.POST)
-            if domain_form.data.get('delete', False):
-                domain.delete()
-                messages.success(request, '%s was successfully deleted.' % (domain.name))
-                return DomainListView.as_view()
             new_soa_pk = domain_form.data.get('soa', None)
             if new_soa_pk:
                 new_soa = SOA.objects.get( pk = new_soa_pk )

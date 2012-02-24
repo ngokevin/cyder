@@ -7,6 +7,7 @@ from django.views.generic import DetailView, CreateView, UpdateView
 
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.address_record.forms import AddressRecordForm
+from cyder.cydns.common.views import CommonDeleteView, CommonDetailView
 from cyder.cydns.ip.models import Ip
 from cyder.cydns.ip.forms import IpForm
 
@@ -17,8 +18,11 @@ class AddressRecordView(object):
     form_class = AddressRecordForm
     queryset = AddressRecord.objects.all()
 
-class AddressRecordDetailView(AddressRecordView, DetailView):
-    template_name = "address_record_detail.html"
+class AddressRecordDeleteView(AddressRecordView, CommonDeleteView):
+    """ """
+
+class AddressRecordDetailView(AddressRecordView, CommonDetailView):
+    """ """
 
 class AddressRecordCreateView(AddressRecordView, CreateView):
     template_name = "address_record_update.html"
@@ -57,18 +61,11 @@ class AddressRecordUpdateView(AddressRecordView, UpdateView):
         record_form = AddressRecordForm( request.POST, instance=record )
         ip_form = IpForm( request.POST, instance=record.ip )
         try:
-            if record_form.data.get('delete', False ):
-                # Deleteing
-                info = record.__str__()
-                domain = record.domain
-                record.delete()
-                return redirect( domain )
-            else:
-                # Updating
-                record = record_form.save(commit =False)
-                ip = ip_form.save(commit=False)
-                record.save()
-                ip.save()
+            # Updating
+            record = record_form.save(commit =False)
+            ip = ip_form.save(commit=False)
+            record.save()
+            ip.save()
         except ValidationError, e:
             return render( request, "address_record_update.html", { "record_form": record_form, "ip_form": ip_form } )
 

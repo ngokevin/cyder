@@ -21,9 +21,28 @@
         <a href="/cyder/cydns/nameserver">NS</a>
         <a href="/cyder/cydns/nameserver/create">Create New NS</a>
 
+        <a href="/cyder/cydns/srv">SRV</a>
+        <a href="/cyder/cydns/srv/create">Create New SRV</a>
+
+        <a href="/cyder/cydns/txt">TXT</a>
+        <a href="/cyder/cydns/txt/create">Create New TXT</a>
+
+        <a href="/cyder/cydns/cname">CNAME</a>
+        <a href="/cyder/cydns/cname/create">Create New CNAME</a>
+
+        <a href="/cyder/cydns/ptr">PTR</a>
+        <a href="/cyder/cydns/ptr/create">Create New PTR</a>
+
         <br />
         <br />
     </head>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 
     <div id="content">
     {% block content %}
@@ -34,13 +53,6 @@
     </div>
     {% block site_js %}
     {% endblock %}
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
 </body>
 </html>
 

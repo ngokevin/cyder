@@ -6,6 +6,7 @@ from cyder.cydns.models import _validate_name, RecordExistsError, RecordNotFound
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.ip.models import Ip, ipv6_to_longs
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
+from cyder.settings.local import CYDNS_BASE_URL
 
 import ipaddr
 import string
@@ -23,10 +24,13 @@ class AddressRecord( models.Model ):
 
 
     def get_absolute_url(self):
-        return "/cyder/cydns/address_record/%s/detail" % (self.pk)
+        return CYDNS_BASE_URL + "/address_record/%s/detail" % (self.pk)
 
     def get_edit_url(self):
-        return "/cyder/cydns/address_record/%s/update" % (self.pk)
+        return CYDNS_BASE_URL + "/address_record/%s/update" % (self.pk)
+
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/address_record/%s/delete" % (self.pk)
 
     def details(self):
         return  (

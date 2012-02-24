@@ -29,6 +29,9 @@ class MX( CommonRecord ):
     def get_edit_url(self):
         return CYDNS_BASE_URL + "/mx/%s/update" % (self.pk)
 
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/mx/%s/delete" % (self.pk)
+
     def delete(self, *args, **kwargs):
         super(MX, self).delete(*args, **kwargs)
 

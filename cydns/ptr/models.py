@@ -29,6 +29,8 @@ class PTR( models.Model ):
     def get_edit_url(self):
         return CYDNS_BASE_URL + "/ptr/%s/update" % (self.pk)
 
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/ptr/%s/delete" % (self.pk)
 
     def delete(self, *args, **kwargs):
         self.ip.delete()

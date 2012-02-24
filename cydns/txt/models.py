@@ -20,6 +20,9 @@ class TXT( CommonRecord ):
     def get_edit_url(self):
         return CYDNS_BASE_URL + "/txt/%s/update" % (self.pk)
 
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/txt/%s/delete" % (self.pk)
+
     def fqdn(self):
         if self.label:
             return self.label+"."+self.domain.name
