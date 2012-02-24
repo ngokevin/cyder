@@ -87,20 +87,20 @@ class CommonListView(ListView):
 
 """
 from cyder.cydns.common.views import CommonDetailView, CommonCreateView, CommonUpdateView, CommonListView
-class XXXDetailView(CommonDetailView):
-    template_name =
-    queryset = # Eventually, do a filter here to make user specific views.
+class XXXView(object):
+    model      = XXX
+    form_class = XXXForm
+    queryset   = XXX.objects.all()
 
-class XXXCreateView(CommonCreateView):
-    model      =
-    form_class =
-    form_title =
+class XXXDetailView(XXXView, CommonDetailView):
+    """ """
 
-class XXXUpdateView(CommonUpdateView):
-    form_class =
-    queryset   =
-    form_title =
+class XXXCreateView(XXXView, CommonCreateView):
+    """ """
 
-class XXXListView(CommonListView):
-    queryset   =
+class XXXUpdateView(XXXView, CommonUpdateView):
+    """ """
+
+class XXXListView(XXXView, CommonListView):
+    """ """
 """

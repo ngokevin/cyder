@@ -23,6 +23,22 @@ Master Domain: <a href='{{ domain.master_domain.get_absolute_url() }}'>{{ domain
     <h4> MX Records </h4>
     {{ render_table( mx_headers, mx_matrix, mx_urls ) }}
 {% endif %}
+{% if srv_matrix %}
+    <h4> SRV Records </h4>
+    {{ render_table( srv_headers, srv_matrix, srv_urls ) }}
+{% endif %}
+{% if txt_matrix %}
+    <h4> TXT Records </h4>
+    {{ render_table( txt_headers, txt_matrix, txt_urls ) }}
+{% endif %}
+{% if cname_matrix %}
+    <h4> CNAME Records </h4>
+    {{ render_table( cname_headers, cname_matrix, cname_urls ) }}
+{% endif %}
+{% if ptr_matrix %}
+    <h4> PTR Records </h4>
+    {{ render_table( ptr_headers, ptr_matrix, ptr_urls ) }}
+{% endif %}
 {% endblock %}
 {# Print Address Records #}
 

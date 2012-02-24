@@ -10,9 +10,14 @@ from cyder.cydns.domain.models import Domain, DomainHasChildDomains
 from cyder.cydns.domain.forms import DomainForm, DomainUpdateForm
 from cyder.cydns.domain.models import DomainExistsError, MasterDomainNotFoundError
 from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.common.utils import tablefy
+
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.mx.models import MX
-from cyder.cydns.common.utils import tablefy
+from cyder.cydns.srv.models import SRV
+from cyder.cydns.txt.models import TXT
+from cyder.cydns.cname.models import CNAME
+from cyder.cydns.ptr.models import PTR
 
 import pdb
 from operator import itemgetter
@@ -34,11 +39,25 @@ class DomainDetailView(DomainView, DetailView):
         domain = kwargs.get('object', False)
         if not domain:
             return context
+        # TODO
+        # This process can be generalized. It's not very high priority.
         address_objects = AddressRecord.objects.filter( domain = domain )
         adr_headers, adr_matrix, adr_urls = tablefy( address_objects )
 
         mx_objects = MX.objects.filter( domain = domain )
         mx_headers, mx_matrix, mx_urls = tablefy( mx_objects )
+
+        srv_objects = SRV.objects.filter( domain = domain )
+        srv_headers, srv_matrix, srv_urls = tablefy( srv_objects )
+
+        txt_objects = TXT.objects.filter( domain = domain )
+        txt_headers, txt_matrix, txt_urls = tablefy( txt_objects )
+
+        cname_objects = CNAME.objects.filter( domain = domain )
+        cname_headers, cname_matrix, cname_urls = tablefy( cname_objects )
+
+        ptr_objects = CNAME.objects.filter( domain = domain )
+        ptr_headers, ptr_matrix, ptr_urls = tablefy( ptr_objects )
 
         # Join the two dicts
         context = dict( {
@@ -49,7 +68,25 @@ class DomainDetailView(DomainView, DetailView):
                     # MX
                     "mx_headers": mx_headers,
                     "mx_matrix": mx_matrix,
-                    "mx_urls": mx_urls
+                    "mx_urls": mx_urls,
+                    # SRV
+                    "srv_headers": srv_headers,
+                    "srv_matrix": srv_matrix,
+                    "srv_urls": srv_urls,
+                    # TXT
+                    "txt_headers": txt_headers,
+                    "txt_matrix": txt_matrix,
+                    "txt_urls": txt_urls,
+
+                    # CNAME
+                    "cname_headers": cname_headers,
+                    "cname_matrix": cname_matrix,
+                    "cname_urls": cname_urls,
+
+                    # PTR
+                    "ptr_headers": ptr_headers,
+                    "ptr_matrix": ptr_matrix,
+                    "ptr_urls": ptr_urls
                         }.items() + context.items() )
         return context
 

@@ -1,6 +1,7 @@
 from django.db import models
 from django import forms
 
+from cyder.settings.local import CYDNS_BASE_URL
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.cydns import CommonRecord
 from cyder.cydns.models import InvalidRecordNameError, RecordExistsError, _validate_name, _validate_label, _validate_ttl
@@ -22,6 +23,11 @@ class MX( CommonRecord ):
                     ('Priority', self.priority),
                     ('TTL', self.ttl)
                 )
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/mx/%s/detail" % (self.pk)
+
+    def get_edit_url(self):
+        return CYDNS_BASE_URL + "/mx/%s/update" % (self.pk)
 
     def delete(self, *args, **kwargs):
         super(MX, self).delete(*args, **kwargs)

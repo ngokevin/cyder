@@ -1,5 +1,6 @@
 from django.db import models
 from cyder.cydns.domain.models import Domain
+from cyder.settings.local import CYDNS_BASE_URL
 from cyder.cydns.cydns import CommonRecord
 from cyder.cydns.models import InvalidRecordNameError, RecordExistsError, _validate_name, _validate_label, _validate_ttl
 
@@ -9,6 +10,22 @@ class SRV( CommonRecord ):
     port            = models.PositiveIntegerField(null=False)
     priority        = models.PositiveIntegerField(null=False)
     weight          = models.PositiveIntegerField(null=False)
+
+    def details(self):
+        return  (
+                    ('FQDN', self.fqdn()),
+                    ('Record Type', 'SRV'),
+                    ('Targer', self.target),
+                    ('Port', self.port),
+                    ('Priority', self.priority),
+                    ('Weight', self.weight),
+                )
+
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/srv/%s/detail" % (self.pk)
+
+    def get_edit_url(self):
+        return CYDNS_BASE_URL + "/srv/%s/update" % (self.pk)
 
     def delete(self, *args, **kwargs):
         super(SRV, self).delete(*args, **kwargs)

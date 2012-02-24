@@ -3,6 +3,7 @@ from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.reverse_domain.models import ip_to_reverse_domain, ReverseDomainNotFoundError
 from cyder.cydns.ip.models import Ip, ipv6_to_longs
 from cyder.cydns.models import CyAddressValueError, _validate_name, RecordExistsError, RecordNotFoundError, InvalidRecordNameError
+from cyder.settings.local import CYDNS_BASE_URL
 import ipaddr
 
 class PTR( models.Model ):
@@ -14,6 +15,20 @@ class PTR( models.Model ):
     ip              = models.OneToOneField(Ip, null=False)
     domain          = models.ForeignKey(Domain, null=True)
 
+    def details(self):
+        return  (
+                    ('Ip', str(self.ip)),
+                    ('Record Type', 'PTR'),
+                    ('Name', self.name),
+                    ('Type', self.ip_type),
+                )
+
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/ptr/%s/detail" % (self.pk)
+
+    def get_edit_url(self):
+        return CYDNS_BASE_URL + "/ptr/%s/update" % (self.pk)
+
 
     def delete(self, *args, **kwargs):
         self.ip.delete()
@@ -24,7 +39,7 @@ class PTR( models.Model ):
         super(PTR, self).save(*args, **kwargs)
 
     def clean( self ):
-        if type(self.name) not in (type(''), type(u'')):
+        if type(self.name) not in (str, unicode):
             raise InvalidRecordNameError("Error: name must be type str")
         _validate_name( self.name )
 
@@ -38,6 +53,7 @@ class PTR( models.Model ):
         return "<Pointer '%s %s %s'>" % (self.ip.__str__(), 'PTR', self.name )
     def __repr__(self):
         return  self.__str__()
+
 
 def _check_exists( ptr ):
     exist = PTR.objects.filter( name = ptr.name ).select_related('ip')
