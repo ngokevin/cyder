@@ -1,5 +1,4 @@
 from django.db import models
-from django.forms import ModelForm
 from django import forms
 
 from django.db import models
@@ -81,11 +80,6 @@ class Ip( models.Model ):
     class Meta:
         db_table = 'ip'
 
-class IpForm( ModelForm ):
-    class Meta:
-        model   = Ip
-        include = ('ip_str','ip_type',)
-        exclude = ('ip_upper', 'ip_lower', 'reverse_domain', )
 
 def ipv6_to_longs(addr):
     """This function will turn an IPv6 into two long. The first will be reprsenting the first 64 bits of the address and second will be the lower 64 bits.

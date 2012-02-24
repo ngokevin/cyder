@@ -4,7 +4,7 @@ from cyder.settings.local import CYDNS_BASE_URL
 from cyder.cydns.models import _validate_name, InvalidRecordNameError
 from django.views.decorators.csrf import csrf_exempt
 
-from django.forms import ModelForm, ValidationError
+from django.forms import ValidationError
 from django import forms
 import pdb
 
@@ -37,7 +37,7 @@ class Domain( models.Model ):
         _validate_name( self.name )
         possible = Domain.objects.filter( name = self.name )
         if possible and possible[0].pk != self.pk:
-            raise DomainExistsError("The %s domain already exists." % (domain.name))
+            raise DomainExistsError("The %s domain already exists." % (self.name))
 
         self.master_domain = _name_to_master_domain( self.name )
 
@@ -48,20 +48,6 @@ class Domain( models.Model ):
 
     class Meta:
         db_table = 'domain'
-
-class DomainUpdateForm( ModelForm ):
-    class Meta:
-        model   = Domain
-        exclude = ('name','master_domain',)
-
-class DomainForm( ModelForm ):
-    choices = ( (1,'Yes'),
-                (0,'No'),
-              )
-    inherit_soa = forms.ChoiceField(widget=forms.RadioSelect, choices=choices)
-    class Meta:
-        model   = Domain
-        exclude = ('master_domain',)
 
 
 def _check_for_children( domain ):

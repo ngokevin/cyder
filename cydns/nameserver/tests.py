@@ -71,7 +71,7 @@ class NSTests(TestCase):
         data = { 'domain':self.r , 'server':'ns2.ru', 'glue':glue }
         ns = self.do_add( **data )
         self.assertTrue( ns.glue )
-        self.assertEqual( ns.server, ns.glue.__fqdn__() )
+        self.assertEqual( ns.server, ns.glue.fqdn() )
 
         ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
         ip.save()
@@ -80,7 +80,7 @@ class NSTests(TestCase):
         data = { 'domain':self.f_r , 'server':'ns3.foo.ru', 'glue':glue }
         ns = self.do_add( **data )
         self.assertTrue( ns.glue )
-        self.assertEqual( ns.server, ns.glue.__fqdn__() )
+        self.assertEqual( ns.server, ns.glue.fqdn() )
 
     def test_add_ns_outside_domain(self):
         data = { 'domain':self.f_r , 'server':'ns2.ru' }
@@ -95,7 +95,7 @@ class NSTests(TestCase):
         data = { 'domain':self.r , 'server':'ns3.ru', 'glue':glue }
         ns = self.do_add( **data )
         self.assertTrue( ns.glue )
-        self.assertEqual( ns.server, ns.glue.__fqdn__() )
+        self.assertEqual( ns.server, ns.glue.fqdn() )
         ns.server = "ns3.foo.com"
         ns.glue = None
         ns.save()
@@ -105,7 +105,7 @@ class NSTests(TestCase):
         ns.glue = glue
         ns.save()
         self.assertTrue( ns.glue )
-        self.assertEqual( ns.server, ns.glue.__fqdn__() )
+        self.assertEqual( ns.server, ns.glue.fqdn() )
 
         ns.server = "ns4.ru"
         ns.glue = glue
@@ -119,7 +119,7 @@ class NSTests(TestCase):
         data = { 'domain':self.f_r , 'server':'ns4.foo.ru', 'glue':glue }
         ns = self.do_add( **data )
         self.assertTrue( ns.glue )
-        self.assertEqual( ns.server, ns.glue.__fqdn__() )
+        self.assertEqual( ns.server, ns.glue.fqdn() )
 
         ns.delete()
         nsret = Nameserver.objects.filter( server = 'ns2.foo.ru', domain = self.f_r )

@@ -85,7 +85,7 @@ def _validate_reverse_name( reverse_name, ip_type ):
                 if not( int(chunk) <= 255 and int(chunk) >= 0):
                     raise InvalidRecordNameError("Error: Ivalid Ipv4 name %s . Character '%s' is invalid." %\
                                                                                     (reverse_name, chunk) )
-        except Exception: #Umm, lol. What am I doing here? TODO
+        except Exception: #Umm, lol. What am I doing here? TODO Is this exception even needed?
             raise InvalidRecordNameError("Error: Ivalid Ipv%s name %s." % (ip_type, reverse_name) )
 
 def do_generic_invalid( obj, data, exception, function ):

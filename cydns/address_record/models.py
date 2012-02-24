@@ -1,5 +1,4 @@
 from django.db import models
-from django.forms import ModelForm
 from django import forms
 
 from cyder.cydns.models import _validate_label, InvalidRecordNameError, CyAddressValueError
@@ -31,7 +30,7 @@ class AddressRecord( models.Model ):
 
     def details(self):
         return  (
-                    ('FQDN', self.__fqdn__()),
+                    ('FQDN', self.fqdn()),
                     ('Record Type', 'A' if self.ip.ip_type == '4' else 'AAAA' ),
                     ('IP', str(self.ip)),
                 )
@@ -49,7 +48,7 @@ class AddressRecord( models.Model ):
         if self.ip_type not in ('4', '6'):
             raise CyAddressValueError("Error: Plase provide the type of Address Record")
         _validate_label( self.label )
-        _validate_name( self.__fqdn__() )
+        _validate_name( self.fqdn() )
         _check_exist( self )
         _check_TLD_condition( self )
 
@@ -62,9 +61,9 @@ class AddressRecord( models.Model ):
             record_type = 'A'
         else:
             record_type = 'AAAA'
-        return "%s %s %s" % ( self.__fqdn__(), record_type, self.ip.__str__() )
+        return "%s %s %s" % ( self.fqdn(), record_type, self.ip.__str__() )
 
-    def __fqdn__(self):
+    def fqdn(self):
         if self.label == '':
             fqdn = self.domain.name
         else:
@@ -77,10 +76,6 @@ class AddressRecord( models.Model ):
     class Meta:
         db_table = 'address_record'
 
-class AddressRecordForm( ModelForm ):
-    class Meta:
-        model   = AddressRecord
-        exclude = ('ip',)
 
 
 def _check_exist( record ):
@@ -91,7 +86,7 @@ def _check_exist( record ):
 
 
 def _check_TLD_condition( record ):
-    domain = Domain.objects.filter( name = record.__fqdn__() )
+    domain = Domain.objects.filter( name = record.fqdn() )
     if not domain:
         return
     if record.label == '' and domain[0] == record.domain:

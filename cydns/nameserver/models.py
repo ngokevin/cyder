@@ -1,5 +1,5 @@
 from django.db import models
-from django.forms import ModelForm, ValidationError
+from django.forms import ValidationError
 from cyder.settings.local import CYDNS_BASE_URL
 from cyder.cydns.address_record.models import Domain, _check_TLD_condition
 from cyder.cydns.address_record.models import AddressRecord
@@ -11,13 +11,14 @@ class Nameserver( models.Model ):
     domain          = models.ForeignKey(Domain, null=False)
     # "If the name server does lie within the domain it should have a corresponding A record."
     server          = models.CharField(max_length=256)
-    glue            = models.ForeignKey(AddressRecord, null=True)
+    glue            = models.ForeignKey(AddressRecord, null=True, blank=True)
 
     class Meta:
         db_table = 'nameserver'
 
     def details(self):
         return  (
+                    ('FQDN', self.fqdn()),
                     ('Domain', self.domain),
                     ('Server', self.server),
                     ('Glue', self.glue),
@@ -44,7 +45,7 @@ class Nameserver( models.Model ):
         _check_TLD_condition( self )
 
         needs_glue = _needs_glue( self )
-        if self.glue and self.glue.__fqdn__() != self.server:
+        if self.glue and self.glue.fqdn() != self.server:
             if not needs_glue:
                 raise NSRecordMisconfiguredError("Error: %s does not need a glue record." % (str(self)))
             else:
@@ -64,12 +65,6 @@ class Nameserver( models.Model ):
     def __repr__(self):
         return "<NS Record '%s'>" % (str(self))
 
-class NameserverForm( ModelForm ):
-    class Meta:
-        model   = Nameserver
-        exclude = ('glue',)
-        glue    = models.CharField(max_length=256, blank=True, help_text="Enter Glue record if the NS server is \
-                                                                within the domain you are assigning the NS server to.")
 
 class NSRecordMisconfiguredError(ValidationError):
     """This exception is thrown when an attempt is made to create an NS record that requires a glue, but

@@ -5,8 +5,10 @@ from django.contrib import messages
 from django.forms import ValidationError
 from django.views.generic import DetailView, CreateView, UpdateView
 
-from cyder.cydns.address_record.models import AddressRecord, AddressRecordForm
-from cyder.cydns.ip.models import Ip, IpForm
+from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.address_record.forms import AddressRecordForm
+from cyder.cydns.ip.models import Ip
+from cyder.cydns.ip.forms import IpForm
 
 import pdb
 

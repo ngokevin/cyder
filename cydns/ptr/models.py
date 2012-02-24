@@ -42,5 +42,5 @@ class PTR( models.Model ):
 def _check_exists( ptr ):
     exist = PTR.objects.filter( name = ptr.name ).select_related('ip')
     for possible in exist:
-        if possible.ip.pk != ptr.ip.pk and possible.ip.__str__().lower() == ptr.ip.__str__().lower() :
-            raise RecordExistsError( "%s already exists." % (possible.__str__()) )
+        if possible.ip.pk != ptr.ip.pk and str(possible.ip).lower() == str(ptr.ip).lower() :
+            raise RecordExistsError( "%s already exists." % (str(possible)) )

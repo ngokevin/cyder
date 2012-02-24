@@ -6,7 +6,8 @@ from django.views.generic import DetailView, ListView, CreateView, UpdateView
 from django.forms import ValidationError
 
 
-from cyder.cydns.domain.models import Domain, DomainForm, DomainUpdateForm, DomainHasChildDomains
+from cyder.cydns.domain.models import Domain, DomainHasChildDomains
+from cyder.cydns.domain.forms import DomainForm, DomainUpdateForm
 from cyder.cydns.domain.models import DomainExistsError, MasterDomainNotFoundError
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.soa.models import SOA

@@ -1,5 +1,4 @@
 from django.db import models
-from django.forms import ModelForm
 from django import forms
 
 from cyder.cydns.domain.models import Domain
@@ -17,7 +16,7 @@ class MX( CommonRecord ):
 
     def details(self):
         return  (
-                    ('FQDN', self.__fqdn__()),
+                    ('FQDN', self.fqdn()),
                     ('Record Type', 'MX'),
                     ('Server', self.server),
                     ('Priority', self.priority),
@@ -30,7 +29,6 @@ class MX( CommonRecord ):
     def save(self, *args, **kwargs):
         self.clean()
         super(MX, self).save(*args, **kwargs)
-        pdb.set_trace()
 
     def clean( self ):
         if type(self.label) not in (type(''), type(u'')):
@@ -45,9 +43,9 @@ class MX( CommonRecord ):
         _check_TLD_condition( self )
 
     def __str__(self):
-        return "%s %s %s %s %s %s" % ( self.__fqdn__(), self.ttl, 'IN', 'MX', self.priority, self.server)
+        return "%s %s %s %s %s %s" % ( self.fqdn(), self.ttl, 'IN', 'MX', self.priority, self.server)
 
-    def __fqdn__(self):
+    def fqdn(self):
         if self.label == '':
             fqdn = self.domain.name
         else:
@@ -60,9 +58,6 @@ class MX( CommonRecord ):
     class Meta:
         db_table = 'mx'
 
-class MXForm( ModelForm ):
-    class Meta:
-        model   = MX
 
 def _validate_mx_priority( prio ):
     if prio > 65535 or prio < 0:
@@ -75,7 +70,7 @@ def _check_exists( mx ):
             raise RecordExistsError("Error: This MX record already exists.")
 
 def _check_TLD_condition( mx ):
-    domain = Domain.objects.filter( name = mx.__fqdn__() )
+    domain = Domain.objects.filter( name = mx.fqdn() )
     if not domain:
         return
     if mx.label == '' and domain[0] == mx.domain:

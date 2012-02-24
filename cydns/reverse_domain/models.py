@@ -5,7 +5,7 @@ from cyder.cydns.models import _validate_name, _validate_reverse_name, CyAddress
 import ipaddr
 import pdb
 
-from django.forms import ModelForm, ValidationError
+from django.forms import ValidationError
 from django import forms
 
 from django.db.models.signals import pre_save, pre_delete, post_delete, post_save
@@ -43,7 +43,7 @@ class ReverseDomain( models.Model ):
     def clean(self):
         if not self.name:
             raise InvalidRecordNameError("Error: please provide a name")
-        if  type(self.name) != type('') and type(self.name) != type(u''):
+        if  type(self.name) not in (str, unicode):
             raise InvalidRecordNameError("Error: name must be type str")
         if self.ip_type not in ('4', '6'):
             raise InvalidRecordNameError("Error: Plase provide the type of Address Record")
@@ -62,20 +62,6 @@ class ReverseDomain( models.Model ):
     class Meta:
         db_table = 'reverse_domain'
 
-class ReverseDomainUpdateForm( ModelForm ):
-    class Meta:
-        model   = ReverseDomain
-        exclude = ('name','master_reverse_domain', 'ip_type')
-
-
-class ReverseDomainForm( ModelForm ):
-    choices = ( (1,'Yes'),
-                (0,'No'),
-              )
-    inherit_soa = forms.ChoiceField(widget=forms.RadioSelect, choices=choices, required=False)
-    class Meta:
-        model   = ReverseDomain
-        exclude = ('master_reverse_domain',)
 
 def _reassign_reverse_ips_delete( reverse_domain ):
     ips = reverse_domain.ip_set.iterator()

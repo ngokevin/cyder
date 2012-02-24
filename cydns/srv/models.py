@@ -31,9 +31,9 @@ class SRV( CommonRecord ):
         _check_TLD_condition( self )
 
     def __str__(self):
-        return "%s %s %s %s %s %s %s" % ( self.__fqdn__(), 'IN', 'SRV', self.priority,self.weight, self.port, self.target)
+        return "%s %s %s %s %s %s %s" % ( self.fqdn(), 'IN', 'SRV', self.priority,self.weight, self.port, self.target)
 
-    def __fqdn__(self):
+    def fqdn(self):
         if self.label == '':
             fqdn = self.domain.name
         else:
@@ -62,7 +62,7 @@ def _check_exists( srv ):
             raise RecordExistsError("Error: This SRV record already exists.")
 
 def _check_TLD_condition( srv ):
-    domain = Domain.objects.filter( name = srv.__fqdn__() )
+    domain = Domain.objects.filter( name = srv.fqdn() )
     if not domain:
         return
     if srv.label == '' and domain[0] == srv.domain:

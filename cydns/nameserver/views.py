@@ -1,5 +1,6 @@
 # Create your views here.
-from cyder.cydns.nameserver.models import Nameserver, NameserverForm, _needs_glue
+from cyder.cydns.nameserver.models import Nameserver, _needs_glue
+from cyder.cydns.nameserver.forms import NameserverForm
 from cyder.cydns.common.views import CommonDetailView, CommonListView
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.address_record.models import AddressRecord

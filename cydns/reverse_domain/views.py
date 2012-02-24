@@ -8,8 +8,8 @@ from django import forms
 
 import pdb
 from cyder.cydns.soa.models import SOA
-from cyder.cydns.reverse_domain.models import ReverseDomain, ReverseDomainForm, ReverseDomainUpdateForm
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
+from cyder.cydns.reverse_domain.models import ReverseDomain, boot_strap_add_ipv6_reverse_domain
+from cyder.cydns.reverse_domain.forms import ReverseDomainForm, ReverseDomainUpdateForm
 
 class BootStrapForm( forms.Form ):
     name = forms.CharField(max_length=100)

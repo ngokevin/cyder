@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import patterns, include, url
-from cyder.cydns.common.views import SOADetailView, SOACreateView, SOAUpdateView, SOAListView
-from cyder.cydns.common.views import MXDetailView, MXCreateView, MXUpdateView, MXListView
+from cyder.cydns.soa.views import SOADetailView, SOACreateView, SOAUpdateView, SOAListView
+from cyder.cydns.mx.views import MXDetailView, MXCreateView, MXUpdateView, MXListView
 from cyder.cydns.domain.views import DomainDetailView, DomainListView, DomainCreateView
 from cyder.cydns.domain.views import DomainUpdateView
 from cyder.cydns.reverse_domain.views import ReverseDomainDetailView, ReverseDomainListView

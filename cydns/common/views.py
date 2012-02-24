@@ -1,5 +1,3 @@
-from cyder.cydns.mx.models import MX, MXForm
-from cyder.cydns.soa.models import SOA, SOAForm
 from django.views.generic import DetailView, CreateView, UpdateView, ListView
 from django.contrib import messages
 from django.forms import ValidationError
@@ -85,48 +83,10 @@ class CommonListView(ListView):
     template_name = "list.html"
     context_object_name = "objects"
 
-############
-#    MX    #
-############
-class MXView(object):
-    model      = MX
-    form_class = MXForm
-    queryset   = MX.objects.all() # Eventually, do a filter here to make user specific views.
 
-class MXDetailView(MXView, CommonDetailView):
-    pass
-
-class MXCreateView(MXView, CommonCreateView):
-    pass
-
-class MXUpdateView(MXView, CommonUpdateView):
-    pass
-
-class MXListView(MXView, CommonListView):
-    pass
-
-###########
-#   SOA   #
-###########
-
-class SOAView(object):
-    model = SOA
-    form_class = SOAForm
-    queryset = SOA.objects.all()
-
-class SOADetailView(SOAView, CommonDetailView):
-    pass
-
-class SOACreateView(SOAView, CommonCreateView):
-    pass
-
-class SOAUpdateView(SOAView, CommonUpdateView):
-    pass
-
-class SOAListView(SOAView, CommonListView):
-    pass
 
 """
+from cyder.cydns.common.views import CommonDetailView, CommonCreateView, CommonUpdateView, CommonListView
 class XXXDetailView(CommonDetailView):
     template_name =
     queryset = # Eventually, do a filter here to make user specific views.
