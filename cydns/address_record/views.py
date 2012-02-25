@@ -66,7 +66,7 @@ class AddressRecordUpdateView(AddressRecordView, UpdateView):
             ip = ip_form.save(commit=False)
             record.save()
             ip.save()
-        except ValidationError, e:
+        except ValueError, e:
             return render( request, "address_record_update.html", { "record_form": record_form, "ip_form": ip_form } )
 
         # Success.
