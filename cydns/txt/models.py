@@ -1,6 +1,6 @@
 from django.db import models
 from cyder.cydns.domain.models import Domain
-from cyder.cydns.cydns import CommonRecord
+from cyder.cydns.common.models import CommonRecord
 from cyder.settings.local import CYDNS_BASE_URL
 
 class TXT( CommonRecord ):

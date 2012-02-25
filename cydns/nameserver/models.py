@@ -3,7 +3,7 @@ from django.forms import ValidationError
 from cyder.settings.local import CYDNS_BASE_URL
 from cyder.cydns.address_record.models import Domain, _check_TLD_condition
 from cyder.cydns.address_record.models import AddressRecord
-from cyder.cydns.models import _validate_label, _validate_name, InvalidRecordNameError, RecordExistsError
+from cyder.cydns.cydns import _validate_label, _validate_name, InvalidRecordNameError, RecordExistsError
 import pdb
 
 class Nameserver( models.Model ):

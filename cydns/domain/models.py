@@ -1,7 +1,7 @@
 from django.db import models
 from cyder.cydns.soa.models import SOA
 from cyder.settings.local import CYDNS_BASE_URL
-from cyder.cydns.models import _validate_name, InvalidRecordNameError
+from cyder.cydns.cydns import _validate_name, InvalidRecordNameError
 from django.views.decorators.csrf import csrf_exempt
 
 from django.forms import ValidationError

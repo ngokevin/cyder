@@ -1,8 +1,8 @@
 from django.db import models
 from cyder.cydns.domain.models import Domain
 from cyder.settings.local import CYDNS_BASE_URL
-from cyder.cydns.cydns import CommonRecord
-from cyder.cydns.models import InvalidRecordNameError, RecordExistsError, _validate_name, _validate_label, _validate_ttl
+from cyder.cydns.common.models import CommonRecord
+from cyder.cydns.cydns import InvalidRecordNameError, RecordExistsError, _validate_name, _validate_label, _validate_ttl
 
 class SRV( CommonRecord ):
     id              = models.AutoField(primary_key=True)

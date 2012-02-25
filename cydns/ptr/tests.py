@@ -12,10 +12,10 @@ from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
 from cyder.cydns.domain.models import Domain
 
 from cyder.cydns.ptr.models import PTR
-from cyder.cydns.models import CyAddressValueError, InvalidRecordNameError
+from cyder.cydns.cydns import CyAddressValueError, InvalidRecordNameError
+from cyder.cydns.cydns import RecordNotFoundError, RecordExistsError
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
-from cyder.cydns.models import RecordNotFoundError, RecordExistsError
 
 import ipaddr
 import pdb

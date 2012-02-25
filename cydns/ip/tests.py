@@ -9,7 +9,7 @@ from django.test import TestCase
 import ipaddr
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain, ReverseDomain, ReverseDomainExistsError
-from cyder.cydns.models import CyAddressValueError
+from cyder.cydns.cydns import CyAddressValueError
 import pdb
 
 class SimpleTest(TestCase):

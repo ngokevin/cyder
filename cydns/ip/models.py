@@ -3,7 +3,7 @@ from django import forms
 
 from django.db import models
 from cyder.cydns.reverse_domain.models import ReverseDomain, ip_to_reverse_domain,ReverseDomainNotFoundError
-from cyder.cydns.models import CyAddressValueError
+from cyder.cydns.cydns import CyAddressValueError
 import ipaddr
 import pdb
 

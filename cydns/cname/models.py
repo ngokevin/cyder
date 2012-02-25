@@ -1,9 +1,9 @@
 from django.db import models
 from cyder.cydns.domain.models import Domain, _name_to_domain
-from cyder.cydns.cydns import CommonRecord
+from cyder.cydns.common.models import CommonRecord
 from cyder.settings.local import CYDNS_BASE_URL
 from cyder.cydns.ip.models import Ip
-from cyder.cydns.models import CyAddressValueError, _validate_name, RecordExistsError, RecordNotFoundError, InvalidRecordNameError
+from cyder.cydns.cydns import CyAddressValueError, _validate_name, RecordExistsError, RecordNotFoundError, InvalidRecordNameError
 
 class CNAME( CommonRecord ):
     id              = models.AutoField(primary_key=True)

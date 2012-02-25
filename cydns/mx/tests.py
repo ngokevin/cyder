@@ -6,7 +6,7 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from cyder.cydns.models import RecordExistsError, InvalidRecordNameError
+from cyder.cydns.cydns import RecordExistsError, InvalidRecordNameError
 from cyder.cydns.mx.models import MX
 from cyder.cydns.domain.models import Domain
 

@@ -12,7 +12,7 @@ from cyder.cydns.address_record.models import AddressRecord,RecordExistsError, R
 from cyder.cydns.nameserver.models import Nameserver,NSRecordMisconfiguredError
 from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.ip.models import Ip
-from cyder.cydns.models import RecordExistsError, InvalidRecordNameError
+from cyder.cydns.cydns import RecordExistsError, InvalidRecordNameError
 import pdb
 
 class NSTests(TestCase):

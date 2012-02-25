@@ -1,8 +1,8 @@
 from django.db import models
 from django import forms
 
-from cyder.cydns.models import _validate_label, InvalidRecordNameError, CyAddressValueError
-from cyder.cydns.models import _validate_name, RecordExistsError, RecordNotFoundError
+from cyder.cydns.cydns import _validate_label, InvalidRecordNameError, CyAddressValueError
+from cyder.cydns.cydns import _validate_name, RecordExistsError, RecordNotFoundError
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.ip.models import Ip, ipv6_to_longs
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
