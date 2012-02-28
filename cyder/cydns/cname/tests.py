@@ -34,6 +34,7 @@ class CNAMETests(TestCase):
     def do_add(self, label, domain, data):
         cn = CNAME( label = label, domain = domain, data = data )
         cn.save()
+        cn.save()
         self.assertTrue(cn.get_absolute_url())
         self.assertTrue(cn.get_edit_url())
         self.assertTrue(cn.get_delete_url())
