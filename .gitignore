@@ -8,3 +8,4 @@ cyer/make.bat
 cyder/Makefile
 cyder/settings/
 cyder_db
+vendor/
