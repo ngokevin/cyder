@@ -66,7 +66,8 @@ def _check_SOA_condition( cname ):
         return
     # We need to check if the domain is the root domain in a zone.
     # The domain will have an soa, but the master domain will have no soa (or a different one)
-    if domain[0].soa != domain[0].master_domain.soa:
+
+    if domain[0].soa and domain[0].soa != domain[0].master_domain.soa:
         raise InvalidRecordNameError( "You cannot create a CNAME that points to a domain at the\
                                         root of a zone." )
     return
