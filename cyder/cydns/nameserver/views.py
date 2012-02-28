@@ -8,6 +8,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import DetailView, CreateView, UpdateView, ListView
 from django.contrib import messages
 from django.forms import ValidationError
+
+from cyder.cydns.utils import slim_form
 import pdb
 
 class NSView(object):
@@ -36,6 +38,9 @@ class NSCreateView(CreateView):
         # form.fields['domain'].queryset = Domain.objects.filter( name = 'foo.com')
         # This ^ line will change the query set to something controllable
         # find user credentials in self.request
+        domain_pk = self.kwargs.get('domain', False)
+        if domain_pk:
+            form = slim_form( domain_pk, form)
         return form
 
     # Handle this post manually.

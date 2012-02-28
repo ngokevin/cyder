@@ -2,7 +2,10 @@ from django.views.generic import DetailView, CreateView, UpdateView, ListView, D
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.forms import ValidationError
+
+from cyder.cydns.domain.models import Domain
 from cyder.settings.local import CYDNS_BASE_URL
+from cyder.cydns.utils import slim_form
 import pdb
 
 class CommonDeleteView(DeleteView):
@@ -44,7 +47,10 @@ class CommonCreateView(CreateView):
     extra_context = None
 
     def get_form(self, form_class):
-        form = super(CommonCreateView, self).get_form( form_class)
+        form = super(CommonCreateView, self).get_form( form_class )
+        domain_pk = self.kwargs.get('domain', False)
+        if domain_pk:
+            slim_form( domain_pk, form )
         # This is where filtering domain selection should take place.
         # form.fields['domain'].queryset = Domain.objects.filter( name = 'foo.com')
         # This ^ line will change the query set to something controllable
