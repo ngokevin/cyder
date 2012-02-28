@@ -33,7 +33,11 @@ class CNAMETest(TestCase):
         label = "foo"
         domain = self.g
         data = "foo.com"
-        self.do_add( label, domain, data )
+        x = self.do_add( label, domain, data )
+        self.asserTrue(x.get_absolute_url())
+        self.asserTrue(x.get_edit_url())
+        self.asserTrue(x.get_delete_url())
+        self.asserTrue(x.details())
 
         label = "boo"
         domain = self.c_g

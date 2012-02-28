@@ -374,6 +374,12 @@ class AddressRecordTests(TestCase):
         rec = AddressRecord(label = data['label'], domain=data['domain'], ip_type='4')
         rec.ip = ip
         rec.save()
+        self.assertTrue(rec.__repr__())
+        self.assertTrue(rec.get_absolute_url())
+        self.assertTrue(rec.get_edit_url())
+        self.assertTrue(rec.get_delete_url())
+        self.assertTrue(rec.details())
+
 
         search = AddressRecord.objects.filter( label = data['label'], domain = data['domain'], ip_type='4' )
         found = False
@@ -388,6 +394,11 @@ class AddressRecordTests(TestCase):
         rec = AddressRecord(label = data['label'], domain=data['domain'], ip_type='6')
         rec.ip = ip
         rec.save()
+        self.assertTrue(rec.__repr__())
+        self.assertTrue(rec.get_absolute_url())
+        self.assertTrue(rec.get_edit_url())
+        self.assertTrue(rec.get_delete_url())
+        self.assertTrue(rec.details())
 
         search = AddressRecord.objects.filter( label = data['label'], domain = data['domain'], ip_type='6' )
         found = False
@@ -441,6 +452,23 @@ class AddressRecordTests(TestCase):
         self.do_add_record6( data )
         data = {'label': '23412341253254243','domain': self.f_o_e ,'ip': osu_block+":8"}
         self.do_add_record6( data )
+
+    def test_no_type(self):
+        osu_block = "2620:105:F000:"
+        data = {'label': 'uuu','domain': self.f_o_e ,'ip': '128.193.4.1'}
+        ip = Ip(ip_str=data['ip'], ip_type = '4')
+        ip.save()
+        rec = AddressRecord(label = data['label'], domain=data['domain'], ip_type='x')
+        rec.ip = ip
+        self.assertRaises(CyAddressValueError, rec.save)
+
+        data = {'label': 'uuu','domain': self.f_o_e ,'ip': '128.193.4.1'}
+        ip = Ip(ip_str=data['ip'], ip_type = '4')
+        ip.save()
+        rec = AddressRecord(label = data['label'], domain=data['domain'])
+        rec.ip = ip
+        self.assertRaises(CyAddressValueError, rec.save)
+
 
     def test_bad_A_ip(self):
         #IPv4 Tests
