@@ -9,12 +9,19 @@
 {% if domain.soa %}
 SOA: <a href='{{ domain.soa.get_absolute_url() }}'>{{ domain.soa.primary }}</a>
 {% endif %}
-<br />
-
+<br/>
 {% if domain.master_domain %}
 Master Domain: <a href='{{ domain.master_domain.get_absolute_url() }}'>{{ domain.master_domain.name }}</a>
 {% endif %}
 <br/>
+<h4>Domain Tools</h4>
+<a href='/cyder/cydns/soa/create'>Create SOA</a>
+<a href='/cyder/cydns/ns/create'>Create NS</a>
+<a href='/cyder/cydns/mx/create'>Create MX</a>
+<a href='/cyder/cydns/address_record/create'>Create A (AAAA)</a>
+<a href='/cyder/cydns/ptr/create'>Create PTR</a>
+<br />
+
 
 {% if address_matrix %}
     <h4> Address Records </h4>

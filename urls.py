@@ -19,13 +19,18 @@ from cyder.cydns.address_record.views import AddressRecordDetailView, AddressRec
 from cyder.cydns.address_record.views import AddressRecordUpdateView, AddressRecordDeleteView
 
 
+
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
 
 urlpatterns = patterns('',
 
+    url(r'^$', Cydns.as_view() ),
     url(r'^cyder/cydns$', Cydns.as_view() ),
+    # CAS
+    url(r'^login$', 'django_cas.views.login'),
+    url(r'^logout$', 'django_cas.views.logout'),
 
     #########
     # CYDNS #
