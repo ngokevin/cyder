@@ -10,3 +10,4 @@ cyder/settings/
 cyder_db
 cyder_db_test
 vendor/
+.coverage
