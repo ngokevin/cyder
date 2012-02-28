@@ -1,9 +1,10 @@
 */*.pyc
 *.pyc
-dist/*
-build/
+cyder/dist/*
+cyer/build/
 cyder/settings.py
-doc_build/
-make.bat
+cyer/doc_build/
+cyer/make.bat
 cyder/Makefile
-settings/
+cyder/settings/
+cyder_db
