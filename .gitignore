@@ -1,5 +1,6 @@
 */*.pyc
 *.pyc
+*.swp
 cyder/dist/*
 cyer/build/
 cyder/settings.py
