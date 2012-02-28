@@ -9,6 +9,8 @@ from cyder.cydns.cname.views import CNAMEDetailView, CNAMECreateView, CNAMEUpdat
 from cyder.cydns.cname.views import CNAMEListView, CNAMEDeleteView
 from cyder.cydns.ptr.views import PTRDetailView, PTRCreateView, PTRUpdateView, PTRListView, PTRDeleteView
 from cyder.cydns.nameserver.views import NSDetailView, NSCreateView, NSUpdateView, NSListView, NSDeleteView
+from cyder.cydns.nameserver.views import RevNSUpdateView, RevNSListView, RevNSDeleteView
+from cyder.cydns.nameserver.views import RevNSDetailView, RevNSCreateView
 
 from cyder.cydns.domain.views import DomainDetailView, DomainListView, DomainCreateView
 from cyder.cydns.domain.views import DomainUpdateView, DomainDeleteView
@@ -42,6 +44,14 @@ urlpatterns = patterns('',
     url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/update$', NSUpdateView.as_view() ),
     url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/detail$', NSDetailView.as_view() ),
     url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/delete$', NSDeleteView.as_view() ),
+
+    # Reverse NS
+    url(r'^cyder/cydns/reverse_nameserver$', RevNSListView.as_view() ),
+    url(r'^cyder/cydns/reverse_nameserver/create$', RevNSCreateView.as_view()),
+    url(r'^cyder/cydns/reverse_nameserver/(?P<reverse_domain>[\w-]+)/create$', RevNSCreateView.as_view()),
+    url(r'^cyder/cydns/reverse_nameserver/(?P<pk>[\w-]+)/update$', RevNSUpdateView.as_view() ),
+    url(r'^cyder/cydns/reverse_nameserver/(?P<pk>[\w-]+)/detail$', RevNSDetailView.as_view() ),
+    url(r'^cyder/cydns/reverse_nameserver/(?P<pk>[\w-]+)/delete$', RevNSDeleteView.as_view() ),
 
     # SRV
     url(r'^cyder/cydns/srv$', SRVListView.as_view() ),

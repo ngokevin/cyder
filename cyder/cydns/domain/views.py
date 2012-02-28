@@ -14,6 +14,7 @@ from cyder.cydns.common.utils import tablefy
 from cyder.cydns.common.views import CommonDeleteView
 
 from cyder.cydns.soa.models import SOA
+from cyder.cydns.nameserver.models import Nameserver
 from cyder.cydns.mx.models import MX
 from cyder.cydns.srv.models import SRV
 from cyder.cydns.txt.models import TXT
@@ -64,8 +65,15 @@ class DomainDetailView(DomainView, DetailView):
         ptr_objects = PTR.objects.filter( domain = domain )
         ptr_headers, ptr_matrix, ptr_urls = tablefy( ptr_objects )
 
+        ns_objects = Nameserver.objects.filter( domain = domain )
+        ns_headers, ns_matrix, ns_urls = tablefy( ns_objects )
+
         # Join the two dicts
         context = dict( {
+                    # NS
+                    "ns_headers": ns_headers,
+                    "ns_matrix": ns_matrix,
+                    "ns_urls": ns_urls,
                     # A and AAAA
                     "address_headers": adr_headers,
                     "address_matrix": adr_matrix,
@@ -82,12 +90,10 @@ class DomainDetailView(DomainView, DetailView):
                     "txt_headers": txt_headers,
                     "txt_matrix": txt_matrix,
                     "txt_urls": txt_urls,
-
                     # CNAME
                     "cname_headers": cname_headers,
                     "cname_matrix": cname_matrix,
                     "cname_urls": cname_urls,
-
                     # PTR
                     "ptr_headers": ptr_headers,
                     "ptr_matrix": ptr_matrix,

@@ -1,28 +1,72 @@
 from django.db import models
 from django.forms import ValidationError
+
 from cyder.settings.local import CYDNS_BASE_URL
-from cyder.cydns.address_record.models import Domain, _check_TLD_condition
-from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.domain.models import Domain
+from cyder.cydns.reverse_domain.models import ReverseDomain
+from cyder.cydns.address_record.models import AddressRecord, _check_TLD_condition
 from cyder.cydns.cydns import _validate_label, _validate_name, InvalidRecordNameError, RecordExistsError
 import pdb
 
-class Nameserver( models.Model ):
+class BaseNameserver( models.Model ):
     id              = models.AutoField(primary_key=True)
+    server          = models.CharField(max_length=256)
+    class Meta:
+        abstract = True
+
+    def clean( self ):
+        if type(self.server) not in (str, unicode):
+            raise InvalidRecordNameError("Error: name must be type str")
+        _validate_name( self.server )
+        _check_TLD_condition( self )
+
+
+class ReverseNameserver( BaseNameserver ):
+    """ Name server for reverse domains. """
+    reverse_domain          = models.ForeignKey(ReverseDomain, null=False)
+    class Meta:
+        db_table = 'reverse_nameserver'
+
+    def details(self):
+        details =  (
+                    ('Reverese Domain', self.reverse_domain.name),
+                    ('Server', self.server),
+                   )
+        return tuple(details)
+
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/reverse_nameserver/%s/detail" % (self.pk)
+
+    def get_edit_url(self):
+        return CYDNS_BASE_URL + "/reverse_nameserver/%s/update" % (self.pk)
+
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/reverse_nameserver/%s/delete" % (self.pk)
+
+    def clean( self ):
+        super(ReverseNameserver, self).clean()
+        _check_reverse_exist( self )
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super(ReverseNameserver, self).save(*args, **kwargs)
+
+class Nameserver( BaseNameserver ):
+    """ Name server for forward domains. """
     domain          = models.ForeignKey(Domain, null=False)
     # "If the name server does lie within the domain it should have a corresponding A record."
-    server          = models.CharField(max_length=256)
     glue            = models.ForeignKey(AddressRecord, null=True, blank=True)
 
     class Meta:
         db_table = 'nameserver'
 
     def details(self):
-        return  (
-                    ('FQDN', self.fqdn()),
-                    ('Domain', self.domain),
+        details=[
                     ('Server', self.server),
-                    ('Glue', self.glue),
-                )
+                    ('Domain', self.domain.name),
+                ]
+        if self.glue: details.append(('Glue', self.glue))
+        return tuple(details)
 
     def get_absolute_url(self):
         return CYDNS_BASE_URL + "/nameserver/%s/detail" % (self.pk)
@@ -40,12 +84,8 @@ class Nameserver( models.Model ):
         super(Nameserver, self).delete(*args, **kwargs)
 
     def clean( self ):
-        if type(self.server) not in (type(''), type(u'')):
-            raise InvalidRecordNameError("Error: name must be type str")
-
-        _validate_name( self.server )
+        super(Nameserver, self).clean()
         _check_exist( self )
-        _check_TLD_condition( self )
 
         needs_glue = _needs_glue( self )
         if self.glue and self.glue.fqdn() != self.server:
@@ -94,6 +134,12 @@ def _check_TLD_condition( ns ):
 
 def _check_exist( ns ):
     exist = Nameserver.objects.filter( server = ns.server, domain = ns.domain )
+    for possible in exist:
+        if possible.pk != ns.pk:
+            raise RecordExistsError(str(possible)+" already exists.")
+
+def _check_reverse_exist( ns ):
+    exist = ReverseNameserver.objects.filter( server = ns.server, reverse_domain = ns.reverse_domain )
     for possible in exist:
         if possible.pk != ns.pk:
             raise RecordExistsError(str(possible)+" already exists.")

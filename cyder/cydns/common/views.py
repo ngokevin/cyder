@@ -12,6 +12,7 @@ class CommonDeleteView(DeleteView):
     context_object_name = "common"
     template_name = "common_delete.html"
     success_url = "/cyder/cydns"
+
     def get_object(self, queryset=None):
         obj = super(CommonDeleteView, self).get_object()
         # Object permissions here
@@ -50,7 +51,12 @@ class CommonCreateView(CreateView):
         form = super(CommonCreateView, self).get_form( form_class )
         domain_pk = self.kwargs.get('domain', False)
         if domain_pk:
-            slim_form( domain_pk, form )
+            slim_form( domain_pk=domain_pk, form=form )
+
+        reverse_domain_pk = self.kwargs.get('reverse_domain', False)
+        if reverse_domain_pk:
+            slim_form( reverse_domain_pk=reverse_domain_pk, form=form )
+
         # This is where filtering domain selection should take place.
         # form.fields['domain'].queryset = Domain.objects.filter( name = 'foo.com')
         # This ^ line will change the query set to something controllable

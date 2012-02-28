@@ -24,7 +24,10 @@ Master Domain: <a href='{{ domain.master_domain.get_absolute_url() }}'>{{ domain
 <a href='/cyder/cydns/ptr/create'>Create PTR</a>
 <br />
 
-
+{% if ns_matrix %}
+    <h4> Nameservers </h4>
+    {{ render_table( ns_headers, ns_matrix, ns_urls ) }}
+{% endif %}
 {% if address_matrix %}
     <h4> Address Records </h4>
     {{ render_table( address_headers, address_matrix, address_urls ) }}

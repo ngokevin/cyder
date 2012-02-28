@@ -1,7 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
-<h3>Reverse Domain {{ reverse_domain.name }}</h3>
-SOA: {{ reverse_domain.soa }}<br />
-<a href='{{ reverse_domain.get_edit_url() }}'>Edit</a>
+{% from "tables.html" import render_table %}
+<h3> Reverse Domain {{ reverse_domain.name }}</h3>
+<a href='{{ reverse_domain.get_edit_url() }}'>Edit SOA</a>
 <a href='{{ reverse_domain.get_delete_url() }}'>Delete</a>
+<br/>
+{% if reverse_domain.soa %}
+SOA: <a href='{{ reverse_domain.soa.get_absolute_url() }}'>{{ reverse_domain.soa.primary }}</a>
+{% endif %}
+<br/>
+{% if reverse_domain.master_reverse_domain %}
+Master Reverse Domain: <a href='{{ reverse_domain.master_reverse_domain.get_absolute_url() }}'>{{ reverse_domain.master_reverse_domain.name }}</a>
+{% endif %}
+<br/>
+<h4>Reverse Domain Tools</h4>
+<a href='/cyder/cydns/reverse_nameserver/{{ reverse_domain.pk }}/create'>Create NS</a>
+<br />
+{% if revns_matrix %}
+    <h4> Reverse Nameservers </h4>
+    {{ render_table( revns_headers, revns_matrix, revns_urls ) }}
+{% endif %}
 {% endblock %}
