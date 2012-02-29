@@ -148,17 +148,6 @@ def _dname_to_master_reverse_domain( dname, ip_type="4" ):
     return master_reverse_domain
 
 
-def _add_generic_reverse_domain( dname, ip_type ):
-    reverse_domain = ReverseDomain( name=dname, ip_type=ip_type )
-    reverse_domain.save()
-    return reverse_domain
-
-def _remove_generic_reverse_domain( dname, ip_type ):
-    if not ReverseDomain.objects.filter( name = dname, ip_type = ip_type ):
-        raise ReverseDomainNotFoundError( "Error: %s was not found." % (dname))
-    reverse_domain = ReverseDomain.objects.filter( name = dname, ip_type = ip_type )[0] # It's cached
-    reverse_domain.delete()
-
 def _reassign_reverse_ips( reverse_domain_1, reverse_domain_2, ip_type ):
     """There are some formalities that need to happen when a reverse domain is added and deleted. For example, when adding say we had the ip address 128.193.4.0 and it had the reverse_domain 128.193. If we add the reverse_domain 128.193.4, our 128.193.4.0 no longer belongs to the 128.193 domain. We need to re-asign the ip to it's correct reverse domain.
 
