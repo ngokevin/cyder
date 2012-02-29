@@ -7,6 +7,7 @@ cyer/doc_build/
 cyer/make.bat
 cyder/Makefile
 cyder/settings/
+cyder/maintain2cyder/*.cfg
 cyder_db
 cyder_db_test
 vendor/
