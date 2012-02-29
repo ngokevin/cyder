@@ -48,7 +48,6 @@ class SRV( CommonRecord ):
         _validate_srv_priority( self.priority )
         _validate_srv_weight( self.weight )
         _check_exists( self )
-        _check_TLD_condition( self )
 
     def __str__(self):
         return "%s %s %s %s %s %s %s" % ( self.fqdn(), 'IN', 'SRV', self.priority,self.weight, self.port, self.target)
@@ -77,11 +76,3 @@ def _check_exists( srv ):
         if possible.pk != srv.pk:
             raise RecordExistsError("Error: This SRV record already exists.")
 
-def _check_TLD_condition( srv ):
-    domain = Domain.objects.filter( name = srv.fqdn() )
-    if not domain:
-        return
-    if srv.label == '' and domain[0] == srv.domain:
-        return #This is allowed
-    else:
-        raise InvalidRecordNameError( "You cannot create a SRV record with a non empty label that points to a TLD." )
