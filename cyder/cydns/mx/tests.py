@@ -26,6 +26,10 @@ class MXTests(TestCase):
         mx = MX( **data )
         mx.__repr__()
         mx.save()
+        self.assertTrue(mx.details())
+        self.assertTrue(mx.get_absolute_url())
+        self.assertTrue(mx.get_edit_url())
+        self.assertTrue(mx.get_delete_url())
         rmx = MX.objects.filter( **data )
         self.assertTrue( len(rmx) == 1 )
         return mx
@@ -58,6 +62,8 @@ class MXTests(TestCase):
         data = { 'label':"asdf" ,'domain':self.o_e ,'server':'coo.com' ,'priority':-1 ,'ttl':23 }
         self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
         data = { 'label':"asdf" ,'domain':self.o_e ,'server':'coo.com' ,'priority':65536 ,'ttl':23 }
+        self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
+        data = { 'label':"asdf" ,'domain':self.o_e ,'server':234 ,'priority':65536 ,'ttl':23 }
         self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
 
     def do_remove(self, data):

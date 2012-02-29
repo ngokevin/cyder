@@ -40,9 +40,9 @@ class MX( CommonRecord ):
         super(MX, self).save(*args, **kwargs)
 
     def clean( self ):
-        if type(self.label) not in (type(''), type(u'')):
+        if type(self.label) not in (str, unicode):
             raise InvalidRecordNameError("Error: name must be type str")
-        if type(self.server) not in (type(''), type(u'')):
+        if type(self.server) not in (str, unicode):
             raise InvalidRecordNameError("Error: name must be type str")
         _validate_label( self.label )
         _validate_name( self.server )
