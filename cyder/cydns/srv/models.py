@@ -54,11 +54,7 @@ class SRV( CommonRecord ):
         return "%s %s %s %s %s %s %s" % ( self.fqdn(), 'IN', 'SRV', self.priority,self.weight, self.port, self.target)
 
     def fqdn(self):
-        if self.label == '':
-            fqdn = self.domain.name
-        else:
-            fqdn = str(self.label)+"."+self.domain.name
-        return fqdn
+        return str(self.label)+"."+self.domain.name
 
     class Meta:
         db_table = 'srv'
