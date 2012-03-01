@@ -105,7 +105,6 @@ AUTH_PROFILE_MODULE = 'cyder.core.cyuser.UserProfile'
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'django_cas.backends.CASBackend',
-    'cyder.core.container.backends.ContainerBackend',
 )
 
 DATABASES = {
