@@ -50,7 +50,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'cyder.base',
     'cyder.core.cyuser',
     'cyder.core',
-    'cyder.core.container',
+    'cyder.core.ctnr',
     'cyder.core.registrations',
     'cyder.core.node',
     'cyder.cydns',
