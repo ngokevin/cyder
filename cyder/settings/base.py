@@ -100,7 +100,7 @@ JINGO_EXCLUDE_APPS = [
 # ]
 LOGGING = dict(loggers=dict(playdoh = {'level': logging.DEBUG}))
 
-AUTH_PROFILE_MODULE = 'cyder.core.cyuser.UserProfile'
+AUTH_PROFILE_MODULE = 'cyuser.UserProfile'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',

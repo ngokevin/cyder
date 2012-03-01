@@ -1,6 +1,9 @@
 # This is an example settings/local.py file.
 # These settings overrides what's in settings/base.py
 
+# Required for django-debug-toolbar
+INTERNAL_IPS = ('127.0.0.1',)
+
 """
 DATABASES = {
     'default': {
@@ -26,8 +29,9 @@ DATABASES = {
 """
 
 # To extend any settings from settings/base.py here's an example:
-#from . import base
-#INSTALLED_APPS = base.INSTALLED_APPS + ['debug_toolbar']
+from . import base
+INSTALLED_APPS = base.INSTALLED_APPS + ['debug_toolbar']
+JINGO_EXCLUDE_APPS = base.JINGO_EXCLUDE_APPS + ['debug_toolbar']
 
 # Uncomment this and set to all slave DBs in use on the site.
 # SLAVE_DATABASES = ['slave']
@@ -80,6 +84,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'cyder.middleware.dev_authentication.DevAuthenticationMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
