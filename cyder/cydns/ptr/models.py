@@ -3,7 +3,7 @@ from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.reverse_domain.models import ip_to_reverse_domain, ReverseDomainNotFoundError
 from cyder.cydns.ip.models import Ip, ipv6_to_longs
 from cyder.cydns.cydns import CyAddressValueError, _validate_name, RecordExistsError, RecordNotFoundError, InvalidRecordNameError
-from cyder.settings.local import CYDNS_BASE_URL
+from cyder.settings import CYDNS_BASE_URL
 import ipaddr
 
 class PTR( models.Model ):

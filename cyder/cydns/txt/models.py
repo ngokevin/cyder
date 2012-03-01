@@ -1,7 +1,7 @@
 from django.db import models
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.common.models import CommonRecord
-from cyder.settings.local import CYDNS_BASE_URL
+from cyder.settings import CYDNS_BASE_URL
 
 class TXT( CommonRecord ):
     id              = models.AutoField(primary_key=True)

@@ -2,9 +2,7 @@ from django.views.generic import DetailView, CreateView, UpdateView, ListView, D
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.forms import ValidationError
-
 from cyder.cydns.domain.models import Domain
-from cyder.settings.local import CYDNS_BASE_URL
 from cyder.cydns.utils import slim_form
 import pdb
 

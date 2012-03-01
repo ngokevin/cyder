@@ -1,5 +1,5 @@
 from django.db import models
-from cyder.settings.local import CYDNS_BASE_URL
+from cyder.settings import CYDNS_BASE_URL
 from cyder.cydns.cydns import _validate_name, CyAddressValueError, InvalidRecordNameError
 from cyder.cydns.cydns import RecordExistsError, RecordNotFoundError
 from django import forms
