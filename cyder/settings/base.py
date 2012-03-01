@@ -105,7 +105,7 @@ AUTH_PROFILE_MODULE = 'cyder.core.cyuser.UserProfile'
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'django_cas.backends.CASBackend',
-    'cyder.core.container.ContainerBackend',
+    'cyder.core.cyuser.AuthorizationBackend',
 )
 
 DATABASES = {
@@ -121,8 +121,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django_cas.middleware.CASMiddleware',
-    'cyder.middleware.require_login.RequireLoginMiddleware',
-
+    'cyder.middleware.authentication.AuthenticationMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (

@@ -79,9 +79,10 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'cyder.middleware.dev_authentication.DevAuthenticationMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'cyder.core.container.ContainerBackend',
+    'cyder.core.cyuser.AuthorizationBackend',
 )
