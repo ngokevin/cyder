@@ -48,7 +48,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.messages',
     # Application base, containing global templates.
     'cyder.base',
-    'cyder.cyuser',
+    'cyder.core.cyuser',
     'cyder.core',
     'cyder.core.container',
     'cyder.core.registrations',
