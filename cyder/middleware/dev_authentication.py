@@ -1,6 +1,7 @@
+from django.contrib.auth import login
 from django.contrib.auth.models import User
 
-from cyder.core.container.models import Container
+from cyder.core.ctnr.models import Ctnr
 
 class DevAuthenticationMiddleware(object):
 
@@ -9,8 +10,8 @@ class DevAuthenticationMiddleware(object):
         # login as development user
         if request.user.is_anonymous():
             try:
-                user = User.objects.get(username='development')
-                request.user = user
+                request.user = authenticate(username='development', password='development')
+                login(request, request.user)
             except:
                 # manually create development user if not created already
                 request.user = User()
@@ -18,16 +19,17 @@ class DevAuthenticationMiddleware(object):
                 request.user.first_name = 'development'
                 request.user.last_name = 'development'
                 request.user.email = 'development@foo.bar.com'
+                request.user.set_password('development')
                 request.user.is_superuser = True
                 request.user.backend = 'django.contrib.auth.backends.ModelBackend'
                 request.user.save()
 
-            # set session container on login to user's default container
-            default_container = request.user.get_profile().default_container
-            if not default_container:
-                request.session.container = Container.objects.get(id=0)
+            # set session ctnr on login to user's default ctnr
+            default_ctnr = request.user.get_profile().default_ctnr
+            if not default_ctnr:
+                request.session.ctnr = Ctnr.objects.get(id=0)
             else:
-                request.session.container = Container.objects.get(id=default_container.id)
+                request.session.ctnr = Ctnr.objects.get(id=default_ctnr.id)
 
         else:
             return None
