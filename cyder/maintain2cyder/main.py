@@ -11,7 +11,7 @@ class Maintain(object):
     def __init__(  self, build_zone, build_rev, build_config,\
                    bind_dir, build_dir, run_records_test = False , test_zone_files = True ):
         db = database.Database()
-        self.cur = db.get_cursor("maintain")
+        self.cur = db.get_cursor("maintain_sb")
         self.fd = open(build_dir+"/"+"db.none", "w+") # Zone needs this for bootstraping
 
         ### Behavior switches

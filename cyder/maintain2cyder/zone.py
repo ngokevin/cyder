@@ -79,6 +79,10 @@ class Zone(object):
     def gen_domain( self, domain, dname ):
         print "Generating %s" % (dname)
         self.gen_ORIGIN( domain, dname, 999 )
+        bad_dnames = ['', '.']
+        if dname not in bad_dnames:
+            d = Domain( name = dname )
+            d.save()
         self.gen_NS( domain, dname )
         self.gen_MX( domain, dname )
         self.gen_A( domain, dname )

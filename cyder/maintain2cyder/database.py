@@ -5,10 +5,17 @@ import sys
 CONFIG_FILE = './cyder/maintain2cyder/database.cfg'
 
 class Database:
+    CONFIG_FILE = './cyder/maintain2cyder/database.cfg'
+
     # pass in string. Use that string to index section array and dynamically return a cursor.
     def __init__( self ):
+        self.config_file = CONFIG_FILE
         self.config = ConfigParser.ConfigParser()
-        self.config.read(CONFIG_FILE)
+        self.config.read(self.config_file)
+
+    def retry( self ):
+        self.config = ConfigParser.ConfigParser()
+        self.config.read(self.config_file)
 
     """
     Pass a string into this method identifing which database in the config
