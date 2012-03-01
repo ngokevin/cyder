@@ -1,6 +1,6 @@
 from django.db import models
 from django.forms import ValidationError
-from cyder.settings.local import CYDNS_BASE_URL
+from cyder.settings import CYDNS_BASE_URL
 from cyder.cydns.address_record.models import Domain, _check_TLD_condition
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.cydns import _validate_label, _validate_name, InvalidRecordNameError, RecordExistsError

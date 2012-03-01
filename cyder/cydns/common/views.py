@@ -2,7 +2,7 @@ from django.views.generic import DetailView, CreateView, UpdateView, ListView, D
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.forms import ValidationError
-from cyder.settings.local import CYDNS_BASE_URL
+from cyder.settings import CYDNS_BASE_URL
 import pdb
 
 class CommonDeleteView(DeleteView):
