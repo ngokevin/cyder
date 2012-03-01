@@ -5,7 +5,7 @@ from cyder.dns.reverse_domain import ReverseDomain
 from cyder.user import CyUser
 
 
-class CTNR( models.Model ):
+class Container( models.Model ):
     id              = models.AutoField(primary_key=True)
     ranges          = models.ManyToManyField(Range, null=False)
     domains         = models.ManyToManyField(Domain, null=False)

@@ -1,4 +1,4 @@
-from cyder.core.container.models import CTNR, CTNR_User
+from cyder.core.container.models import Container, Container_User
 
 class AuthorizationBackend(object):
 

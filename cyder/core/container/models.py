@@ -5,12 +5,12 @@ from cyder.cydns.reverse_domain.models import ReverseDomain
 from django.contrib.auth.models import User
 
 
-class CTNR( models.Model ):
+class Container( models.Model ):
     id              = models.AutoField(primary_key=True)
     ranges          = models.ManyToManyField(Range, null=False)
     domains         = models.ManyToManyField(Domain, null=False)
     reverse_domains = models.ManyToManyField(ReverseDomain, null=False)
-    users           = models.ManyToManyField(User, null=False, related_name='users', through='CTNR_User')
+    users           = models.ManyToManyField(User, null=False, related_name='users', through='ContainerUser')
     admins          = models.ManyToManyField(User, null=False, related_name='admins')
     description     = models.CharField(max_length=200)
     name            = models.CharField(max_length=100)
@@ -18,13 +18,13 @@ class CTNR( models.Model ):
     purgeable       = models.BooleanField()
 
     class Meta:
-        db_table = 'ctnr'
+        db_table = 'container'
 
 
-class CTNR_User(models.Model):
+class ContainerUser(models.Model):
     user            = models.ForeignKey(User)
-    cntr            = models.ForeignKey(CTNR)
+    container       = models.ForeignKey(Container)
     level           = models.IntegerField()
 
     class Meta:
-        db_table = 'ctnr_users'
+        db_table = 'container_users'

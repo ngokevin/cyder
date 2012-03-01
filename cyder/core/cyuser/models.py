@@ -2,12 +2,12 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import signals
 
-from cyder.core.container.models import CTNR
+from cyder.core.container.models import Container
 
 
 class UserProfile( models.Model ):
     user            = models.OneToOneField(User)
-    default_ctnr    = models.ForeignKey(CTNR, null=True)
+    default_container = models.ForeignKey(Container, null=True)
     phone_number    = models.IntegerField(null=True)
 
 
