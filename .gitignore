@@ -8,4 +8,5 @@ cyder/doc_build/
 cyder/make.bat
 cyder/Makefile
 cyder/settings/local*
+local.py
 vendor/
