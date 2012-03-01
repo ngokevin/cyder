@@ -1,7 +1,7 @@
 from django.db import models
 from cyder.cydns.soa.models import SOA
 from cyder.settings import CYDNS_BASE_URL
-from cyder.cydns.cydns import _validate_name, InvalidRecordNameError
+from cyder.cydns.cydns import _validate_domain_name, InvalidRecordNameError
 from django.views.decorators.csrf import csrf_exempt
 
 from django.forms import ValidationError
@@ -37,7 +37,7 @@ class Domain( models.Model ):
         super(Domain, self).save(*args, **kwargs)
 
     def clean( self ):
-        _validate_name( self.name )
+        _validate_domain_name( self.name )
         possible = Domain.objects.filter( name = self.name )
         if possible and possible[0].pk != self.pk:
             raise DomainExistsError("The %s domain already exists." % (self.name))

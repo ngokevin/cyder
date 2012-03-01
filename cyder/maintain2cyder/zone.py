@@ -5,7 +5,7 @@ import printer
 import sys
 import os
 
-from cyder.cydns.domain.models import Domain
+from cyder.cydns.domain.models import Domain, DomainExistsError
 """
 A Zone object should be initialized at a base domain. From that domain it should start to
 build a zone file. These are the steps it shuold take to build it's zone file.
@@ -79,10 +79,21 @@ class Zone(object):
     def gen_domain( self, domain, dname ):
         print "Generating %s" % (dname)
         self.gen_ORIGIN( domain, dname, 999 )
-        bad_dnames = ['', '.']
+        bad_dnames = ['', '.', '_']
         if dname not in bad_dnames:
-            d = Domain( name = dname )
-            d.save()
+            # Other badies
+            if dname[0].find('_') >= 0:
+                pass
+            elif dname.find('in-addr.arpa') >= 0:
+                pass
+            else:
+                d = Domain( name = dname )
+                try:
+                    d.save()
+                except DomainExistsError, e:
+                    print "ERROR: %s " % dname
+                    pass
+
         self.gen_NS( domain, dname )
         self.gen_MX( domain, dname )
         self.gen_A( domain, dname )

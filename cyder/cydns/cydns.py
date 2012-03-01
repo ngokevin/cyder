@@ -28,15 +28,16 @@ class RecordNotFoundError(ValidationError):
         return self.msg
 
 
-def _validate_label( label ):
+def _validate_label( label, valid_chars=None ):
     """Run test on a record to make sure that the new name is constructed with valid syntax.
 
         :param label: The name to be tested.
         :type label: str
     """
-    if type(label) not in ( type(u''), type('') ):
+    if type(label) not in ( str, unicode ):
             raise InvalidRecordNameError("Error: The supplied name '%s' is not of type 'str'." % (label) )
-    valid_chars = string.ascii_letters+"0123456789"+"-"
+    if not valid_chars:
+        valid_chars = string.ascii_letters+"0123456789"+"-"
     for char in label:
         if char == '.':
             raise InvalidRecordNameError("Error: Ivalid name %s . Please do not span multiple domains when creating A records." % (label) )
@@ -44,13 +45,28 @@ def _validate_label( label ):
             raise InvalidRecordNameError("Error: Ivalid name %s . Character '%s' is invalid." % (label, char) )
     return
 
+def _validate_domain_name( dname ):
+    """Domain names are different. They are allowed to have '_' in them.
+
+        :param dname: The domain name to be tested.
+        :type dname: str
+    """
+    if type(dname) not in ( str, unicode ):
+        raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (dname) )
+
+    for label in dname.split('.'):
+        if not label:
+            raise InvalidRecordNameError("Error: Ivalid name %s . Empty label." % (label) )
+        valid_chars = string.ascii_letters+"0123456789"+"-_"
+        _validate_label( label, valid_chars=valid_chars )
+
 def _validate_name( fqdn ):
     """Run test on a name to make sure that the new name is constructed with valid syntax.
 
         :param fqdn: The fqdn to be tested.
         :type fqdn: str
     """
-    if type(fqdn) not in ( type(u''), type('') ):
+    if type(fqdn) not in ( str, unicode ):
         raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (fqdn) )
 
     for label in fqdn.split('.'):
@@ -65,7 +81,7 @@ def _validate_reverse_name( reverse_name, ip_type ):
         :param fqdn: The fqdn to be tested.
         :type fqdn: str
     """
-    if type(reverse_name) != type(u'') and type(reverse_name) != type(''):
+    if type(reverse_name) not in ( str, unicode ):
         raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (reverse_name) )
 
     valid_ipv6 = "0123456789AaBbCcDdEeFf"

@@ -1,51 +1,52 @@
-from database import Database
+import ConfigParser
+import MySQLdb
 import pdb
-db = Database()
-db.config_file = "database.cfg"
-db.retry()
-cur = db.get_cursor("maintain_sb")
+config_file = "database.cfg"
+config = ConfigParser.ConfigParser()
+config.read(config_file)
+connection = MySQLdb.connect(
+                host=config.get( 'maintain_sb', 'host' ),
+                user=config.get( 'maintain_sb', 'user' ),
+                passwd=config.get( 'maintain_sb', 'passwd' ),
+                db=config.get( 'maintain_sb', 'db' ))
 
-cur.execute(""" SELECT id, name
-                FROM `domain`
-                WHERE `name`
-                LIKE "%%.%"
-                AND `master_domain`=0;""" )
+cur = connection.cursor()
+#cur.execute(""" SELECT * FROM `domain` WHERE `name`='foo.bar.baz' ;""" )
+cur.execute(""" SELECT * FROM `domain` WHERE 1=1 ;""" )
 
 broken_domains = cur.fetchall()
+print "BROKEN DOMAINS========="
+for domain in broken_domains:
+    print domain[1]
 
 needed_domains = set()
 
-def insert_dname( parent ):
-    sql =  "INSERT INTO domain (name, master_domain, enabled) VALUES ('%s', %s, %s)" % (parent, 0, 1)
-    search_sql =  "SELECT id FROM domain WHERE name='%s'" % (parent)
+def find_or_insert_dname( dname ):
+    search_sql =  "SELECT id FROM domain WHERE name='%s'" % (dname)
+    cur.execute( search_sql )
+    possible = cur.fetchone()
+    if possible:
+        return possible[0]
+
+    sql =  "INSERT INTO domain (name, master_domain, enabled) VALUES('%s', %s, %s)" % (dname, 0, 1)
     status = cur.execute( sql )
-    possible_id = cur.fetchone()
-    status = cur.execute( sql )
-    if not status:
-        print "ERROR: %s" % (parent)
-    parent_id = cur.lastrowid
-    return parent_id
+    domain_id = cur.lastrowid
+    connection.commit()
+    return domain_id
 
 def update_child( d_id, parent_id ):
     sql = "UPDATE domain SET master_domain=%s WHERE id=%s" % (parent_id, d_id)
     status = cur.execute( sql )
+    connection.commit()
     if not status:
         pass
 
+def update_master_domain( domain_id, parent_id ):
+    sql = "UPDATE `domain` SET `master_domain`='%s' WHERE `id`='%s'" % (parent_id, domain_id)
+    cur.execute( sql )
+    connection.commit()
+    return cur.lastrowid
 
-
-def fix_domain( dname, d_id ):
-    parent = '.'.join(dname.split('.')[1:])
-    if parent == 'orvsd.org':
-        pdb.set_trace()
-    needed_domains.add( parent )
-    if is_valid(parent):
-        parent_id = insert_dname( parent )
-        return parent_id
-    else:
-        parent_id = fix_domain( parent, d_id )
-        update_child( d_id, parent_id )
-        return parent_id
 
 def is_valid(dname):
     if dname.find('.') ==  -1:
@@ -53,16 +54,39 @@ def is_valid(dname):
     else:
         return False
 
+
+def fix_domain( dname ):
+    #pdb.set_trace()
+    if is_valid(dname):
+        # Base case
+        domain_id = find_or_insert_dname( dname )
+        return domain_id
+    else:
+        # Make sure I exist
+        domain_id = find_or_insert_dname( dname )
+        parent = '.'.join(dname.split('.')[1:])
+        # Make sure my parent exists and is correct
+        master_domain_id = fix_domain( parent )
+        # Make sure I'm correct
+        update_master_domain( domain_id, master_domain_id )
+        # Return my id
+        return domain_id
+
+
+
 for domain in broken_domains:
     if domain[1].find('.in-addr.arpa') != -1:
         continue
     if domain[1] == '':
         continue
+    if domain[1] == ' ':
+        continue
     if domain[1] == '.':
         continue
-    parent_id = fix_domain( domain[1], domain[0] )
-    update_child( domain[0], parent_id )
+    fix_domain( domain[1] )
+    connection.commit()
 
 
+print "CHANGED DOMAINS========="
 for domain in needed_domains:
     print domain
