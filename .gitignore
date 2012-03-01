@@ -10,6 +10,7 @@ cyder/Makefile
 cyder_db
 cyder_db_test
 cyder/settings/local*
+cyder/settings/local.py
 vendor/
 .coverage
 cyder/maintain2cyder/*.cfg
