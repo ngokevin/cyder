@@ -1,12 +1,11 @@
 */*.pyc
 *.pyc
 *.swp
+cyder_db
 cyder/dist/*
 cyder/build/
-cyder/settings.py
 cyder/doc_build/
 cyder/make.bat
 cyder/Makefile
 cyder/settings/local*
-cyder_db
 vendor/
