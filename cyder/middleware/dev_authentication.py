@@ -1,7 +1,10 @@
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 
+from cyder.core.cyuser.backends import AuthorizationBackend
 from cyder.core.ctnr.models import Ctnr
+
+import pdb
 
 class DevAuthenticationMiddleware(object):
 
@@ -9,10 +12,10 @@ class DevAuthenticationMiddleware(object):
 
         # login as development user
         if request.user.is_anonymous():
-            try:
-                request.user = authenticate(username='development', password='development')
+            request.user = authenticate(username='development', password='development')
+            if request.user:
                 login(request, request.user)
-            except:
+            else:
                 # manually create development user if not created already
                 request.user = User()
                 request.user.username = 'development'
@@ -20,8 +23,6 @@ class DevAuthenticationMiddleware(object):
                 request.user.last_name = 'development'
                 request.user.email = 'development@foo.bar.com'
                 request.user.set_password('development')
-                request.user.is_superuser = True
-                request.user.backend = 'django.contrib.auth.backends.ModelBackend'
                 request.user.save()
 
             # set session ctnr on login to user's default ctnr
