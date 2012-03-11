@@ -65,7 +65,28 @@ def _validate_name( fqdn ):
 
         :param fqdn: The fqdn to be tested.
         :type fqdn: str
+
+        note::
+            DNS name grammar
+            <domain> ::= <subdomain> | " "
+
+            <subdomain> ::= <label> | <subdomain> "." <label>
+
+            <label> ::= <letter> [ [ <ldh-str> ] <let-dig> ]
+
+            <ldh-str> ::= <let-dig-hyp> | <let-dig-hyp> <ldh-str>
+
+            <let-dig-hyp> ::= <let-dig> | "-"
+
+            <let-dig> ::= <letter> | <digit>
+
+            <letter> ::= any one of the 52 alphabetic characters A through Z in
+            upper case and a through z in lower case
+
+            <digit> ::= any one of the ten digits 0 through 9
+            RFC 1034 http://www.ietf.org/rfc/rfc1034.txt
     """
+    # TODO, make sure the grammar is followed.
     if type(fqdn) not in ( str, unicode ):
         raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (fqdn) )
 
