@@ -2,6 +2,7 @@
 # repo. If you need to override a setting locally, use settings_local.py
 
 import os
+import sys
 
 from funfactory.settings_base import *
 
@@ -15,7 +16,7 @@ CYDNS_BASE_URL = CYDER_BASE_URL + "/cydns"
 JINJA_CONFIG = {'autoescape': False}
 
 # NOSE_ARGS = ['-s', '-v', '-d' ]
-NOSE_ARGS = [ '-s', '-v', '-d', '--cover-package=cyder', "--with-coverage"  ]
+NOSE_ARGS = [ '-s', '-d', '--cover-package=cyder', "--with-coverage"  ]
 
 # Bundles is a dictionary of two dictionaries, css and js, which list css files
 # and js files that can be bundled together by the minify app.
@@ -75,6 +76,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'cyder.cydhcp.range',
     'cyder.cydhcp.subnet',
     'cyder.cydhcp.subnet_option',
+
 ]
 
 

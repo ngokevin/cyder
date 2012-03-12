@@ -50,6 +50,11 @@ class ReverseNameserver( BaseNameserver ):
     def save(self, *args, **kwargs):
         self.clean()
         super(ReverseNameserver, self).save(*args, **kwargs)
+    def __str__(self):
+        return "%s %s %s" % ( self.reverse_domain.name, 'NS', self.server )
+
+    def __repr__(self):
+        return "<Reverse NS Record '%s'>" % (str(self))
 
 class Nameserver( BaseNameserver ):
     """ Name server for forward domains. """

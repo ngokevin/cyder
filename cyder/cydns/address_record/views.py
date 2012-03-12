@@ -54,7 +54,7 @@ class AddressRecordCreateView(AddressRecordView, CreateView):
     def get( self, request, *args, **kwargs ):
         domain_pk = self.kwargs.get('domain', False)
         if domain_pk:
-            record_form = slim_form( domain_pk, AddressRecordForm())
+            record_form = slim_form( domain_pk=domain_pk, form=AddressRecordForm())
         else:
             record_form = AddressRecordForm()
         ip_form = IpForm()

@@ -4,7 +4,15 @@ import pdb
 import pprint
 import printer
 import re
-import copy
+import pdb
+
+from cyder.cydns.reverse_domain.models import ReverseDomain
+from cyder.cydns.soa.models import SOA
+from cyder.cydns.ptr.models import PTR
+from cyder.cydns.ip.models import Ip
+from cyder.cydns.nameserver.models import ReverseNameserver
+from cyder.cydns.cydns import InvalidRecordNameError, RecordExistsError
+
 
 class Reverse_Zone(object):
     BUILD_DIR="./build"
@@ -34,20 +42,43 @@ class Reverse_Zone(object):
     @param node: dictionary representing a tree
     @param records: global record list (global to recursive stack)
     """
-    def walk_tree( self, cur_domain, cur_dname, records ):
+    def walk_tree( self, cur_domain, cur_dname, records, rdomain=None ):
         self.cur.execute("SELECT id, name FROM domain WHERE name LIKE '%.in-addr.arpa' AND master_domain="+str(cur_domain)+" ORDER BY name")
         domains = self.cur.fetchall()
         for domain in domains:
             child_domain = domain[0]
             child_dname = domain[1]
+
+            rev_name = child_dname.replace('.in-addr.arpa',  '')
+            split = rev_name.split('.')
+            tmp_name = ''
+            for i in range(len(split)):
+                tmp_name += '.'+split[-i-1]
+            reverse_name = tmp_name[1:]
+            split = reverse_name.split('.')
+            for i in range(len(split)):
+                name = '.'.join(split[:i+1])
+                print "NAME: "+name
+                rdomain, created = ReverseDomain.objects.get_or_create( name = name, ip_type='4')
+                if created:
+                    print "Created reverse domain %s" % (name)
+                else:
+                    print "Reverse domain %s already existed" % (name)
+
             if self.check_for_SOA( child_domain, child_dname ):
                 rzone_fd = open( "%s/%s" % (Reverse_Zone.BUILD_DIR, child_dname), "w+")
                 new_rzone = Reverse_Zone( self.cur, rzone_fd, child_domain, child_dname )
-                new_rzone.gen_SOA( child_domain, child_dname ) # SOA ALWAYS has to be first thing.
-                new_rzone.walk_tree( child_domain, child_dname, records )
+                soa = new_rzone.gen_SOA( child_domain, child_dname ) # SOA ALWAYS has to be first thing.
+                if soa:
+                    rdomain.soa = soa
+                    rdomain.save()
+                elif rdomain.master_reverse_domain and rdomain.master_reverse_domain.soa:
+                    rdomain.soa = rdomain.master_reverse_domain.soa
+
+                new_rzone.walk_tree( child_domain, child_dname, records, rdomain=rdomain )
             else:
-                self.walk_tree( child_domain, child_dname, records )
-        self.gen_domain( cur_domain, cur_dname, records )
+                self.walk_tree( child_domain, child_dname, records, rdomain=rdomain )
+        self.gen_domain( cur_domain, cur_dname, records, rdomain )
 
     """
     SQL Wrapper
@@ -60,7 +91,7 @@ class Reverse_Zone(object):
     Go go through all the records and add them to the correct zone file.
     1) If there is an SOA create a new Zone and call walk_tree.
     """
-    def gen_domain( self, domain, dname, records ):
+    def gen_domain( self, domain, dname, records, rdomain ):
         if domain == 0 or dname == "root":
             print "Root domain, skipping"
             return
@@ -70,7 +101,7 @@ class Reverse_Zone(object):
         #    return
 
         self.gen_ORIGIN( domain, dname, 999 )
-        self.gen_NS( domain, dname )
+        self.gen_NS( domain, dname, rdomain )
         self.gen_ORIGIN( domain, 'in-addr.arpa', 999 )
         records_to_remove = []
         search_string = "^"+self.ip_from_domainname(dname).replace('.','\.')+"\."
@@ -79,7 +110,21 @@ class Reverse_Zone(object):
             ip = long2ip(longip)
             # TODO compile this
             if re.search( search_string, ip ):
-                self.printer.print_PTR( ip, name )
+                #self.printer.print_PTR( ip, name )
+                cip  = Ip( ip_str = ip, ip_type='4' )
+                possible = PTR.objects.filter( name=name, ip__ip_upper=cip.ip_upper,\
+                                            ip__ip_lower=cip.ip_lower )
+                if possible:
+                    print "SKIPPING: PTR %s %s already created." % (ip, name)
+                else:
+                    cip.save()
+                    try:
+                        ptr = PTR( ip = cip, name = name )
+                        ptr.save()
+                    except RecordExistsError, e:
+                        cip.delete()
+                        print "SKIPPING: PTR %s %s already created." % (ip, name)
+
                 records_to_remove.append( record )
 
         for record in records_to_remove:
@@ -87,15 +132,26 @@ class Reverse_Zone(object):
 
         self.gen_ORIGIN( domain, dname, 999 )
 
-    def gen_ORIGIN( self, domain, dname, ttl ):
+    def gen_ORIGIN( self, domain, dname, ttl):
         origin = "$ORIGIN  %s.\n" % (dname)
         origin += "$TTL     %s\n" % (ttl)
-        self.printer.print_raw( origin )
+        #self.printer.print_raw( origin )
 
-    def gen_NS( self, domain, dname ):
+    def gen_NS( self, domain, dname, rdomain ):
         self.cur.execute("SELECT * FROM `nameserver` WHERE `domain`='%s';" % (domain))
         records = self.cur.fetchall()
-        self.printer.print_NS( '', [ record[1] for record in records ] )
+        for record in records:
+            ns_name = record[1]
+            try:
+                ns, created = ReverseNameserver.objects.get_or_create( server = ns_name, reverse_domain = rdomain )
+            except InvalidRecordNameError, e:
+                print "ERROR: NS NAME: %s error: %s" % (ns_name, str(e))
+                continue
+            if created:
+                print "Created ns"
+            else:
+                print "Skipping %s already exists." % (ns)
+        #self.printer.print_NS( '', [ record[1] for record in records ] )
 
     """
     This function may be redundant.
@@ -115,10 +171,11 @@ class Reverse_Zone(object):
         self.cur.execute("SELECT * FROM `soa` WHERE `domain`='%s' ;" % (domain))
         records = self.cur.fetchall() # Could use fetch one. Want to do check though.
         if len(records) > 1:
-            self.printer.print_raw( ";Sanity Check failed" )
+            pass
+            #self.printer.print_raw( ";Sanity Check failed" )
         if not records:
             # We don't have an SOA for this domain.
-            self.printer.print_raw( ";No soa for "+dname+"  "+str(domain) )
+            #self.printer.print_raw( ";No soa for "+dname+"  "+str(domain) )
             return
         record = records[0]
         primary_master = record[2]
@@ -127,7 +184,13 @@ class Reverse_Zone(object):
         RETRY = record[5]
         EXPIRE = record[6]
         MINIMUM = record[7] #TODO What is minimum, using TTL
-        self.printer.print_SOA( record[7], dname, primary_master, contact, Reverse_Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
+        #self.printer.print_SOA( record[7], dname, primary_master, contact, Reverse_Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
+        soa, created = SOA.objects.get_or_create(  primary = primary_master, contact = contact )
+        if created:
+            print "Created soa"
+        else:
+            print "Skipping %s already exists." % (soa)
+        return soa
 
     """
     We need ip's from: host, ranges, and pointer.
@@ -179,22 +242,3 @@ class Reverse_Zone(object):
         #ip_mask = ( octets + (["0"] * 4) )[:4]
         return '.'.join(octets)
 
-"""
-print rz.ip_from_domainname( '139.201.199.in-addr.arpa' )
-print rz.ip_from_domainname( '10.in-addr.arpa' )
-print rz.ip_from_domainname( '193.128.in-addr.arpa' )
-print rz.ip_from_domainname( '16.211.140.in-addr.arpa' )
-pp.pprint( gen_all_records() )
-#pp.pprint( rz.build_tree(0, {}) )
-#rz.walk_tree( rz.build_tree(0, {}), rz.gen_all_records() )
-records = rz.gen_all_records()
-before = len(records)
-rz.walk_tree( 0, 'root', records )
-print "id="+str(id(records))
-after = len(records)
-for record in records:
-    print "%s %s" % (long2ip(record[0]), record[1])
-#walk_tree( build_tree(0, '', {}), [])
-print before
-print after
-"""

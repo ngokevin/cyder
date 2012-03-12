@@ -59,7 +59,7 @@ class SOA( models.Model ):
         super(SOA, self).save(*args, **kwargs)
 
     def __str__(self):
-        return "%s %s %s" % ( self.primary.__str__(), 'SOA', self.serial )
+        return "%s %s" % ('SOA', self.primary.__str__())
 
     def __repr__(self):
         return "<SOA Record '%s'>" % (self.__str__())

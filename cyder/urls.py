@@ -48,7 +48,7 @@ urlpatterns = patterns('',
     # Reverse NS
     url(r'^cyder/cydns/reverse_nameserver$', RevNSListView.as_view() ),
     url(r'^cyder/cydns/reverse_nameserver/create$', RevNSCreateView.as_view()),
-    url(r'^cyder/cydns/reverse_nameserver/(?P<reverse_domain>[\w-]+)/create$', RevNSCreateView.as_view()),
+    url(r'^cyder/cydns/reverse_nameserver/(?P<reverse_domain_pk>[\w-]+)/create$', RevNSCreateView.as_view()),
     url(r'^cyder/cydns/reverse_nameserver/(?P<pk>[\w-]+)/update$', RevNSUpdateView.as_view() ),
     url(r'^cyder/cydns/reverse_nameserver/(?P<pk>[\w-]+)/detail$', RevNSDetailView.as_view() ),
     url(r'^cyder/cydns/reverse_nameserver/(?P<pk>[\w-]+)/delete$', RevNSDeleteView.as_view() ),

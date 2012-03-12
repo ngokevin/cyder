@@ -2,116 +2,116 @@ from django.db import models
 from django.forms import ValidationError
 import string
 import pdb
-"""
-.. module:: cydns
-
-"""
+#"""
+#q.. module:: cydns
+#q
+#q"""
 #TODO Subclass these Exceptions!
-class CyAddressValueError(ValidationError):
-    """This exception is thrown when an attempt is made to create/update a record with an invlaid IP."""
-
-class InvalidRecordNameError(ValidationError):
-    """This exception is thrown when an attempt is made to create/update a record with an invlaid name."""
-
-class RecordExistsError(ValidationError):
-    """This exception is thrown when an attempt is made to create a record that already exists."""
-
-class RecordNotFoundError(ValidationError):
-    """This exception is thrown when an attempt is made to remove/update a record that does not       exists."""
-    def __init__(self, msg ):
-        """Record Not Found ValidationError.
-        """
-        self.msg = msg
-    def __str__(self):
-        return self.__repr__()
-    def __repr__(self):
-        return self.msg
-
-
-def _validate_label( label, valid_chars=None ):
-    """Run test on a record to make sure that the new name is constructed with valid syntax.
-
-        :param label: The name to be tested.
-        :type label: str
-    """
-    if type(label) not in ( str, unicode ):
-            raise InvalidRecordNameError("Error: The supplied name '%s' is not of type 'str'." % (label) )
-    if not valid_chars:
-        valid_chars = string.ascii_letters+"0123456789"+"-"
-    for char in label:
-        if char == '.':
-            raise InvalidRecordNameError("Error: Ivalid name %s . Please do not span multiple domains when creating A records." % (label) )
-        if valid_chars.find(char) < 0:
-            raise InvalidRecordNameError("Error: Ivalid name %s . Character '%s' is invalid." % (label, char) )
-    return
-
-def _validate_domain_name( dname ):
-    """Domain names are different. They are allowed to have '_' in them.
-
-        :param dname: The domain name to be tested.
-        :type dname: str
-    """
-    if type(dname) not in ( str, unicode ):
-        raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (dname) )
-
-    for label in dname.split('.'):
-        if not label:
-            raise InvalidRecordNameError("Error: Ivalid name %s . Empty label." % (label) )
-        valid_chars = string.ascii_letters+"0123456789"+"-_"
-        _validate_label( label, valid_chars=valid_chars )
-
-def _validate_name( fqdn ):
-    """Run test on a name to make sure that the new name is constructed with valid syntax.
-
-        :param fqdn: The fqdn to be tested.
-        :type fqdn: str
-    """
-    if type(fqdn) not in ( str, unicode ):
-        raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (fqdn) )
-
-    for label in fqdn.split('.'):
-        if not label:
-            raise InvalidRecordNameError("Error: Ivalid name %s . Empty label." % (label) )
-        _validate_label( label )
-
-
-def _validate_reverse_name( reverse_name, ip_type ):
-    """Run test on a name to make sure that the new name is constructed with valid syntax.
-
-        :param fqdn: The fqdn to be tested.
-        :type fqdn: str
-    """
-    if type(reverse_name) not in ( str, unicode ):
-        raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (reverse_name) )
-
-    valid_ipv6 = "0123456789AaBbCcDdEeFf"
-
-    if ip_type == '4' and len(reverse_name.split('.')) > 4:
-        raise InvalidRecordNameError("Error: IPv4 reverse domains should be a maximum of 4 octets")
-    if ip_type == '6' and len(reverse_name.split('.')) > 32:
-        raise InvalidRecordNameError("Error: IPv6 reverse domains should be a maximum of 32 nibbles")
-
-    for chunk in reverse_name.split('.'):
-        try:
-            if ip_type == '6':
-                if valid_ipv6.find(chunk) < 0:
-                    raise InvalidRecordNameError("Error: Ivalid Ipv6 name %s . Character '%s' is invalid." %\
-                                                                                    (reverse_name, chunk) )
-            else:
-                if not( int(chunk) <= 255 and int(chunk) >= 0):
-                    raise InvalidRecordNameError("Error: Ivalid Ipv4 name %s . Character '%s' is invalid." %\
-                                                                                    (reverse_name, chunk) )
-        except Exception: #Umm, lol. What am I doing here? TODO Is this exception even needed?
-            raise InvalidRecordNameError("Error: Ivalid Ipv%s name %s." % (ip_type, reverse_name) )
-
-def do_generic_invalid( obj, data, exception, function ):
-    e = None
-    try:
-        function(**data)
-    except exception, e:
-        pass
-    obj.assertEqual(exception, type(e))
-
-def _validate_ttl( ttl ):
-    if ttl < 0 or ttl > 2147483647: # See RFC 2181
-        raise InvalidRecordNameError("Error: TTLs must be within the 0 to 2147483647 range.")
+#qclass CyAddressValueError(ValidationError):
+    #q"""This exception is thrown when an attempt is made to create/update a record with an invlaid IP."""
+#q
+#qclass InvalidRecordNameError(ValidationError):
+    #q"""This exception is thrown when an attempt is made to create/update a record with an invlaid name."""
+#q
+#qclass RecordExistsError(ValidationError):
+    #q"""This exception is thrown when an attempt is made to create a record that already exists."""
+#q
+#qclass RecordNotFoundError(ValidationError):
+    #q"""This exception is thrown when an attempt is made to remove/update a record that does not       exists."""
+    #qdef __init__(self, msg ):
+        #q"""Record Not Found ValidationError.
+        #q"""
+        #qself.msg = msg
+    #qdef __str__(self):
+        #qreturn self.__repr__()
+    #qdef __repr__(self):
+        #qreturn self.msg
+#q
+#q
+#qdef _validate_label( label, valid_chars=None ):
+    #q"""Run test on a record to make sure that the new name is constructed with valid syntax.
+#q
+        #q:param label: The name to be tested.
+        #q:type label: str
+    #q"""
+    #qif type(label) not in ( str, unicode ):
+            #qraise InvalidRecordNameError("Error: The supplied name '%s' is not of type 'str'." % (label) )
+    #qif not valid_chars:
+        #qvalid_chars = string.ascii_letters+"0123456789"+"-"
+    #qfor char in label:
+        #qif char == '.':
+            #qraise InvalidRecordNameError("Error: Ivalid name %s . Please do not span multiple domains when creating A records." % (label) )
+        #qif valid_chars.find(char) < 0:
+            #qraise InvalidRecordNameError("Error: Ivalid name %s . Character '%s' is invalid." % (label, char) )
+    #qreturn
+#q
+#qdef _validate_domain_name( dname ):
+    #q"""Domain names are different. They are allowed to have '_' in them.
+#q
+        #q:param dname: The domain name to be tested.
+        #q:type dname: str
+    #q"""
+    #qif type(dname) not in ( str, unicode ):
+        #qraise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (dname) )
+#q
+    #qfor label in dname.split('.'):
+        #qif not label:
+            #qraise InvalidRecordNameError("Error: Ivalid name %s . Empty label." % (label) )
+        #qvalid_chars = string.ascii_letters+"0123456789"+"-_"
+        #q_validate_label( label, valid_chars=valid_chars )
+#q
+#qdef _validate_name( fqdn ):
+    #q"""Run test on a name to make sure that the new name is constructed with valid syntax.
+#q
+        #q:param fqdn: The fqdn to be tested.
+        #q:type fqdn: str
+    #q"""
+    #qif type(fqdn) not in ( str, unicode ):
+        #qraise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (fqdn) )
+#q
+    #qfor label in fqdn.split('.'):
+        #qif not label:
+            #qraise InvalidRecordNameError("Error: Ivalid name %s . Empty label." % (label) )
+        #q_validate_label( label )
+#q
+#q
+#qdef _validate_reverse_name( reverse_name, ip_type ):
+    #q"""Run test on a name to make sure that the new name is constructed with valid syntax.
+#q
+        #q:param fqdn: The fqdn to be tested.
+        #q:type fqdn: str
+    #q"""
+    #qif type(reverse_name) not in ( str, unicode ):
+        #qraise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (reverse_name) )
+#q
+    #qvalid_ipv6 = "0123456789AaBbCcDdEeFf"
+#q
+    #qif ip_type == '4' and len(reverse_name.split('.')) > 4:
+        #qraise InvalidRecordNameError("Error: IPv4 reverse domains should be a maximum of 4 octets")
+    #qif ip_type == '6' and len(reverse_name.split('.')) > 32:
+        #qraise InvalidRecordNameError("Error: IPv6 reverse domains should be a maximum of 32 nibbles")
+#q
+    #qfor chunk in reverse_name.split('.'):
+        #qtry:
+            #qif ip_type == '6':
+                #qif valid_ipv6.find(chunk) < 0:
+                    #qraise InvalidRecordNameError("Error: Ivalid Ipv6 name %s . Character '%s' is invalid." %\
+                                                                                    #q(reverse_name, chunk) )
+            #qelse:
+                #qif not( int(chunk) <= 255 and int(chunk) >= 0):
+                    #qraise InvalidRecordNameError("Error: Ivalid Ipv4 name %s . Character '%s' is invalid." %\
+                                                                                    #q(reverse_name, chunk) )
+        #qexcept Exception: #Umm, lol. What am I doing here? TODO Is this exception even needed?
+            #qraise InvalidRecordNameError("Error: Ivalid Ipv%s name %s." % (ip_type, reverse_name) )
+#q
+#qdef do_generic_invalid( obj, data, exception, function ):
+    #qe = None
+    #qtry:
+        #qfunction(**data)
+    #qexcept exception, e:
+        #qpass
+    #qobj.assertEqual(exception, type(e))
+#q
+#qdef _validate_ttl( ttl ):
+    #qif ttl < 0 or ttl > 2147483647: # See RFC 2181
+        #qraise InvalidRecordNameError("Error: TTLs must be within the 0 to 2147483647 range.")

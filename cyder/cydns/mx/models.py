@@ -49,7 +49,6 @@ class MX( CommonRecord ):
         _validate_mx_priority( self.priority )
         _validate_ttl( self.ttl )
         _check_exists( self )
-        _check_TLD_condition( self )
 
     def __str__(self):
         return "%s %s %s %s %s %s" % ( self.fqdn(), self.ttl, 'IN', 'MX', self.priority, self.server)

@@ -20,7 +20,6 @@ class PTR( models.Model ):
                     ('Ip', str(self.ip)),
                     ('Record Type', 'PTR'),
                     ('Name', self.name),
-                    ('Type', self.ip_type),
                 )
 
     def get_absolute_url(self):
@@ -52,9 +51,9 @@ class PTR( models.Model ):
         db_table = 'ptr'
 
     def __str__(self):
-        return "<Pointer '%s %s %s'>" % (self.ip.__str__(), 'PTR', self.name )
+        return "%s %s %s" % (self.ip.__str__(), 'PTR', self.name )
     def __repr__(self):
-        return  self.__str__()
+        return "<Pointer '%s %s %s'>" % (self.ip.__str__(), 'PTR', self.name )
 
 
 def _check_exists( ptr ):

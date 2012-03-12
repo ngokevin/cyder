@@ -96,5 +96,5 @@ def _check_TLD_condition( record ):
     if record.label == '' and domain[0] == record.domain:
         return #This is allowed
     else:
-        raise InvalidRecordNameError( "You cannot create TLD A record for another domain." )
+        raise InvalidRecordNameError( "You cannot create an A record that points to the top level of another domain." )
 

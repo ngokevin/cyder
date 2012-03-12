@@ -1,6 +1,8 @@
 import ConfigParser
 import MySQLdb
 import pdb
+
+# Set up database connection
 config_file = "database.cfg"
 config = ConfigParser.ConfigParser()
 config.read(config_file)
@@ -11,15 +13,11 @@ connection = MySQLdb.connect(
                 db=config.get( 'maintain_sb', 'db' ))
 
 cur = connection.cursor()
-#cur.execute(""" SELECT * FROM `domain` WHERE `name`='foo.bar.baz' ;""" )
+# Get all domains
 cur.execute(""" SELECT * FROM `domain` WHERE 1=1 ;""" )
 
-broken_domains = cur.fetchall()
-print "BROKEN DOMAINS========="
-for domain in broken_domains:
-    print domain[1]
+domains = cur.fetchall()
 
-needed_domains = set()
 
 def find_or_insert_dname( dname ):
     search_sql =  "SELECT id FROM domain WHERE name='%s'" % (dname)
@@ -34,12 +32,6 @@ def find_or_insert_dname( dname ):
     connection.commit()
     return domain_id
 
-def update_child( d_id, parent_id ):
-    sql = "UPDATE domain SET master_domain=%s WHERE id=%s" % (parent_id, d_id)
-    status = cur.execute( sql )
-    connection.commit()
-    if not status:
-        pass
 
 def update_master_domain( domain_id, parent_id ):
     sql = "UPDATE `domain` SET `master_domain`='%s' WHERE `id`='%s'" % (parent_id, domain_id)
@@ -74,19 +66,17 @@ def fix_domain( dname ):
 
 
 
-for domain in broken_domains:
-    if domain[1].find('.in-addr.arpa') != -1:
-        continue
-    if domain[1] == '':
-        continue
-    if domain[1] == ' ':
-        continue
-    if domain[1] == '.':
-        continue
-    fix_domain( domain[1] )
-    connection.commit()
+if __name__ == '__main__':
+    print "Fixing domains..."
+    for domain in domains:
+        if domain[1].find('.in-addr.arpa') != -1:
+            continue
+        if domain[1] == '':
+            continue
+        if domain[1] == ' ':
+            continue
+        if domain[1] == '.':
+            continue
+        fix_domain( domain[1] )
+        connection.commit()
 
-
-print "CHANGED DOMAINS========="
-for domain in needed_domains:
-    print domain

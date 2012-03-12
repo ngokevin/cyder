@@ -11,7 +11,7 @@ from cyder.cydns.domain.forms import DomainForm, DomainUpdateForm
 from cyder.cydns.domain.models import DomainExistsError, MasterDomainNotFoundError
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.common.utils import tablefy
-from cyder.cydns.common.views import CommonDeleteView
+from cyder.cydns.common.views import CommonDeleteView, CommonListView
 
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.nameserver.models import Nameserver
@@ -31,9 +31,9 @@ class DomainView(object):
 class DomainDeleteView(DomainView, CommonDeleteView):
     """ """
 
-class DomainListView(DomainView, ListView):
-    template_name       = "domain_list.html"
-    context_object_name = "domains"
+class DomainListView(DomainView, CommonListView):
+    """ """
+    #context_object_name = "domains"
 
 
 class DomainDetailView(DomainView, DetailView):
@@ -47,6 +47,7 @@ class DomainDetailView(DomainView, DetailView):
             return context
         # TODO
         # This process can be generalized. It's not very high priority.
+        # TODO, doing this sooo wrong. I should be using the entity sets which will cache things.
         address_objects = AddressRecord.objects.filter( domain = domain )
         adr_headers, adr_matrix, adr_urls = tablefy( address_objects )
 

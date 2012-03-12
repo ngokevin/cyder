@@ -5,7 +5,15 @@ import printer
 import sys
 import os
 
+from cyder.cydns.cydns import InvalidRecordNameError
 from cyder.cydns.domain.models import Domain, DomainExistsError
+from cyder.cydns.reverse_domain.models import ReverseDomain
+from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.ip.models import Ip
+from cyder.cydns.soa.models import SOA
+from cyder.cydns.mx.models import MX
+from cyder.cydns.cname.models import CNAME
+from cyder.cydns.nameserver.models import Nameserver, _needs_glue
 """
 A Zone object should be initialized at a base domain. From that domain it should start to
 build a zone file. These are the steps it shuold take to build it's zone file.
@@ -31,6 +39,24 @@ PROBLEMS:
         level i.e. foo.oregonstate.edu can have an NS record, but oregonstate.edu can't. This
         is more of a bug in the maintain GUI than in the actual database.
 """
+# Cyder Stuff
+# We need to create some reverse domains for this script to work.
+ips = []
+# 127.0.0.0/24 I blame NOC
+ips.append('127')
+ips.append('131.252.80.131')
+ips.append('207.98.68.5')
+
+for ip in ips:
+    split = ip.split('.')
+    for i in range(len(split)):
+        name = '.'.join(split[:i+1])
+        ReverseDomain.objects.get_or_create( name = name, ip_type='4')
+
+
+
+
+
 class Zone(object):
     BUILD_DIR="./build"
     SERIAL = 1
@@ -60,10 +86,20 @@ class Zone(object):
     """
     def walk_domain( self, cur_domain , dname ):
         #TODO Consider moving the SOA genration into __init__
+        soa = None
         if self.check_for_SOA( cur_domain, dname ):
-            self.gen_SOA( cur_domain, dname )
+            soa = self.gen_SOA( cur_domain, dname )
 
-        self.gen_domain( cur_domain, dname )
+        new_domain = self.gen_domain( cur_domain, dname )
+        # If we found an soa, assign it. Else inheirit soa from master (if master domain has one)
+        if soa and new_domain:
+            new_domain.soa = soa
+            new_domain.save()
+        else:
+            if new_domain and new_domain.master_domain and new_domain.master_domain.soa:
+                new_domain.soa = new_domain.master_domain.soa
+                new_domain.save()
+
         self.cur.execute("""SELECT * FROM `domain` WHERE `name` NOT LIKE "%%.in-addr.arpa" AND `master_domain`=%s;""" % (cur_domain))
         domains = self.cur.fetchall()
         for subdomain in domains:
@@ -80,27 +116,32 @@ class Zone(object):
         print "Generating %s" % (dname)
         self.gen_ORIGIN( domain, dname, 999 )
         bad_dnames = ['', '.', '_']
+        cdomain = None
         if dname not in bad_dnames:
-            # Other badies
-            if dname[0].find('_') >= 0:
-                pass
-            elif dname.find('in-addr.arpa') >= 0:
+            # Other baddies
+            if dname.find('in-addr.arpa') >= 0:
                 pass
             else:
-                d = Domain( name = dname )
-                try:
-                    d.save()
-                except DomainExistsError, e:
-                    print "ERROR: %s " % dname
-                    pass
+                # IT's a good domain. First see if it exists already. Else create it.
+                possible = Domain.objects.filter( name = dname )
+                if possible:
+                    cdomain = possible[0]
+                else:
+                    cdomain = Domain( name = dname )
+                    try:
+                        cdomain.save()
+                    except DomainExistsError, e:
+                        print "ERROR: %s " % dname
+                        pass
 
-        self.gen_NS( domain, dname )
-        self.gen_MX( domain, dname )
-        self.gen_A( domain, dname )
+        self.gen_MX( domain, dname, cdomain )
+        self.gen_A( domain, dname, cdomain )
         self.gen_dyn_ranges( domain, dname )
-        self.gen_CNAME( domain, dname )
+        self.gen_CNAME( domain, dname, cdomain )
+        self.gen_NS( domain, dname, cdomain )
+        return cdomain
 
-    def gen_MX( self, domain, dname ):
+    def gen_MX( self, domain, dname, cdomain ):
         self.cur.execute("SELECT * FROM `zone_mx` WHERE `domain`='%s' ORDER BY `name`;" % (domain))
         records = self.cur.fetchall()
         self.gen_ORIGIN( domain, '' , Zone.DEFAULT_TTL )
@@ -115,7 +156,23 @@ class Zone(object):
                 self.printer.print_MX( dname, domain, ttl, prio, server  )
             else:
                 self.printer.print_MX( name+"."+dname, domain, ttl, prio, server  )
+            # Cyder stuff
+            if cdomain:
+                possible = MX.objects.filter( label=name, domain = cdomain, server = server, priority= prio, ttl = ttl )
+                if possible: # Have we already created this?
+                    pass
+                else: # Create a new mx
+                    print name
+                    print server
+                    print cdomain
+                    mx = MX( label=name, domain = cdomain, server = server, priority= prio, ttl = ttl )
+                    try:
+                        mx.save()
+                    except InvalidRecordNameError, e:
+                        print "ERROR: %s. name: %s  cdomain: %s server: %s" %(str(e), name, str(cdomain), server)
+
         self.gen_ORIGIN( domain, dname , Zone.DEFAULT_TTL )
+
     """
     This function may be redundant.
     """
@@ -147,17 +204,27 @@ class Zone(object):
         EXPIRE = record[6]
         MINIMUM = record[7] #TODO What is minimum, using TTL
         self.printer.print_SOA( record[7], dname, primary_master, contact, Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
+        # Let's create an soa in the new database and return it.
+        possible = SOA.objects.filter( primary = primary_master, contact = contact )
+        if possible:
+            return possible[0]
+        soa = SOA( primary = primary_master, contact = contact, retry = RETRY, refresh = REFRESH )
+        soa.save()
+        return soa
+
 
     def gen_ORIGIN( self, domain, dname, ttl ):
         origin = "$ORIGIN  %s.\n" % (dname)
         origin += "$TTL     %s\n" % (ttl)
         self.printer.print_raw( origin )
 
-    def gen_CNAME( self, domain, dname ):
+    def gen_CNAME( self, domain, dname, cdomain ):
         self.cur.execute("SELECT * FROM `zone_cname` WHERE `domain`='%s';" % (domain))
         records = self.cur.fetchall()
         for record in records:
             self.printer.print_CNAME( record[2], record[1] )
+            cname, created = CNAME.objects.get_or_create( label=record[2], domain=cdomain, data=record[1])
+            cname.save()
 
     def gen_dyn_ranges( self, domain, dname ):
         self.printer.print_raw( "; Gen dyn_ranges for %s\n" % (dname) )
@@ -174,45 +241,106 @@ class Zone(object):
     dname: the base name of that domain. i.e. domain 218 has dname oregonstate.edu
     """
 
-    def gen_A( self, domain, dname ):
-        self.gen_host( domain, dname )
-        self.gen_forward_pointers( domain, dname )
+    def gen_A( self, domain, dname, cdomain ):
+        self.gen_host( domain, dname, cdomain )
+        #self.gen_forward_pointers( domain, dname, cdomain )
 
     """
     Generate all A records from the pointer table (forward pointers)
+    This function should grab every forward table from the (broken) pointer table.
+    if pointer == <some domain>:
+        create a TLD A record
+    else:
+        strip label
+        find domain
+        create A record in domain using label
     """
-    # This might generate duplicate records TODO since we are just filtering on dname
-    # If we did a tree search starting at the leaf nodes this would work better.
-    # Right now all subdomain of some domain also generate all forward pointers.
-    # Need a way to only print a forward pointer once.
-    # Solution?
-    # Before we do ORIGIN buisness print absolute domain names with their ip's
-    # We could also print a $ORIGIN ., and at the end print $ORIGIN domain.
-    def gen_forward_pointers( self, domain, dname ):
-        sql = "SELECT * FROM `pointer` WHERE hostname LIKE '%"+dname+"' AND `type`='forward' ORDER BY hostname"
+    def gen_forward_pointers(self):
+        sql = "SELECT * FROM `pointer` WHERE `type`='forward' ORDER BY hostname"
         self.cur.execute(sql)
         records = self.cur.fetchall()
         # We have abosulte names in the pointer table so print a root origin.
-        self.gen_ORIGIN( domain, '', 999 )
         for record in records:
-            if record[1] == 0:
-                continue
-            self.printer.print_A( record[2] , long2ip(record[1]) )
+            # Start Cyder
+            domain = Domain.objects.filter( name = record[2] ) #This is a TLD record
+            if domain:
+                name = ''
+                cdomain = domain[0]
+            else:
+                name = record[2].split('.')[0] # Get the front label
+                dname = '.'.join(record[2].split('.')[1:])
+                cdomain = Domain.objects.filter( name = dname )
+                if not cdomain:
+                    split = dname.split('.')
+                    for i in list(reversed(range(len(split)))):
+                        name = '.'.join(split[i:])
+                        cdomain, created = Domain.objects.get_or_create( name = name )
+                        cdomain.save()
+                else:
+                    cdomain = cdomain[0]
+
+            ip_str = long2ip(record[1])
+            if not AddressRecord.objects.filter( label = name, domain= cdomain, ip__ip_str = ip_str ):
+                ip = Ip( ip_str= ip_str, ip_type='4')
+                ip.save()
+                rec = AddressRecord( label=name, domain = cdomain, ip = ip , ip_type='4' )
+                try:
+                    rec.save()
+                except InvalidRecordNameError, e:
+                    print "ERROR: %s name: %s domain: %s ip: %s" % (str(e), name, cdomain.name, ip_str )
+                    ip.delete()
+            else:
+                print "SKIPPING name: %s domain: %s ip: %s (already created)" % (name, cdomain.name, ip_str )
+
         # Revert to dname origin.
         self.gen_ORIGIN( domain, dname , 999 )
 
     """
     Generate all A records from the host table.
     """
-    def gen_host( self, domain, dname ):
+    def gen_host( self, domain, dname, cdomain ):
         self.cur.execute("SELECT * FROM `host` WHERE `domain`='%s';" % (domain))
         records = self.cur.fetchall()
         for record in records:
             if record[1] == 0:
                 continue
             self.printer.print_A( record[3] , long2ip(record[1]) )
+            print record[3]
+            print long2ip(record[1])
+            if not AddressRecord.objects.filter( label = record[3], domain= cdomain, ip__ip_str = long2ip(record[1]) ):
+                ip = Ip( ip_str=long2ip(record[1]), ip_type='4')
+                ip.save()
+                rec = AddressRecord( label=record[3], domain = cdomain, ip =ip , ip_type='4' )
+                try:
+                    rec.save()
+                except InvalidRecordNameError, e:
+                    print "ERROR: %s name: %s domain: %s ip: %s" % (str(e), record[3], cdomain.name, long2ip(record[1]))
+                    ip.delete()
+            else:
+                print "SKIPPING %s %s %s (already created)" % (record[3], cdomain.name, long2ip(record[1]))
 
-    def gen_NS( self, domain, dname ):
+    def gen_NS( self, domain, dname, cdomain=None ):
         self.cur.execute("SELECT * FROM `nameserver` WHERE `domain`='%s';" % (domain))
         records = self.cur.fetchall()
         self.printer.print_NS( '', [ record[1] for record in records ] )
+        # TODO we need glue records for some of these.
+        if cdomain:
+            for record in records:
+                ns_name = record[1]
+                possible = Nameserver.objects.filter( domain = cdomain, server = ns_name )
+                if possible:
+                    print "SKIPPING: nameserver: %s domain: %s (already created)" % (ns_name, cdomain.name)
+                    continue
+                ns = Nameserver( domain = cdomain, server = ns_name )
+                if _needs_glue(ns):
+                    a_rec = AddressRecord.objects.filter( label = ns_name.split('.')[0], domain=cdomain )
+                    if not a_rec:
+                        print "ERROR: Could not find glue. ns: %s domain: %s" % (ns_name, cdomain.name)
+                        continue
+                    else:
+                        a_rec = a_rec[0]
+                    ns.glue = a_rec
+                try:
+                    ns.save()
+                except InvalidRecordNameError, e:
+                    print "ERROR: %s nameserver: %s domain: %s" % (str(e), ns_name, cdomain.name)
