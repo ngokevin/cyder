@@ -23,14 +23,6 @@ class MX( CommonRecord ):
                     ('Priority', self.priority),
                     ('TTL', self.ttl)
                 )
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/mx/%s/detail" % (self.pk)
-
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/mx/%s/update" % (self.pk)
-
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/mx/%s/delete" % (self.pk)
 
     def delete(self, *args, **kwargs):
         super(MX, self).delete(*args, **kwargs)

@@ -23,13 +23,16 @@ class ReverseDomain( models.Model ):
         super(ReverseDomain, self).__init__(*args, **kwargs)
 
     def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/reverse_domain/%s/detail" % (self.pk)
+        return CYDNS_BASE_URL + "/%s/%s/detail" % (self._meta.app_label, self.pk)
 
     def get_edit_url(self):
-        return CYDNS_BASE_URL + "/reverse_domain/%s/update" % (self.pk)
+        return CYDNS_BASE_URL + "/%s/%s/update" % (self._meta.app_label, self.pk)
 
     def get_delete_url(self):
-        return CYDNS_BASE_URL + "/reverse_domain/%s/delete" % (self.pk)
+        return CYDNS_BASE_URL + "/%s/%s/delete" % (self._meta.app_label, self.pk)
+
+    class Meta:
+        db_table = 'reverse_domain'
 
     def delete(self, *args, **kwargs):
         _check_for_children( self )
@@ -62,8 +65,6 @@ class ReverseDomain( models.Model ):
         return "<ReverseDomain '%s'>" % (self.name)
     def __repr__(self):
         return  self.__str__()
-    class Meta:
-        db_table = 'reverse_domain'
 
 
 def _reassign_reverse_ips_delete( reverse_domain ):

@@ -23,13 +23,16 @@ class PTR( models.Model ):
                 )
 
     def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/ptr/%s/detail" % (self.pk)
+        return CYDNS_BASE_URL + "/%s/%s/detail" % (self._meta.app_label, self.pk)
 
     def get_edit_url(self):
-        return CYDNS_BASE_URL + "/ptr/%s/update" % (self.pk)
+        return CYDNS_BASE_URL + "/%s/%s/update" % (self._meta.app_label, self.pk)
 
     def get_delete_url(self):
-        return CYDNS_BASE_URL + "/ptr/%s/delete" % (self.pk)
+        return CYDNS_BASE_URL + "/%s/%s/delete" % (self._meta.app_label, self.pk)
+
+    class Meta:
+        db_table = 'ptr'
 
     def delete(self, *args, **kwargs):
         self.ip.delete()
@@ -46,9 +49,6 @@ class PTR( models.Model ):
 
         _check_exists( self )
         self.domain = _name_to_domain( self.name )
-
-    class Meta:
-        db_table = 'ptr'
 
     def __str__(self):
         return "%s %s %s" % (self.ip.__str__(), 'PTR', self.name )

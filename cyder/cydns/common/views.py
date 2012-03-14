@@ -13,11 +13,11 @@ class CommonDeleteView(DeleteView):
 
     def get_object(self, queryset=None):
         obj = super(CommonDeleteView, self).get_object()
-        # Object permissions here
         return obj
 
     def delete(self, request, *args, **kwargs):
         # Get the object that we are deleting
+        print "Delete: deleting %s" % self.get_object() #TODO filter user access
         obj = get_object_or_404( self.form_class.Meta.model, pk = kwargs.get('pk', 0))
         try:
             view = super(CommonDeleteView, self).delete(request, *args, **kwargs)
@@ -63,6 +63,7 @@ class CommonCreateView(CreateView):
         return form
 
     def post(self, request, *args, **kwargs ):
+        print "Creating common for domain %s" % (str(self.kwargs)) #TODO Filter user access
         try:
             obj = super(CommonCreateView, self).post(request, *args, **kwargs)
         except ValidationError, e:
@@ -72,6 +73,7 @@ class CommonCreateView(CreateView):
         return obj
 
     def get(self, request, *args, **kwargs ):
+        print "Creating common for domain %s" % (str(self.kwargs)) #TODO Filter user access
         return super(CommonCreateView, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -95,6 +97,7 @@ class CommonUpdateView(UpdateView):
         return form
 
     def post(self, request, *args, **kwargs ):
+        print "Update: Changing %s" % self.get_object() #TODO filter user access
         try:
             obj = super(CommonUpdateView, self).post(request, *args, **kwargs)
         except ValidationError, e:
@@ -103,6 +106,7 @@ class CommonUpdateView(UpdateView):
             return super(CommonUpdateView, self).get(request, *args, **kwargs)
         return obj
     def get(self, request, *args, **kwargs ):
+        print "Update: Accessing %s" % self.get_object() #TODO filter access
         return super(CommonUpdateView, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

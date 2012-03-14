@@ -11,6 +11,16 @@ import pdb
 class BaseNameserver( models.Model ):
     id              = models.AutoField(primary_key=True)
     server          = models.CharField(max_length=256)
+
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/%s/%s/detail" % (self._meta.app_label, self.pk)
+
+    def get_edit_url(self):
+        return CYDNS_BASE_URL + "/%s/%s/update" % (self._meta.app_label, self.pk)
+
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/%s/%s/delete" % (self._meta.app_label, self.pk)
+
     class Meta:
         abstract = True
 
@@ -34,14 +44,6 @@ class ReverseNameserver( BaseNameserver ):
                    )
         return tuple(details)
 
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/reverse_nameserver/%s/detail" % (self.pk)
-
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/reverse_nameserver/%s/update" % (self.pk)
-
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/reverse_nameserver/%s/delete" % (self.pk)
 
     def clean( self ):
         super(ReverseNameserver, self).clean()
@@ -72,15 +74,6 @@ class Nameserver( BaseNameserver ):
                 ]
         if self.glue: details.append(('Glue', self.glue))
         return tuple(details)
-
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/nameserver/%s/detail" % (self.pk)
-
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/nameserver/%s/update" % (self.pk)
-
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/nameserver/%s/delete" % (self.pk)
 
     def __init__(self, *args, **kwargs):
         super(Nameserver, self).__init__(*args, **kwargs)

@@ -8,3 +8,12 @@ class CommonRecord(models.Model):
 
     class Meta:
         abstract = True
+
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/%s/%s/detail" % (self._meta.app_label, self.pk)
+
+    def get_edit_url(self):
+        return CYDNS_BASE_URL + "/%s/%s/update" % (self._meta.app_label, self.pk)
+
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/%s/%s/delete" % (self._meta.app_label, self.pk)

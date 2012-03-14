@@ -24,6 +24,16 @@ class SOA( models.Model ):
     refresh         = models.PositiveIntegerField(null=False, default = DEFAULT_REFRESH)
     # This indicates if this zone needs to be rebuilt
     dirty           = models.BooleanField( default = False )
+
+    def get_absolute_url(self):
+        return CYDNS_BASE_URL + "/%s/%s/detail" % (self._meta.app_label, self.pk)
+
+    def get_edit_url(self):
+        return CYDNS_BASE_URL + "/%s/%s/update" % (self._meta.app_label, self.pk)
+
+    def get_delete_url(self):
+        return CYDNS_BASE_URL + "/%s/%s/delete" % (self._meta.app_label, self.pk)
+
     class Meta:
         db_table = 'soa'
 

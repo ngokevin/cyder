@@ -21,15 +21,6 @@ class SRV( CommonRecord ):
                     ('Weight', self.weight),
                 )
 
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/srv/%s/detail" % (self.pk)
-
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/srv/%s/update" % (self.pk)
-
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/srv/%s/delete" % (self.pk)
-
     def delete(self, *args, **kwargs):
         super(SRV, self).delete(*args, **kwargs)
 
