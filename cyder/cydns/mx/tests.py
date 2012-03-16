@@ -6,7 +6,9 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from cyder.cydns.cydns import RecordExistsError, InvalidRecordNameError
+from django.db import IntegrityError
+
+from cyder.cydns.cydns import InvalidRecordNameError
 from cyder.cydns.mx.models import MX
 from cyder.cydns.domain.models import Domain
 
@@ -66,6 +68,9 @@ class MXTests(TestCase):
         data = { 'label':"asdf" ,'domain':self.o_e ,'server':234 ,'priority':65536 ,'ttl':23 }
         self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
 
+        data = { 'label':"a" ,'domain':self.o_e ,'server':'foo' ,'priority':6556 ,'ttl':91234241254 }
+        self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
+
     def do_remove(self, data):
         mx = self.do_generic_add( data )
         mx.delete()
@@ -87,12 +92,12 @@ class MXTests(TestCase):
     def test_add_and_update_dup(self):
         data = { 'label':'' ,'domain':self.o_e ,'server':'relaydf.oregonstate.edu' ,'priority':2 ,'ttl':2222 }
         mx0 = self.do_generic_add( data )
-        self.assertRaises( RecordExistsError, self.do_generic_add, data )
+        self.assertRaises( IntegrityError, self.do_generic_add, data )
         data = { 'label':'' ,'domain':self.o_e ,'server':'mail.sddf.fo' ,'priority':9 ,'ttl':34234 }
         mx1 = self.do_generic_add( data )
-        self.assertRaises( RecordExistsError, self.do_generic_add, data )
+        self.assertRaises( IntegrityError, self.do_generic_add, data )
 
         mx0.server = "mail.sddf.fo"
         mx0.priority = 9
         mx0.ttl = 34234
-        self.assertRaises( RecordExistsError, mx0.save )
+        self.assertRaises( IntegrityError, mx0.save )

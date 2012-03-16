@@ -7,12 +7,13 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase
 
-from cyder.cydns.domain.models import Domain, DomainExistsError, MasterDomainNotFoundError, DomainNotFoundError
-from cyder.cydns.address_record.models import AddressRecord,RecordExistsError, RecordNotFoundError
+from cyder.cydns.domain.models import Domain, MasterDomainNotFoundError
+from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.nameserver.models import ReverseNameserver,NSRecordMisconfiguredError
 from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.ip.models import Ip
-from cyder.cydns.cydns import RecordExistsError, InvalidRecordNameError
+from cyder.cydns.cydns import  InvalidRecordNameError
+from django.db import IntegrityError
 import pdb
 
 class RevNSTests(TestCase):
@@ -85,4 +86,4 @@ class RevNSTests(TestCase):
         data = { 'reverse_domain':self.r , 'server':'ns2.moot.ru' }
         self.do_add( **data )
 
-        self.assertRaises( RecordExistsError, self.do_add, **data)
+        self.assertRaises( IntegrityError, self.do_add, **data)

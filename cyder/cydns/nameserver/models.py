@@ -3,39 +3,37 @@ from django.forms import ValidationError
 
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.reverse_domain.models import ReverseDomain
-from cyder.cydns.address_record.models import AddressRecord, _check_TLD_condition
-from cyder.settings import CYDNS_BASE_URL
-from cyder.cydns.cydns import _validate_label, _validate_name, InvalidRecordNameError, RecordExistsError
+from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.cydns import _validate_label, _validate_name, InvalidRecordNameError
+from cyder.cydns.models import ObjectUrlMixin
 import pdb
 
-class BaseNameserver( models.Model ):
+class BaseNameserver( models.Model, ObjectUrlMixin ):
     id              = models.AutoField(primary_key=True)
-    server          = models.CharField(max_length=256)
-
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/%s/%s/detail" % (self._meta.app_label, self.pk)
-
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/%s/%s/update" % (self._meta.app_label, self.pk)
-
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/%s/%s/delete" % (self._meta.app_label, self.pk)
+    server          = models.CharField(max_length=255)
 
     class Meta:
         abstract = True
 
     def clean( self ):
-        if type(self.server) not in (str, unicode):
-            raise InvalidRecordNameError("Error: name must be type str")
         _validate_name( self.server )
-        _check_TLD_condition( self )
+        self._check_NS_TLD_condition()
+
+    def _check_NS_TLD_condition( ns ):
+        domain = Domain.objects.filter( name = ns.server )
+        if not domain:
+            return
+        else:
+            raise InvalidRecordNameError( "You cannot create a NS record that is the name of a domain." )
 
 
 class ReverseNameserver( BaseNameserver ):
-    """ Name server for reverse domains. """
+    """Name server for reverse domains."""
     reverse_domain          = models.ForeignKey(ReverseDomain, null=False)
+
     class Meta:
         db_table = 'reverse_nameserver'
+        unique_together = ('reverse_domain', 'server')
 
     def details(self):
         details =  (
@@ -47,11 +45,11 @@ class ReverseNameserver( BaseNameserver ):
 
     def clean( self ):
         super(ReverseNameserver, self).clean()
-        _check_reverse_exist( self )
 
     def save(self, *args, **kwargs):
         self.clean()
         super(ReverseNameserver, self).save(*args, **kwargs)
+
     def __str__(self):
         return "%s %s %s" % ( self.reverse_domain.name, 'NS', self.server )
 
@@ -66,6 +64,7 @@ class Nameserver( BaseNameserver ):
 
     class Meta:
         db_table = 'nameserver'
+        unique_together = ('domain', 'server')
 
     def details(self):
         details=[
@@ -83,9 +82,8 @@ class Nameserver( BaseNameserver ):
 
     def clean( self ):
         super(Nameserver, self).clean()
-        _check_exist( self )
 
-        needs_glue = _needs_glue( self )
+        needs_glue = self._needs_glue()
         if self.glue and self.glue.fqdn() != self.server:
             if not needs_glue:
                 raise NSRecordMisconfiguredError("Error: %s does not need a glue record." % (str(self)))
@@ -106,11 +104,19 @@ class Nameserver( BaseNameserver ):
     def __repr__(self):
         return "<NS Record '%s'>" % (str(self))
 
+    def _needs_glue( self ):
+        # Replace the domain portion of the server with "".
+        # if domain == foo.com and server == ns1.foo.com.
+        #       ns1.foo.com --> ns1
+        possible_label = self.server.replace("."+self.domain.name, "")
+        try:
+            _validate_label(possible_label)
+        except InvalidRecordNameError, e:
+            # It's not a valid label
+            return False
+        return True
 
-class NSRecordMisconfiguredError(ValidationError):
-    """This exception is thrown when an attempt is made to create an NS record that requires a glue, but
-       a glue record is not found."""
-
+# TODO, re-write the view to not need this.
 def _needs_glue( ns ):
     # Replace the domain portion of the server with "".
     # if domain == foo.com and server == ns1.foo.com.
@@ -123,21 +129,7 @@ def _needs_glue( ns ):
         return False
     return True
 
-def _check_TLD_condition( ns ):
-    domain = Domain.objects.filter( name = ns.server )
-    if not domain:
-        return
-    else:
-        raise InvalidRecordNameError( "You cannot create a NS record that is the name of a domain." )
+class NSRecordMisconfiguredError(ValidationError):
+    """This exception is thrown when an attempt is made to create an NS record that requires a glue, but
+       a glue record is not found."""
 
-def _check_exist( ns ):
-    exist = Nameserver.objects.filter( server = ns.server, domain = ns.domain )
-    for possible in exist:
-        if possible.pk != ns.pk:
-            raise RecordExistsError(str(possible)+" already exists.")
-
-def _check_reverse_exist( ns ):
-    exist = ReverseNameserver.objects.filter( server = ns.server, reverse_domain = ns.reverse_domain )
-    for possible in exist:
-        if possible.pk != ns.pk:
-            raise RecordExistsError(str(possible)+" already exists.")

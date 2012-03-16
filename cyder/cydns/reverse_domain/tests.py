@@ -6,15 +6,16 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.db import IntegrityError
 
 
 from cyder.cydns.reverse_domain.models import ReverseDomain, ReverseDomainNotFoundError,ReverseChildDomainExistsError
-from cyder.cydns.reverse_domain.models import ReverseDomainExistsError,MasterReverseDomainNotFoundError
+from cyder.cydns.reverse_domain.models import MasterReverseDomainNotFoundError
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain, nibblize
 
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
 
-from cyder.cydns.domain.models import Domain, DomainExistsError, MasterDomainNotFoundError,DomainNotFoundError
+from cyder.cydns.domain.models import Domain, MasterDomainNotFoundError
 
 #from cyder.cydns.address_record.models import remove_domain_str, remove_domain, remove_domain, RecordExistsError
 from cyder.cydns.cydns import InvalidRecordNameError, CyAddressValueError
@@ -126,9 +127,9 @@ class ReverseDomainTests(TestCase):
         rdy.save()
         try:
             ReverseDomain(name='192.168', ip_type='4').save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             pass
-        self.assertEqual(ReverseDomainExistsError, type(e))
+        self.assertEqual(IntegrityError, type(e))
         e = None
 
         rd = ReverseDomain(name = '128', ip_type='4').save()
@@ -168,33 +169,33 @@ class ReverseDomainTests(TestCase):
         boot_strap_add_ipv6_reverse_domain( test_dname )
         try:
             ReverseDomain( name='2.6.2.1.1.0.5.f.0.0.0', ip_type='6').save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             pass
-        self.assertEqual( ReverseDomainExistsError, type(e))
+        self.assertEqual( IntegrityError, type(e))
         e = None
         try:
             ReverseDomain( name = '2.6.2.1', ip_type='6').save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             pass
-        self.assertEqual( ReverseDomainExistsError, type(e))
+        self.assertEqual( IntegrityError, type(e))
         e = None
         try:
             ReverseDomain( name = '2.6.2.1.1.0.5.F.0.0.0.d.e.a.d', ip_type='6').save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             pass
-        self.assertEqual( ReverseDomainExistsError, type(e))
+        self.assertEqual( IntegrityError, type(e))
         e = None
         try:
             ReverseDomain( name = '2.6.2.1.1.0.5.F.0.0.0.d.e.a.d.b.e.e.f', ip_type='6').save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             pass
-        self.assertEqual( ReverseDomainExistsError, type(e))
+        self.assertEqual( IntegrityError, type(e))
         e = None
         try:
             ReverseDomain( name = test_dname, ip_type='6').save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             pass
-        self.assertEqual( ReverseDomainExistsError, type(e))
+        self.assertEqual( IntegrityError, type(e))
         e = None
         # These should pass
         boot_strap_add_ipv6_reverse_domain('7.6.2.4')
@@ -220,9 +221,9 @@ class ReverseDomainTests(TestCase):
         rd0 = boot_strap_add_ipv6_reverse_domain("2.0.0.1")
         try:
             ReverseDomain( name = '2.0.0.1', ip_type='6').save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             pass
-        self.assertEqual( ReverseDomainExistsError, type(e))
+        self.assertEqual( IntegrityError, type(e))
         e = None
         self.add_str_ipv6('2001:0db8:85a3:0000:0000:8a2e:0370:733')
 

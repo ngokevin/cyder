@@ -22,3 +22,4 @@ class TXT( CommonRecord ):
 
     class Meta:
         db_table = 'txt'
+        #unique_together = ('domain', 'label', 'meta_data')

@@ -1,8 +1,9 @@
 from django.db import models
-from cyder.settings import CYDNS_BASE_URL
-from cyder.cydns.cydns import _validate_name, CyAddressValueError, InvalidRecordNameError
-from cyder.cydns.cydns import RecordExistsError, RecordNotFoundError
 from django import forms
+
+from cyder.cydns.cydns import _validate_name
+from cyder.cydns.models import ObjectUrlMixin
+
 import time
 import pdb
 
@@ -11,7 +12,7 @@ DEFAULT_EXPIRE = ONE_WEEK*2
 DEFAULT_RETRY = ONE_WEEK/7 # One day
 DEFAULT_REFRESH = 180 # 3 min
 
-class SOA( models.Model ):
+class SOA( models.Model, ObjectUrlMixin ):
     id              = models.AutoField(primary_key=True)
     primary         = models.CharField(max_length=100)
     contact         = models.CharField(max_length=100)
@@ -25,17 +26,9 @@ class SOA( models.Model ):
     # This indicates if this zone needs to be rebuilt
     dirty           = models.BooleanField( default = False )
 
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/%s/%s/detail" % (self._meta.app_label, self.pk)
-
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/%s/%s/update" % (self._meta.app_label, self.pk)
-
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/%s/%s/delete" % (self._meta.app_label, self.pk)
-
     class Meta:
         db_table = 'soa'
+        unique_together = ('primary', 'contact')
 
     def details(self):
         return  (
@@ -46,15 +39,6 @@ class SOA( models.Model ):
                     ('Retry', self.retry),
                     ('Refresh', self.refresh),
                 )
-
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/soa/%s/detail" % (self.pk)
-
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/soa/%s/update" % (self.pk)
-
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/soa/%s/delete" % (self.pk)
 
     def delete(self, *args, **kwargs):
         super(SOA, self).delete(*args, **kwargs)
@@ -72,5 +56,5 @@ class SOA( models.Model ):
         return "%s %s" % ('SOA', self.primary.__str__())
 
     def __repr__(self):
-        return "<SOA Record '%s'>" % (self.__str__())
+        return "<'%s'>" % (self.__str__())
 

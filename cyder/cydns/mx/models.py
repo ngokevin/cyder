@@ -1,10 +1,10 @@
 from django.db import models
 from django import forms
 
-from cyder.settings import CYDNS_BASE_URL
-from cyder.cydns.domain.models import Domain
+from cyder.cydns.domain.models import Domain, _check_TLD_condition
 from cyder.cydns.common.models import CommonRecord
-from cyder.cydns.cydns import InvalidRecordNameError, RecordExistsError, _validate_name, _validate_label, _validate_ttl
+from cyder.cydns.cydns import InvalidRecordNameError, _validate_name
+from cyder.cydns.cydns import  _validate_label, _validate_ttl
 
 import pdb
 
@@ -23,6 +23,10 @@ class MX( CommonRecord ):
                     ('Priority', self.priority),
                     ('TTL', self.ttl)
                 )
+    class Meta:
+        db_table = 'mx'
+        # label and domain in CommonRecord
+        unique_together = ('domain', 'label', 'server', 'priority')
 
     def delete(self, *args, **kwargs):
         super(MX, self).delete(*args, **kwargs)
@@ -32,18 +36,15 @@ class MX( CommonRecord ):
         super(MX, self).save(*args, **kwargs)
 
     def clean( self ):
-        if type(self.label) not in (str, unicode):
-            raise InvalidRecordNameError("Error: name must be type str")
-        if type(self.server) not in (str, unicode):
-            raise InvalidRecordNameError("Error: name must be type str")
         _validate_label( self.label )
         _validate_name( self.server )
-        _validate_mx_priority( self.priority )
         _validate_ttl( self.ttl )
-        _check_exists( self )
+        _check_TLD_condition( self )
+        self._validate_mx_priority()
 
     def __str__(self):
-        return "%s %s %s %s %s %s" % ( self.fqdn(), self.ttl, 'IN', 'MX', self.priority, self.server)
+        return "%s %s %s %s %s %s" % ( self.fqdn(), self.ttl, 'IN', 'MX',\
+                                        self.priority, self.server)
 
     def fqdn(self):
         if self.label == '':
@@ -55,25 +56,7 @@ class MX( CommonRecord ):
     def __repr__(self):
         return "<MX '%s'>" % (self.__str__())
 
-    class Meta:
-        db_table = 'mx'
-
-
-def _validate_mx_priority( prio ):
-    if prio > 65535 or prio < 0:
-        raise InvalidRecordNameError("Error: MX priority must be within the 0 to 65535 range. See RFC 1035")
-
-def _check_exists( mx ):
-    exist = MX.objects.filter( label = mx.label, server = mx.server, priority = mx.priority, ttl = mx.ttl, domain = mx.domain )
-    for possible in exist:
-        if possible.pk != mx.pk:
-            raise RecordExistsError("Error: This MX record already exists.")
-
-def _check_TLD_condition( mx ):
-    domain = Domain.objects.filter( name = mx.fqdn() )
-    if not domain:
-        return
-    if mx.label == '' and domain[0] == mx.domain:
-        return #This is allowed
-    else:
-        raise InvalidRecordNameError( "You cannot create a MX record with a non empty label that points to a TLD." )
+    def _validate_mx_priority( self ):
+        if self.priority > 65535 or self.priority < 0:
+            raise InvalidRecordNameError("Error: MX priority must be within the 0 to 65535\
+                                            range. See RFC 1035")

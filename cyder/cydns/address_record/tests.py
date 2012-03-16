@@ -6,19 +6,19 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.db import IntegrityError
 
 from cyder.cydns.reverse_domain.models import ReverseDomain, ReverseDomainNotFoundError
-from cyder.cydns.reverse_domain.models import ReverseDomainExistsError,MasterReverseDomainNotFoundError
+from cyder.cydns.reverse_domain.models import MasterReverseDomainNotFoundError
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
 
 from cyder.cydns.ip.models import Ip, ipv6_to_longs
 
-from cyder.cydns.domain.models import Domain, DomainExistsError, MasterDomainNotFoundError
-from cyder.cydns.domain.models import DomainNotFoundError
+from cyder.cydns.domain.models import Domain, MasterDomainNotFoundError
 
 from cyder.cydns.cydns import InvalidRecordNameError, CyAddressValueError
-from cyder.cydns.address_record.models import RecordNotFoundError
-from cyder.cydns.address_record.models import AddressRecord,RecordExistsError
+from cyder.cydns.cydns import RecordExistsError
+from cyder.cydns.address_record.models import AddressRecord
 
 import ipaddr
 import pdb
@@ -30,53 +30,53 @@ class AddressRecordTests(TestCase):
         try:
             self.e = Domain( name='edu' )
             self.e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             pass
         try:
             self.o_e = Domain( name='oregonstate.edu' )
             self.o_e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             self.o_e = Domain.objects.filter( name = 'oregonstate.edu' )[0]
             pass
 
         try:
             self.f_o_e = Domain( name='foo.oregonstate.edu' )
             self.f_o_e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             self.f_o_e = Domain.objects.filter( name = 'foo.oregonstate.edu' )[0]
             pass
 
         try:
             self.m_o_e = Domain( name= 'max.oregonstate.edu')
             self.m_o_e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             self.m_o_e = Domain.objects.filter( name = 'max.oregonstate.edu' )[0]
             pass
 
         try:
             self.z_o_e = Domain( name='zax.oregonstate.edu')
             self.z_o_e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             self.z_o_e = Domain.objects.filter( name = 'zax.oregonstate.edu' )[0]
             pass
         try:
             self.g_o_e = Domain( name='george.oregonstate.edu')
             self.g_o_e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             self.g_o_e = Domain.objects.filter( name = 'george.oregonstate.edu' )[0]
             pass
 
         try:
             self._128 = ReverseDomain(name='128')
             self._128.save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             self._128 = ReverseDomain.objects.filter( name = '128' )[0]
             pass
 
         try:
              self._128_193 = ReverseDomain( name = '128.193')
              self._128_193.save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             self._128_193 = ReverseDomain.objects.filter( name = '128.193' )[0]
             pass
 

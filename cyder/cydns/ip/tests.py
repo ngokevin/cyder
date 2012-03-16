@@ -6,9 +6,11 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.db import IntegrityError
+
 import ipaddr
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain, ReverseDomain, ReverseDomainExistsError
+from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain, ReverseDomain
 from cyder.cydns.cydns import CyAddressValueError
 import pdb
 
@@ -56,7 +58,7 @@ class SimpleTest(TestCase):
         try:
             rd = boot_strap_add_ipv6_reverse_domain('f')
             rd.save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             pass
         ip_str = 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'
         ip = ipaddr.IPv6Address(ip_str)

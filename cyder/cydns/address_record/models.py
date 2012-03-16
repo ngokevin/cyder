@@ -1,19 +1,17 @@
 from django.db import models
-from django import forms
+from django.core.exceptions import ValidationError
+
 
 from cyder.cydns.cydns import _validate_label, InvalidRecordNameError, CyAddressValueError
-from cyder.cydns.cydns import _validate_name, RecordExistsError, RecordNotFoundError
-from cyder.cydns.domain.models import Domain
-from cyder.cydns.ip.models import Ip, ipv6_to_longs
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
-from cyder.settings import CYDNS_BASE_URL
+from cyder.cydns.cydns import _validate_name, RecordExistsError
+from cyder.cydns.domain.models import Domain, _check_TLD_condition
+from cyder.cydns.ip.models import Ip
+from cyder.cydns.models import ObjectUrlMixin
 
-import ipaddr
-import string
 import pdb
 
 # This is the A and AAAA record class
-class AddressRecord( models.Model ):
+class AddressRecord( models.Model, ObjectUrlMixin ):
     """AddressRecord is the class that generates A and AAAA records."""
     IP_TYPE_CHOICES = ( ('4','ipv4'),('6','ipv6') )
     id              = models.AutoField(primary_key=True)
@@ -23,14 +21,21 @@ class AddressRecord( models.Model ):
     ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
 
 
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/address_record/%s/detail" % (self.pk)
+    class Meta:
+        db_table = 'address_record'
 
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/address_record/%s/update" % (self.pk)
-
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/address_record/%s/delete" % (self.pk)
+    def validate_unique( self, *args, **kwargs ):
+        """You can't do unique constraints across a foriegn key using 'unique_together'.
+        We need the ip to not be the same so we have a validate_unique function.
+        RecordExistsError is a subclass of ValidationError.
+        note::
+            https://docs.djangoproject.com/en/dev/ref/models/instances/#django.db.models.Model.validate_unique
+        """
+        exist = AddressRecord.objects.filter( label = self.label, domain = self.domain,\
+                                            ip_type = self.ip_type ).select_related('ip')
+        for possible in exist:
+            if str(possible.ip) == str(self.ip) and possible.ip.pk != self.ip.pk:
+                raise RecordExistsError(str(self)+" already exists.")
 
     def details(self):
         return  (
@@ -47,13 +52,11 @@ class AddressRecord( models.Model ):
         super(AddressRecord, self).delete(*args, **kwargs)
 
     def clean( self ):
-        if type(self.label) not in (str, unicode):
-            raise InvalidRecordNameError("Error: name must be type str")
         if self.ip_type not in ('4', '6'):
             raise CyAddressValueError("Error: Plase provide the type of Address Record")
         _validate_label( self.label )
         _validate_name( self.fqdn() )
-        _check_exist( self )
+        self.validate_unique()
         _check_TLD_condition( self )
 
     def save(self, *args, **kwargs):
@@ -67,34 +70,13 @@ class AddressRecord( models.Model ):
             record_type = 'AAAA'
         return "%s %s %s" % ( self.fqdn(), record_type, self.ip.__str__() )
 
+    def __repr__(self):
+        return "<Address Record '%s'>" % (self.__str__())
+
     def fqdn(self):
         if self.label == '':
             fqdn = self.domain.name
         else:
             fqdn = self.label+"."+self.domain.name
         return fqdn
-
-    def __repr__(self):
-        return "<Address Record '%s'>" % (self.__str__())
-
-    class Meta:
-        db_table = 'address_record'
-
-
-
-def _check_exist( record ):
-    exist = AddressRecord.objects.filter( label = record.label, domain = record.domain, ip_type = record.ip_type ).select_related('ip')
-    for possible in exist:
-        if possible.ip.__str__() == record.ip.__str__() and possible.ip.pk != record.ip.pk:
-            raise RecordExistsError(possible.__str__()+" already exists.")
-
-
-def _check_TLD_condition( record ):
-    domain = Domain.objects.filter( name = record.fqdn() )
-    if not domain:
-        return
-    if record.label == '' and domain[0] == record.domain:
-        return #This is allowed
-    else:
-        raise InvalidRecordNameError( "You cannot create an A record that points to the top level of another domain." )
 

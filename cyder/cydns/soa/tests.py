@@ -7,6 +7,7 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase
 from cyder.cydns.soa.models import *
+from django.db import IntegrityError
 from cyder.cydns.cydns import InvalidRecordNameError
 from cyder.cydns.domain.models import Domain
 
@@ -80,6 +81,12 @@ class SOATests(TestCase):
         soa.delete()
         soa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh=refresh )
         self.assertTrue( len(soa) == 0 )
+
+        # Add dup
+        soa = self.do_generic_add(primary, contact,retry, refresh)
+        soa.save()
+        soa = SOA(primary=primary, contact=contact,retry=retry, refresh=refresh)
+        self.assertRaises(IntegrityError, soa.save)
 
     def test_add_invalid(self):
         data = { 'primary':"daf..fff" , 'contact':"foo.com" }

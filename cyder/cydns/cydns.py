@@ -1,5 +1,5 @@
 from django.db import models
-from django.forms import ValidationError
+from django.core.exceptions import ValidationError
 import string
 import pdb
 """
@@ -14,19 +14,13 @@ class InvalidRecordNameError(ValidationError):
     """This exception is thrown when an attempt is made to create/update a record with an invlaid name."""
 
 class RecordExistsError(ValidationError):
-    """This exception is thrown when an attempt is made to create a record that already exists."""
+    """This exception is thrown when an attempt is made to create a record that already exists.
+    All records that can support the unique_together constraint do so. These models will raise
+    an IntegretyError. Some models, ones that have to span foreign keys to check for uniqueness,
+    need to still raise ValidationError. RecordExistsError will be raised in these cases.
 
-class RecordNotFoundError(ValidationError):
-    """This exception is thrown when an attempt is made to remove/update a record that does not       exists."""
-    def __init__(self, msg ):
-        """Record Not Found ValidationError.
-        """
-        self.msg = msg
-    def __str__(self):
-        return self.__repr__()
-    def __repr__(self):
-        return self.msg
-
+    An AddressRecord is an example of a model that raises this Exception.
+    """
 
 def _validate_label( label, valid_chars=None ):
     """Run test on a record to make sure that the new name is constructed with valid syntax.
@@ -87,8 +81,7 @@ def _validate_name( fqdn ):
             RFC 1034 http://www.ietf.org/rfc/rfc1034.txt
     """
     # TODO, make sure the grammar is followed.
-    if type(fqdn) not in ( str, unicode ):
-        raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (fqdn) )
+    _name_type_check( fqdn )
 
     for label in fqdn.split('.'):
         if not label:
@@ -136,3 +129,9 @@ def do_generic_invalid( obj, data, exception, function ):
 def _validate_ttl( ttl ):
     if ttl < 0 or ttl > 2147483647: # See RFC 2181
         raise InvalidRecordNameError("Error: TTLs must be within the 0 to 2147483647 range.")
+
+# Works for labels too.
+def _name_type_check( name ):
+    if type(name) not in (str, unicode):
+        raise InvalidRecordNameError("Error: name must be type str")
+

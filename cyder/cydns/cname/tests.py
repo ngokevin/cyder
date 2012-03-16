@@ -9,7 +9,8 @@ from django.test import TestCase
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.domain.models import Domain
-from cyder.cydns.cydns import InvalidRecordNameError, RecordExistsError
+from cyder.cydns.cydns import InvalidRecordNameError
+from django.db import IntegrityError
 
 
 class CNAMETests(TestCase):
@@ -59,7 +60,7 @@ class CNAMETests(TestCase):
         domain = self.g
         data = "foo.com"
         self.do_add( label, domain, data )
-        self.assertRaises(RecordExistsError, self.do_add, *( label, domain, data ))
+        self.assertRaises(IntegrityError, self.do_add, *( label, domain, data ))
 
         label = ""
         domain = self.g

@@ -8,15 +8,16 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 
 from cyder.cydns.reverse_domain.models import ReverseDomain, ReverseDomainNotFoundError
-from cyder.cydns.reverse_domain.models import ReverseDomainExistsError,MasterReverseDomainNotFoundError
+from cyder.cydns.reverse_domain.models import MasterReverseDomainNotFoundError
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
 
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
 
-from cyder.cydns.domain.models import Domain, DomainExistsError, MasterDomainNotFoundError
-from cyder.cydns.domain.models import DomainNotFoundError, DomainHasChildDomains, _name_to_domain
+from cyder.cydns.domain.models import Domain, MasterDomainNotFoundError
+from cyder.cydns.domain.models import DomainHasChildDomains, _name_to_domain
 
 from cyder.cydns.cydns import InvalidRecordNameError
+from django.db import IntegrityError
 
 import ipaddr
 import pdb
@@ -64,13 +65,10 @@ class DomainTests(TestCase):
         e = None
 
         Domain( name = 'cn' ).save()
-        Domain( name = 'foo.cn').save()
-        try:
-            Domain( name = 'foo.cn').save()
-        except DomainExistsError, e:
-            pass
-        self.assertEqual( DomainExistsError, type(e))
-        e = None
+        d = Domain( name = 'foo.cn')
+        d.save()
+        d = Domain( name = 'foo.cn')
+        self.assertRaises(IntegrityError, d.save)
 
 
     def test_create_domain(self):
