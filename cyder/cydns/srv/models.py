@@ -43,6 +43,9 @@ class SRV( CommonRecord ):
     def __str__(self):
         return "%s %s %s %s %s %s %s" % ( self.fqdn(), 'IN', 'SRV', self.priority,self.weight, self.port, self.target)
 
+    def __repr__(self):
+        return "<%s>" % (str(self))
+
     def fqdn(self):
         return str(self.label)+"."+self.domain.name
 
