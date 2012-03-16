@@ -68,10 +68,10 @@ class AddressRecord( models.Model, ObjectUrlMixin ):
             record_type = 'A'
         else:
             record_type = 'AAAA'
-        return "%s %s %s" % ( self.fqdn(), record_type, self.ip.__str__() )
+        return "%s %s %s" % ( self.fqdn(), record_type, str(self.ip) )
 
     def __repr__(self):
-        return "<Address Record '%s'>" % (self.__str__())
+        return "<Address Record '%s'>" % (str(self))
 
     def fqdn(self):
         if self.label == '':

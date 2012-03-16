@@ -31,7 +31,7 @@ class DomainTests(TestCase):
         f_c.save()
         f_c.delete()
         foo = Domain( name = 'foo.com' )
-        foo.__str__()
+        str(foo)
         foo.__repr__()
 
     def test_add_domain(self):
@@ -61,7 +61,7 @@ class DomainTests(TestCase):
         except MasterDomainNotFoundError, e:
             pass
         self.assertEqual( MasterDomainNotFoundError, type(e))
-        e.__str__()
+        str(e)
         e = None
 
         Domain( name = 'cn' ).save()

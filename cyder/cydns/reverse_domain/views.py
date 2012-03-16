@@ -98,7 +98,7 @@ class ReverseDomainUpdateView(ReverseDomainView, UpdateView):
             reverse_domain.save() # Major exception handling logic goes here.
         except ValueError, e:
             reverse_domain_form = ReverseDomainUpdateForm(instance=reverse_domain)
-            messages.error( request, e.__str__() )
+            messages.error( request, str(e) )
             return render( request, "reverse_domain_update.html", { "reverse_domain_form": reverse_domain_form } )
 
         messages.success(request, '%s was successfully updated.' % (reverse_domain.name))
@@ -119,7 +119,7 @@ def bootstrap_ipv6(request):
             try:
                 reverse_domain = boot_strap_add_ipv6_reverse_domain( bootstrap_form.cleaned_data['name'], soa = soa )
             except ValidationError, e:
-                messages.error( request, e.__str__() )
+                messages.error( request, str(e) )
                 return render( request, 'bootstrap_ipv6.html', {'bootstrap_form': bootstrap_form} )
         else:
             return render( request, 'bootstrap_ipv6.html', {'bootstrap_form': bootstrap_form} )

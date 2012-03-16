@@ -34,7 +34,6 @@ class AddressRecordCreateView(AddressRecordView, CreateView):
         ip_form = IpForm( request.POST, instance=Ip() )
         # Attempt to create record.
         try:
-            errors = False
             ip_type = request.POST['ip_type']
             record_form.instance.ip_type, ip_form.instance.ip_type = ip_type, ip_type
 

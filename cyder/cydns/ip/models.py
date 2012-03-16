@@ -34,7 +34,7 @@ class Ip( models.Model ):
         if self.ip_type == '4':
             try:
                 ip = ipaddr.IPv4Address(self.ip_str)
-                self.ip_str = ip.__str__()
+                self.ip_str = str(ip)
             except ipaddr.AddressValueError, e:
                 raise CyAddressValueError("Error: Invalid Ip address %s" % (self.ip_str))
             if update_reverse_domain:
@@ -44,7 +44,7 @@ class Ip( models.Model ):
         else:
             try:
                 ip = ipaddr.IPv6Address(self.ip_str)
-                self.ip_str = ip.__str__()
+                self.ip_str = str(ip)
             except ipaddr.AddressValueError, e:
                 raise CyAddressValueError("Invalid ip %s for IPv6s." % (self.ip_str) )
 
@@ -67,6 +67,7 @@ class Ip( models.Model ):
 
     def __str__(self):
         return self.ip_str
+
     def __int__(self):
         if self.ip_type == '4':
             self.ip_lower
@@ -74,7 +75,7 @@ class Ip( models.Model ):
             return (self.ip_upper*(2**64))+self.ip_lower
 
     def __repr__(self):
-        return "<Ip '%s'>" % (self.__str__())
+        return "<Ip '%s'>" % (str(self))
 
 
     class Meta:

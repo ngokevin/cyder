@@ -53,8 +53,8 @@ class SOA( models.Model, ObjectUrlMixin ):
         super(SOA, self).save(*args, **kwargs)
 
     def __str__(self):
-        return "%s %s" % ('SOA', self.primary.__str__())
+        return "%s %s" % ('SOA', str(self.primary))
 
     def __repr__(self):
-        return "<'%s'>" % (self.__str__())
+        return "<'%s'>" % (str(self))
 

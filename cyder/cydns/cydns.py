@@ -28,8 +28,8 @@ def _validate_label( label, valid_chars=None ):
         :param label: The name to be tested.
         :type label: str
     """
-    if type(label) not in ( str, unicode ):
-            raise InvalidRecordNameError("Error: The supplied name '%s' is not of type 'str'." % (label) )
+    _name_type_check( label )
+
     if not valid_chars:
         valid_chars = string.ascii_letters+"0123456789"+"-"
     for char in label:
@@ -39,16 +39,15 @@ def _validate_label( label, valid_chars=None ):
             raise InvalidRecordNameError("Error: Ivalid name %s . Character '%s' is invalid." % (label, char) )
     return
 
-def _validate_domain_name( dname ):
+def _validate_domain_name( name ):
     """Domain names are different. They are allowed to have '_' in them.
 
-        :param dname: The domain name to be tested.
-        :type dname: str
+        :param name: The domain name to be tested.
+        :type name: str
     """
-    if type(dname) not in ( str, unicode ):
-        raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (dname) )
+    _name_type_check( name )
 
-    for label in dname.split('.'):
+    for label in name.split('.'):
         if not label:
             raise InvalidRecordNameError("Error: Ivalid name %s . Empty label." % (label) )
         valid_chars = string.ascii_letters+"0123456789"+"-_"
@@ -95,8 +94,7 @@ def _validate_reverse_name( reverse_name, ip_type ):
         :param fqdn: The fqdn to be tested.
         :type fqdn: str
     """
-    if type(reverse_name) not in ( str, unicode ):
-        raise InvalidRecordNameError("Error: Ivalid name %s. Not of type str." % (reverse_name) )
+    _name_type_check( reverse_name )
 
     valid_ipv6 = "0123456789AaBbCcDdEeFf"
 
@@ -117,14 +115,6 @@ def _validate_reverse_name( reverse_name, ip_type ):
                                                                                     (reverse_name, chunk) )
         except Exception: #Umm, lol. What am I doing here? TODO Is this exception even needed?
             raise InvalidRecordNameError("Error: Ivalid Ipv%s name %s." % (ip_type, reverse_name) )
-
-def do_generic_invalid( obj, data, exception, function ):
-    e = None
-    try:
-        function(**data)
-    except exception, e:
-        pass
-    obj.assertEqual(exception, type(e))
 
 def _validate_ttl( ttl ):
     if ttl < 0 or ttl > 2147483647: # See RFC 2181

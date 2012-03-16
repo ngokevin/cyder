@@ -67,7 +67,7 @@ class ReverseDomain( models.Model, ObjectUrlMixin ):
         if children:
             error = ""
             for child in children:
-                error += child.__str__()+", "
+                error += str(child)+", "
             raise ReverseChildDomainExistsError("Error: Domain %s has children: %s" % (self.name, error))
 
 class ReverseDomainNotFoundError(ValidationError):
@@ -144,7 +144,7 @@ def _reassign_reverse_ips( reverse_domain_1, reverse_domain_2, ip_type ):
         return
     ips = reverse_domain_2.ip_set.iterator()
     for ip in ips:
-        correct_reverse_domain = ip_to_reverse_domain( ip.__str__(), ip_type=ip_type )
+        correct_reverse_domain = ip_to_reverse_domain( str(ip), ip_type=ip_type )
         if correct_reverse_domain != ip.reverse_domain:
             ip.reverse_domain = correct_reverse_domain
             ip.save()

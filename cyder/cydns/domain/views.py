@@ -156,7 +156,7 @@ class DomainUpdateView( DomainView, UpdateView ):
             domain.save() # Major exception handling logic goes here.
         except ValidationError, e:
             domain_form = DomainUpdateForm(instance=domain)
-            messages.error( request, e.__str__() )
+            messages.error( request, str(e) )
             return render( request, "domain_update.html", { "domain_form": domain_form } )
 
         messages.success(request, '%s was successfully updated.' % (domain.name))

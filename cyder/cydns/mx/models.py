@@ -54,7 +54,7 @@ class MX( CommonRecord ):
         return fqdn
 
     def __repr__(self):
-        return "<MX '%s'>" % (self.__str__())
+        return "<MX '%s'>" % (str(self))
 
     def _validate_mx_priority( self ):
         if self.priority > 65535 or self.priority < 0:
