@@ -12,6 +12,7 @@ cyder_db_test
 cyder/settings/local*
 cyder/settings/local.py
 vendor/
+vendor-local/
 .coverage
 cyder/maintain2cyder/*.cfg
 cyder/maintain2cyder/build_dir/
