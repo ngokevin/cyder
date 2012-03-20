@@ -16,8 +16,6 @@ from cyder.cydns.ip.models import Ip, ipv6_to_longs
 
 from cyder.cydns.domain.models import Domain
 
-from cyder.cydns.cydns import InvalidRecordNameError, CyAddressValueError
-from cyder.cydns.cydns import RecordExistsError
 from cyder.cydns.address_record.models import AddressRecord
 
 import ipaddr

@@ -17,4 +17,4 @@ from cyder.cydns.mx.tests import *
 from cyder.cydns.srv.tests import *
 from cyder.cydns.cname.tests import *
 from cyder.cydns.ip.tests import *
-#from cyder.cydns.txt.tests import *
+from cyder.cydns.txt.tests import *

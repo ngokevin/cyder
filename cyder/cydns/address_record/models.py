@@ -24,7 +24,7 @@ class AddressRecord( CommonRecord ):
     def validate_unique( self, *args, **kwargs ):
         """You can't do unique constraints across a foriegn key using 'unique_together'.
         We need the ip to not be the same so we have a validate_unique function.
-        RecordExistsError is a subclass of ValidationError.
+
         note::
             https://docs.djangoproject.com/en/dev/ref/models/instances/#django.db.models.Model.validate_unique
         """

@@ -3,13 +3,13 @@ from django.core.exceptions import ValidationError
 from django import forms
 
 from cyder.cydns.soa.models import SOA
-from cyder.cydns.cydns import _validate_domain_name, InvalidRecordNameError
+from cyder.cydns.cydns import _validate_domain_name
 from cyder.cydns.models import ObjectUrlMixin
 
 import pdb
 
 
-class Domain( models.Model, ObjectUrlMixin ):
+class Domain(models.Model, ObjectUrlMixin):
     """A Domain is used for most DNS records."""
     id              = models.AutoField(primary_key=True)
     name            = models.CharField(max_length=100, unique=True,\
@@ -31,8 +31,8 @@ class Domain( models.Model, ObjectUrlMixin ):
         self.full_clean()
         super(Domain, self).save(*args, **kwargs)
 
-    def clean( self ):
-        self.master_domain = _name_to_master_domain( self.name )
+    def clean(self):
+        self.master_domain = _name_to_master_domain(self.name)
 
     def __str__(self):
         return "%s" % (self.name)
@@ -41,8 +41,8 @@ class Domain( models.Model, ObjectUrlMixin ):
 
 
 
-    def _check_for_children( self ):
-        if Domain.objects.filter( master_domain = self ):
+    def _check_for_children(self):
+        if Domain.objects.filter(master_domain = self):
             raise ValidationError("Before deleting this domain, please remove it's children.")
         pass
 
@@ -60,7 +60,7 @@ A name x.y.z can be split up into x y and z. The domains, 'y.z' and 'z' shoud ex
         None if invalid master domain
 """
 
-def _name_to_master_domain( name ):
+def _name_to_master_domain(name):
     """Given an domain name, this function returns the appropriate master domain.
 
     :param name: The domain for which we are using to search for a master domain.
@@ -72,28 +72,28 @@ def _name_to_master_domain( name ):
     master_domain = None
     for i in reversed(range(len(tokens)-1)):
         parent_name = '.'.join(tokens[i+1:])
-        possible_master_domain = Domain.objects.filter( name = parent_name )
+        possible_master_domain = Domain.objects.filter(name = parent_name)
         if not possible_master_domain:
             raise ValidationError("Master Domain for domain %s, not found." % (name))
         else:
             master_domain = possible_master_domain[0]
     return master_domain
 
-def _name_to_domain( fqdn ):
+def _name_to_domain(fqdn):
     labels = fqdn.split('.')
     for i in range(len(labels)):
         name = '.'.join(labels[i:])
-        longest_match = Domain.objects.filter( name = name )
+        longest_match = Domain.objects.filter(name = name)
         if longest_match:
             return longest_match[0]
     return None
 
 
-def _check_TLD_condition( record ):
-    domain = Domain.objects.filter( name = record.fqdn() )
+def _check_TLD_condition(record):
+    domain = Domain.objects.filter(name = record.fqdn())
     if not domain:
         return
     if record.label == '' and domain[0] == record.domain:
         return #This is allowed
     else:
-        raise InvalidRecordNameError( "You cannot create an record that points to the top level of another domain." )
+        raise ValidationError("You cannot create an record that points to the top level of another domain.")

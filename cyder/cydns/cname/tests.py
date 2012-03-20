@@ -6,12 +6,12 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.core.exceptions import ValidationError
+
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.domain.models import Domain
-from cyder.cydns.cydns import InvalidRecordNameError
-from django.db import IntegrityError
-from django.core.exceptions import ValidationError
+
 import pdb
 
 
