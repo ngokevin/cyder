@@ -125,5 +125,5 @@ def _validate_ttl(ttl):
 # Works for labels too.
 def _name_type_check(name):
     if type(name) not in (str, unicode):
-        raise ValidationError("Error: name must be type str")
+        raise ValidationError("Error: A name must be of type str.")
 
