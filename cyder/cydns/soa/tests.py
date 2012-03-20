@@ -32,7 +32,12 @@ class SOATests(TestCase):
         soa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh = refresh )
         soa[0].save()
         self.assertTrue( soa )
-        soa.__repr__()
+        soa[0].__repr__()
+        soa = soa[0]
+        self.assertTrue(soa.details())
+        self.assertTrue(soa.get_absolute_url())
+        self.assertTrue(soa.get_edit_url())
+        self.assertTrue(soa.get_delete_url())
 
         primary = "do.com"
         contact = "admf.asdf"
@@ -41,12 +46,21 @@ class SOATests(TestCase):
         self.do_generic_add(primary, contact,retry, refresh)
         soa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh = refresh )
         self.assertTrue( soa )
+        soa = soa[0]
+        self.assertTrue(soa.details())
+        self.assertTrue(soa.get_absolute_url())
+        self.assertTrue(soa.get_edit_url())
+        self.assertTrue(soa.get_delete_url())
 
         primary = "ns1.derp.com"
         contact = "admf.asdf"
         soa = SOA( primary = primary, contact = contact )
         soa.save()
         self.assertTrue( soa.serial and soa.expire and soa.retry and soa.refresh )
+        self.assertTrue(soa.details())
+        self.assertTrue(soa.get_absolute_url())
+        self.assertTrue(soa.get_edit_url())
+        self.assertTrue(soa.get_delete_url())
 
     def test_add_remove(self):
         primary = "ns2.oregonstate.edu"

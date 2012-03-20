@@ -13,6 +13,10 @@ from cyder.cydns.cydns import CyAddressValueError
 import pdb
 
 class SimpleTest(TestCase):
+    def setUp(self):
+        rd = ReverseDomain(name='66', ip_type='4')
+        rd.save()
+
     def test_ipv4_str(self):
         rd = ReverseDomain(name='192', ip_type='4')
         rd.save()
@@ -96,3 +100,15 @@ class SimpleTest(TestCase):
         self.assertFalse( ip.ip_upper and ip.ip_lower and ip.reverse_domain )
         ip.clean()
         self.assertTrue( ip.ip_upper==0 and ip.ip_lower and ip.reverse_domain )
+
+    def test_bad_create(self):
+        ip = Ip( ip_str = "66.193.1.2", ip_type='x' )
+        self.assertRaises(CyAddressValueError, ip.save)
+        ip = Ip( ip_str = "66.193.1.2", ip_type=None )
+        self.assertRaises(CyAddressValueError, ip.save)
+        ip = Ip( ip_str = "66.193.1.2", ip_type=99 )
+        self.assertRaises(CyAddressValueError, ip.save)
+
+    def test_ipv6_to_longs(self):
+        addr = "herp derp, not an ip"
+        self.assertRaises(CyAddressValueError, ipv6_to_longs, addr)

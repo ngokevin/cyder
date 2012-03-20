@@ -45,6 +45,13 @@ class PTRTests(TestCase):
             ret = PTR( ip = ip, name = fqdn )
             ret.save()
 
+
+        self.assertTrue(ret.details())
+        self.assertTrue(ret.get_absolute_url())
+        self.assertTrue(ret.get_edit_url())
+        self.assertTrue(ret.get_delete_url())
+
+
         ptr = PTR.objects.filter( name=fqdn, ip__ip_upper = ip.ip_upper, ip__ip_lower = ip.ip_lower )
         ptr.__repr__()
         self.assertTrue(ptr)
