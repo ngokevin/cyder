@@ -1,4 +1,4 @@
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from cyder.core.cyuser.backends import AuthorizationBackend
@@ -28,9 +28,9 @@ class DevAuthenticationMiddleware(object):
             # set session ctnr on login to user's default ctnr
             default_ctnr = request.user.get_profile().default_ctnr
             if not default_ctnr:
-                request.session.ctnr = Ctnr.objects.get(id=0)
+                request.session['ctnr'] = Ctnr.objects.get(id=0)
             else:
-                request.session.ctnr = Ctnr.objects.get(id=default_ctnr.id)
-
+                request.session['ctnr'] = Ctnr.objects.get(id=default_ctnr.id)
         else:
+            # print request.user.has_perm(request.session['ctnr'])
             return None

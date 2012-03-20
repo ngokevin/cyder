@@ -4,6 +4,10 @@ from django.contrib.auth.models import User
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 
 class AuthorizationBackend:
+    """
+    Overrides django.contrib.auth.models.User permission and authorization
+    methods
+    """
 
     def get_all_permissions(self, user_obj, obj=None):
         if user_obj.is_anonymous() or obj is not None:
@@ -14,7 +18,6 @@ class AuthorizationBackend:
         return user_obj._perm_cache
 
     def has_perm(self, user_obj, perm, obj=None):
-        print "Checking permissions"
         return True
         # container_user = Container_User.objects.get(container=request.session
 
