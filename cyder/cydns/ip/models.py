@@ -29,7 +29,7 @@ class Ip( models.Model ):
     def clean(self, update_reverse_domain=True):
         if self.ip_type not in ('4', '6'):
             raise CyAddressValueError("Error: Plase provide the type of IP")
-        if type(self.ip_str) != type('') and type(self.ip_str) != type(u''):
+        if type(self.ip_str) not in (str, unicode):
             raise CyAddressValueError("Error: Plase provide the string representation of the IP")
         if self.ip_type == '4':
             try:

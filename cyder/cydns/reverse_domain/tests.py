@@ -99,6 +99,7 @@ class ReverseDomainTests(TestCase):
         except ReverseChildDomainExistsError, e:
             pass
         self.assertEqual( ReverseChildDomainExistsError, type(e))
+
     def test_master_reverse_domain(self):
         rd1 = ReverseDomain(name = '128', ip_type='4')
         rd1.save()
@@ -230,6 +231,26 @@ class ReverseDomainTests(TestCase):
         ret = ipv6_to_longs(ip.__str__())
         self.assertEqual( ret, (2306139570357600256,151930230802227))
 
+    def test_bad_names(self):
+        name = None
+        rd = ReverseDomain(name=name, ip_type='6')
+        self.assertRaises(InvalidRecordNameError, rd.save)
+        name = 124
+        rd = ReverseDomain(name=name, ip_type='6')
+        self.assertRaises(InvalidRecordNameError, rd.save)
+        name = "asdf"
+        rd = ReverseDomain(name=name, ip_type='6')
+        self.assertRaises(InvalidRecordNameError, rd.save)
+        name = "9.9.9"
+        ip_type = "asdf"
+        rd = ReverseDomain(name=name, ip_type=ip_type)
+        self.assertRaises(InvalidRecordNameError, rd.save)
+        ip_type = None
+        rd = ReverseDomain(name=name, ip_type=ip_type)
+        self.assertRaises(InvalidRecordNameError, rd.save)
+        ip_type = 1234
+        rd = ReverseDomain(name=name, ip_type=ip_type)
+        self.assertRaises(InvalidRecordNameError, rd.save)
 
     def test_add_remove_reverse_ipv6_domains(self):
         osu_block = "2620:105:F000"
@@ -409,6 +430,9 @@ class ReverseDomainTests(TestCase):
                 self.assertEqual( rd[1].master_reverse_domain, None )
             else:
                 self.assertEqual( rd[1].master_reverse_domain, rds[rd[0]-1] )
+            self.assertTrue(rd[1].get_absolute_url())
+            self.assertTrue(rd[1].get_edit_url())
+            self.assertTrue(rd[1].get_delete_url())
 
         try:
             ReverseDomain.objects.filter( name='1.2.8.3.0.0.0.0.4.3.4.5.6.6.5.6.7.0.0', ip_type='6')[0].delete()

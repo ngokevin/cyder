@@ -40,6 +40,9 @@ class DomainTests(TestCase):
         f_c = Domain( name = 'foo.com')
         f_c.save()
         f_c.save()
+        self.assertTrue( f_c.get_absolute_url() )
+        self.assertTrue( f_c.get_edit_url() )
+        self.assertTrue( f_c.get_delete_url() )
         self.assertTrue( f_c.master_domain == c)
 
         b_c = Domain( name = 'bar.com')
@@ -49,7 +52,6 @@ class DomainTests(TestCase):
         b_b_c = Domain( name = 'baz.bar.com')
         b_b_c.save()
         self.assertTrue( b_b_c.master_domain == b_c)
-
 
 
     def test__name_to_master_domain(self):

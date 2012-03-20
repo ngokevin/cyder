@@ -32,6 +32,12 @@ class NSTests(TestCase):
         if glue:
             ns.glue = glue
         ns.save()
+        ns.save()
+        self.assertTrue(ns.__repr__())
+        self.assertTrue(ns.details())
+        self.assertTrue(ns.get_absolute_url())
+        self.assertTrue(ns.get_edit_url())
+        self.assertTrue(ns.get_delete_url())
         ret = Nameserver.objects.filter( domain = domain, server = server )
         if glue:
             fglue = AddressRecord.objects.get( pk = ns.glue.pk )
@@ -58,6 +64,14 @@ class NSTests(TestCase):
 
         data = { 'domain':self.r , 'server':'asdf.asdf' }
         self.do_add( **data )
+
+        # Test no need for glue
+        ip = Ip( ip_str = '128.193.1.36', ip_type = '4' )
+        ip.save()
+        glue = AddressRecord( label='ns2', domain = self.r, ip = ip, ip_type='4' )
+        glue.save()
+        data = { 'domain':self.f_r , 'server':'asdf.asdf', 'glue':glue }
+        self.assertRaises(NSRecordMisconfiguredError, self.do_add, **data)
 
     def test_add_invalid(self):
         data = { 'domain':self.f_r , 'server':'ns3.foo.ru' }
@@ -110,6 +124,8 @@ class NSTests(TestCase):
         ns.server = "ns4.ru"
         ns.glue = glue
         self.assertRaises(NSRecordMisconfiguredError, ns.save )
+
+
 
     def test_delete_ns(self):
         ip = Ip( ip_str = '128.196.1.10', ip_type = '4' )

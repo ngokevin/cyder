@@ -11,6 +11,8 @@ from cyder.cydns.soa.models import SOA
 from cyder.cydns.reverse_domain.models import ReverseDomain, boot_strap_add_ipv6_reverse_domain
 from cyder.cydns.reverse_domain.forms import ReverseDomainForm, ReverseDomainUpdateForm, BootStrapForm
 from cyder.cydns.common.views import CommonDeleteView
+from cyder.cydns.nameserver.models import ReverseNameserver
+from cyder.cydns.common.utils import tablefy
 
 
 
@@ -28,6 +30,25 @@ class ReverseDomainListView(ReverseDomainView, ListView):
 class ReverseDomainDetailView(ReverseDomainView, DetailView):
     context_object_name = "reverse_domain"
     template_name       = "reverse_domain_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(ReverseDomainDetailView, self).get_context_data(**kwargs)
+        reverse_domain = kwargs.get('object', False)
+        if not reverse_domain:
+            return context
+        # TODO
+        # This process can be generalized. It's not very high priority.
+        revns_objects = ReverseNameserver.objects.filter( reverse_domain = reverse_domain )
+        revns_headers, revns_matrix, revns_urls = tablefy( revns_objects )
+
+        # Join the two dicts
+        context = dict( {
+                    # NS
+                    "revns_headers": revns_headers,
+                    "revns_matrix": revns_matrix,
+                    "revns_urls": revns_urls,
+                        }.items() + context.items() )
+        return context
 
 class ReverseDomainView(object):
     model = ReverseDomain

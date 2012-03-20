@@ -47,7 +47,7 @@ class AddressRecord( models.Model ):
         super(AddressRecord, self).delete(*args, **kwargs)
 
     def clean( self ):
-        if type(self.label) not in (type(u''),type('')):
+        if type(self.label) not in (str, unicode):
             raise InvalidRecordNameError("Error: name must be type str")
         if self.ip_type not in ('4', '6'):
             raise CyAddressValueError("Error: Plase provide the type of Address Record")

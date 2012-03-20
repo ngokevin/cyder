@@ -9,6 +9,8 @@ from cyder.cydns.cname.views import CNAMEDetailView, CNAMECreateView, CNAMEUpdat
 from cyder.cydns.cname.views import CNAMEListView, CNAMEDeleteView
 from cyder.cydns.ptr.views import PTRDetailView, PTRCreateView, PTRUpdateView, PTRListView, PTRDeleteView
 from cyder.cydns.nameserver.views import NSDetailView, NSCreateView, NSUpdateView, NSListView, NSDeleteView
+from cyder.cydns.nameserver.views import RevNSUpdateView, RevNSListView, RevNSDeleteView
+from cyder.cydns.nameserver.views import RevNSDetailView, RevNSCreateView
 
 from cyder.cydns.domain.views import DomainDetailView, DomainListView, DomainCreateView
 from cyder.cydns.domain.views import DomainUpdateView, DomainDeleteView
@@ -38,13 +40,23 @@ urlpatterns = patterns('',
     # NS
     url(r'^cyder/cydns/nameserver$', NSListView.as_view() ),
     url(r'^cyder/cydns/nameserver/create$', NSCreateView.as_view()),
+    url(r'^cyder/cydns/nameserver/(?P<domain>[\w-]+)/create$', NSCreateView.as_view()),
     url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/update$', NSUpdateView.as_view() ),
     url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/detail$', NSDetailView.as_view() ),
     url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/delete$', NSDeleteView.as_view() ),
 
+    # Reverse NS
+    url(r'^cyder/cydns/reverse_nameserver$', RevNSListView.as_view() ),
+    url(r'^cyder/cydns/reverse_nameserver/create$', RevNSCreateView.as_view()),
+    url(r'^cyder/cydns/reverse_nameserver/(?P<reverse_domain>[\w-]+)/create$', RevNSCreateView.as_view()),
+    url(r'^cyder/cydns/reverse_nameserver/(?P<pk>[\w-]+)/update$', RevNSUpdateView.as_view() ),
+    url(r'^cyder/cydns/reverse_nameserver/(?P<pk>[\w-]+)/detail$', RevNSDetailView.as_view() ),
+    url(r'^cyder/cydns/reverse_nameserver/(?P<pk>[\w-]+)/delete$', RevNSDeleteView.as_view() ),
+
     # SRV
     url(r'^cyder/cydns/srv$', SRVListView.as_view() ),
     url(r'^cyder/cydns/srv/create$', SRVCreateView.as_view()),
+    url(r'^cyder/cydns/srv/(?P<domain>[\w-]+)/create$', SRVCreateView.as_view()),
     url(r'^cyder/cydns/srv/(?P<pk>[\w-]+)/update$', SRVUpdateView.as_view() ),
     url(r'^cyder/cydns/srv/(?P<pk>[\w-]+)/detail$', SRVDetailView.as_view() ),
     url(r'^cyder/cydns/srv/(?P<pk>[\w-]+)/delete$', SRVDeleteView.as_view() ),
@@ -52,6 +64,7 @@ urlpatterns = patterns('',
     # TXT
     url(r'^cyder/cydns/txt$', TXTListView.as_view() ),
     url(r'^cyder/cydns/txt/create$', TXTCreateView.as_view()),
+    url(r'^cyder/cydns/txt/(?P<domain>[\w-]+)/create$', TXTCreateView.as_view()),
     url(r'^cyder/cydns/txt/(?P<pk>[\w-]+)/update$', TXTUpdateView.as_view() ),
     url(r'^cyder/cydns/txt/(?P<pk>[\w-]+)/detail$', TXTDetailView.as_view() ),
     url(r'^cyder/cydns/txt/(?P<pk>[\w-]+)/delete$', TXTDeleteView.as_view() ),
@@ -59,6 +72,7 @@ urlpatterns = patterns('',
     # CNAME
     url(r'^cyder/cydns/cname$', CNAMEListView.as_view() ),
     url(r'^cyder/cydns/cname/create$', CNAMECreateView.as_view()),
+    url(r'^cyder/cydns/cname/(?P<domain>[\w-]+)/create$', CNAMECreateView.as_view()),
     url(r'^cyder/cydns/cname/(?P<pk>[\w-]+)/update$', CNAMEUpdateView.as_view() ),
     url(r'^cyder/cydns/cname/(?P<pk>[\w-]+)/detail$', CNAMEDetailView.as_view() ),
     url(r'^cyder/cydns/cname/(?P<pk>[\w-]+)/delete$', CNAMEDeleteView.as_view() ),
@@ -73,6 +87,7 @@ urlpatterns = patterns('',
     # MX
     url(r'^cyder/cydns/mx$', MXListView.as_view() ),
     url(r'^cyder/cydns/mx/create$', MXCreateView.as_view()),
+    url(r'^cyder/cydns/mx/(?P<domain>[\w-]+)/create$', MXCreateView.as_view()),
     url(r'^cyder/cydns/mx/(?P<pk>[\w-]+)/update$', MXUpdateView.as_view() ),
     url(r'^cyder/cydns/mx/(?P<pk>[\w-]+)/detail$', MXDetailView.as_view() ),
     url(r'^cyder/cydns/mx/(?P<pk>[\w-]+)/delete$', MXDeleteView.as_view() ),
@@ -102,6 +117,7 @@ urlpatterns = patterns('',
 
     # Address Record
     url(r'^cyder/cydns/address_record/create$', AddressRecordCreateView.as_view() ),
+    url(r'^cyder/cydns/address_record/(?P<domain>[\w-]+)/create$', AddressRecordCreateView.as_view() ),
     url(r'^cyder/cydns/address_record/(?P<pk>[\w-]+)/update$', AddressRecordUpdateView.as_view() ),
     url(r'^cyder/cydns/address_record/(?P<pk>[\w-]+)/detail$', AddressRecordDetailView.as_view() ),
     url(r'^cyder/cydns/address_record/(?P<pk>[\w-]+)/delete$', AddressRecordDeleteView.as_view() ),

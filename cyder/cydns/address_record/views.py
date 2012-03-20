@@ -7,9 +7,11 @@ from django.views.generic import DetailView, CreateView, UpdateView
 
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.address_record.forms import AddressRecordForm
+from cyder.cydns.domain.models import Domain
 from cyder.cydns.common.views import CommonDeleteView, CommonDetailView
 from cyder.cydns.ip.models import Ip
 from cyder.cydns.ip.forms import IpForm
+from cyder.cydns.utils import slim_form
 
 import pdb
 
@@ -26,6 +28,7 @@ class AddressRecordDetailView(AddressRecordView, CommonDetailView):
 
 class AddressRecordCreateView(AddressRecordView, CreateView):
     template_name = "address_record_update.html"
+
     def post( self, request, *args, **kwargs ):
         record_form = AddressRecordForm( request.POST )
         ip_form = IpForm( request.POST, instance=Ip() )
@@ -49,7 +52,11 @@ class AddressRecordCreateView(AddressRecordView, CreateView):
         return redirect( record )
 
     def get( self, request, *args, **kwargs ):
-        record_form = AddressRecordForm()
+        domain_pk = self.kwargs.get('domain', False)
+        if domain_pk:
+            record_form = slim_form( domain_pk, AddressRecordForm())
+        else:
+            record_form = AddressRecordForm()
         ip_form = IpForm()
         return render( request, "address_record_create.html", { "record_form": record_form, "ip_form": ip_form } )
 

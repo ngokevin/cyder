@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% from "tables.html" import render_table %}
 <h3>{{ form_title }}</h3>
     <table>
     {% for item, value in common.details() %}
@@ -14,4 +15,10 @@
     <br />
     <a href='{{ common.get_edit_url() }}'>Edit</a>
     <a href='{{ common.get_delete_url() }}'>Delete</a>
+    {% if common.domain %}
+        <a href='{{ common.domain.get_absolute_url() }}'>View Domain</a>
+    {% elif common.reverse_domain %}
+        <a href='{{ common.reverse_domain.get_absolute_url() }}'>View Reverse Domain</a>
+    {% endif %}
+    <br />
 {% endblock %}
