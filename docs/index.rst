@@ -13,26 +13,21 @@ The 'glue' (not to be confused with DNS glue records) is found in ``core/``.
 Coding Ideas (Standards)
 ------------------------
 
-
-
-Models shouldn't do anything magical. If something goes wrong, the calling code should be able to
-tell exactly what went wrong. Exceptions should be used at the model level and in helper function
-level. Ideally, these exceptions can help the code that more directly interfaces with the user to
-make CRUD tasks easier.
-
-Avoid touching the models. You should never ever *EVER* directly create or update an instance of a
-model. Use helper function and use them everywhere. If a helper function doesn't exist *CREATE* it
-instead of directly accessing the model. Accessing the models for read access is OK.
-
-Builder function for models should be in the models.py file of the model. For more complex tasks
-don't be afraid to use a different utility (not named utility!!) module.
-
 No trailing white space anywhere.
 
-Test everything (try to).
+Parentheses should have no spaces next to them::
+
+    def good_function(self):
+        pass
+
+    def bad_function( self ):
+
+
+
+Model code should have 100% statement coverage.
 
 Before you do anything with an IP address (as a string or int) put it into the ipaddr library
-functions IPv4Address and IPv6Address. This will standardise how things are formated, stored, and
+functions IPv4Address and IPv6Address. This will standardize how things are formated, stored, and
 displayed.
 
 DNS
@@ -47,6 +42,12 @@ Modules related to the DNS app.
    reverse_domain
    address_record
    ptr
+   nameserver
+   cname
+   mx
+   soa
+   srv
+   txt
 
 Domains and Reverse Domains
 ---------------------------

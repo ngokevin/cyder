@@ -17,10 +17,29 @@ import pdb
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-pdb.set_trace()
 #sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../'))
-#sys.path.append("/nfs/milo/u1/uberj/cyder_env/cyder")
+sys.path.append("/nfs/milo/u1/uberj/cyder_env/cyder/")
+# Edit this if necessary or override the variable in your environment.
+os.environ['DJANGO_SETTINGS_MODULE'] = 'cyder.settings'
+
+
+try:
+    # For local development in a virtualenv:
+    from funfactory import manage
+except ImportError, e:
+    # Production:
+    # Add a temporary path so that we can import the funfactory
+    tmp_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            'vendor', 'src', 'funfactory')
+    sys.path.append(tmp_path)
+
+    from funfactory import manage
+
+    # Let the path magic happen in setup_environ() !
+    sys.path.remove(tmp_path)
+
+
+manage.setup_environ("/nfs/milo/u1/uberj/cyder_env/cyder/manage.py", more_pythonic=True)
 
 # -- General configuration -----------------------------------------------------
 
