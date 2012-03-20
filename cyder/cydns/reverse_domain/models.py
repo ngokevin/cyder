@@ -14,18 +14,17 @@ def _validate_ip_type(ip_type):
         raise ValidationError("Error: Plase provide the type of Address Record")
 
 class ReverseDomain(models.Model, ObjectUrlMixin):
-    """A reverse DNS domain is used build reverse bind files.
-    #TODO, fix these docs.
-    ReverseDomainNotFoundError:
+    """ A reverse DNS domain is used build reverse bind files.
+        ReverseDomainNotFoundError:
         This exception is thrown when you are trying to add an Ip to the database and it cannot be
         paired with a reverse domain. The solution is to create a reverse domain for the Ip to live
         in.
 
-    ReverseChildDomainExistsError
+        ReverseChildDomainExistsError
         This exception is thrown when you try to delete a reverse domain that has child reverese
         domains. A reverse domain should only be deleted when it has no child reverse domains.
 
-    MasterReverseDomainNotFoundError
+        MasterReverseDomainNotFoundError
         All reverse domains should have a logical master (or parent) reverse domain. If you try to
         create a reverse domain that should have a master reverse domain and *doesn't* this
         exception is thrown.
