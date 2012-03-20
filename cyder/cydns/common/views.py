@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.forms import ValidationError
 
 from cyder.cydns.domain.models import Domain
-from cyder.settings.local import CYDNS_BASE_URL
+from cyder.settings import CYDNS_BASE_URL
 from cyder.cydns.utils import slim_form
 import pdb
 
