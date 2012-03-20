@@ -1,19 +1,19 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.ip.models import Ip
-from cyder.cydns.cydns import _validate_name, RecordExistsError
-from cyder.cydns.cydns import InvalidRecordNameError
+from cyder.cydns.cydns import _validate_name
 from cyder.cydns.models import ObjectUrlMixin
 
-class PTR( models.Model, ObjectUrlMixin ):
+class PTR(models.Model, ObjectUrlMixin):
     """A PTR is used to map an IP to a domain name"""
-    IP_TYPE_CHOICES = ( ('4','ipv4'),('6','ipv6') )
+    IP_TYPE_CHOICES = (('4','ipv4'),('6','ipv6'))
     ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
     id              = models.AutoField(primary_key=True)
-    name            = models.CharField(max_length=255)
+    name            = models.CharField(max_length=255, validators=[_validate_name])
     ip              = models.OneToOneField(Ip, null=False)
-    domain          = models.ForeignKey(Domain, null=True)
+    domain          = models.ForeignKey(Domain, null=True, blank=True)
 
     def details(self):
         return  (
@@ -29,22 +29,20 @@ class PTR( models.Model, ObjectUrlMixin ):
         super(PTR, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
-        self.clean()
+        self.full_clean()
         super(PTR, self).save(*args, **kwargs)
 
-    def clean( self ):
-        _validate_name( self.name )
-        self.validate_unique()
-        self.domain = _name_to_domain( self.name )
+    def clean(self):
+        self.domain = _name_to_domain(self.name)
 
     def __str__(self):
-        return "%s %s %s" % (str(self.ip), 'PTR', self.name )
+        return "%s %s %s" % (str(self.ip), 'PTR', self.name)
+
     def __repr__(self):
         return "<%s>" % (str(self))
 
-
-    def validate_unique( self, *args, **kwargs ):
-        exist = PTR.objects.filter( name = self.name ).select_related('ip')
+    def validate_unique(self, *args, **kwargs):
+        exist = PTR.objects.filter(name = self.name).select_related('ip')
         for possible in exist:
             if possible.ip.pk != self.ip.pk and str(possible.ip).lower() == str(self.ip).lower():
-                raise RecordExistsError( "%s already exists." % (str(possible)) )
+                raise ValidationError("%s already exists." % (str(possible)))

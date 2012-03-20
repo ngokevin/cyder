@@ -2,22 +2,19 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 
-from cyder.cydns.cydns import _validate_label, InvalidRecordNameError, CyAddressValueError
-from cyder.cydns.cydns import _validate_name, RecordExistsError
+from cyder.cydns.cydns import _validate_label, _validate_name
 from cyder.cydns.domain.models import Domain, _check_TLD_condition
 from cyder.cydns.ip.models import Ip
-from cyder.cydns.models import ObjectUrlMixin
+from cyder.cydns.common.models import CommonRecord
 
 import pdb
 
 # This is the A and AAAA record class
-class AddressRecord( models.Model, ObjectUrlMixin ):
+class AddressRecord( CommonRecord ):
     """AddressRecord is the class that generates A and AAAA records."""
     IP_TYPE_CHOICES = ( ('4','ipv4'),('6','ipv6') )
     id              = models.AutoField(primary_key=True)
-    label           = models.CharField(max_length=100)
     ip              = models.OneToOneField(Ip, null=False)
-    domain          = models.ForeignKey(Domain, null=False)
     ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
 
 
@@ -35,12 +32,12 @@ class AddressRecord( models.Model, ObjectUrlMixin ):
                                             ip_type = self.ip_type ).select_related('ip')
         for possible in exist:
             if str(possible.ip) == str(self.ip) and possible.ip.pk != self.ip.pk:
-                raise RecordExistsError(str(self)+" already exists.")
+                raise ValidationError(str(self)+" already exists.")
 
     def details(self):
         return  (
                     ('FQDN', self.fqdn()),
-                    ('Record Type', 'A' if self.ip.ip_type == '4' else 'AAAA' ),
+                    ('Record Type', self.record_type()),
                     ('IP', str(self.ip)),
                 )
 
@@ -53,30 +50,21 @@ class AddressRecord( models.Model, ObjectUrlMixin ):
 
     def clean( self ):
         if self.ip_type not in ('4', '6'):
-            raise CyAddressValueError("Error: Plase provide the type of Address Record")
-        _validate_label( self.label )
-        _validate_name( self.fqdn() )
-        self.validate_unique()
+            raise ValidationError("Error: Plase provide the type of Address Record")
         _check_TLD_condition( self )
 
     def save(self, *args, **kwargs):
-        self.clean()
+        self.full_clean()
         super(AddressRecord, self).save(*args, **kwargs)
 
-    def __str__(self):
+    def record_type(self):
         if self.ip_type == '4':
-            record_type = 'A'
+            return 'A'
         else:
-            record_type = 'AAAA'
-        return "%s %s %s" % ( self.fqdn(), record_type, str(self.ip) )
+            return 'AAAA'
+
+    def __str__(self):
+        return "%s %s %s" % ( self.fqdn(), self.record_type(), str(self.ip) )
 
     def __repr__(self):
         return "<Address Record '%s'>" % (str(self))
-
-    def fqdn(self):
-        if self.label == '':
-            fqdn = self.domain.name
-        else:
-            fqdn = self.label+"."+self.domain.name
-        return fqdn
-

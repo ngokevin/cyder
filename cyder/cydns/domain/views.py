@@ -8,7 +8,6 @@ from django.forms import ValidationError
 
 from cyder.cydns.domain.models import Domain, DomainHasChildDomains
 from cyder.cydns.domain.forms import DomainForm, DomainUpdateForm
-from cyder.cydns.domain.models import MasterDomainNotFoundError
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.common.utils import tablefy
 from cyder.cydns.common.views import CommonDeleteView, CommonListView

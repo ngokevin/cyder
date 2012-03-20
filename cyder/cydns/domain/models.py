@@ -12,7 +12,8 @@ import pdb
 class Domain( models.Model, ObjectUrlMixin ):
     """A Domain is used for most DNS records."""
     id              = models.AutoField(primary_key=True)
-    name            = models.CharField(max_length=100, unique=True)
+    name            = models.CharField(max_length=100, unique=True,\
+                        validators=[_validate_domain_name])
     master_domain   = models.ForeignKey("self", null=True, default=None, blank=True)
     soa             = models.ForeignKey(SOA, null=True, default=None, blank=True)
 
@@ -27,11 +28,10 @@ class Domain( models.Model, ObjectUrlMixin ):
         super(Domain, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
-        self.clean()
+        self.full_clean()
         super(Domain, self).save(*args, **kwargs)
 
     def clean( self ):
-        _validate_domain_name( self.name )
         self.master_domain = _name_to_master_domain( self.name )
 
     def __str__(self):
@@ -43,16 +43,11 @@ class Domain( models.Model, ObjectUrlMixin ):
 
     def _check_for_children( self ):
         if Domain.objects.filter( master_domain = self ):
-            raise DomainHasChildDomains("Before deleting this domain, please remove it's children.")
+            raise ValidationError("Before deleting this domain, please remove it's children.")
         pass
 
 
 # A bunch of handy functions that would cause circular dependancies if they were in another file.
-
-class MasterDomainNotFoundError(ValidationError):
-    """This exception is thrown when an attempt is made to add a domain that doesn't have a valid master domain."""
-class DomainHasChildDomains(ValidationError):
-    """This exception is thrown when an attempt is made to delete a domain that has children domains."""
 
 """
 Given an name return the most specific domain that the ip can belong to.
@@ -71,7 +66,7 @@ def _name_to_master_domain( name ):
     :param name: The domain for which we are using to search for a master domain.
     :type name: str
     :returns: domain -- Domain object
-    :raises: MasterDomainNotFoundError
+    :raises: ValidationError
     """
     tokens = name.split('.')
     master_domain = None
@@ -79,7 +74,7 @@ def _name_to_master_domain( name ):
         parent_name = '.'.join(tokens[i+1:])
         possible_master_domain = Domain.objects.filter( name = parent_name )
         if not possible_master_domain:
-            raise MasterDomainNotFoundError("Master Domain for domain %s, not found." % (name))
+            raise ValidationError("Master Domain for domain %s, not found." % (name))
         else:
             master_domain = possible_master_domain[0]
     return master_domain

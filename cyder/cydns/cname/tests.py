@@ -11,6 +11,8 @@ from cyder.cydns.soa.models import SOA
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.cydns import InvalidRecordNameError
 from django.db import IntegrityError
+from django.core.exceptions import ValidationError
+import pdb
 
 
 class CNAMETests(TestCase):
@@ -60,21 +62,18 @@ class CNAMETests(TestCase):
         domain = self.g
         data = "foo.com"
         self.do_add( label, domain, data )
-        self.assertRaises(IntegrityError, self.do_add, *( label, domain, data ))
+        self.assertRaises(ValidationError, self.do_add, *( label, domain, data ))
 
         label = ""
         domain = self.g
         data = "foo.com"
         self.do_add( label, domain, data )
 
-        label = None
-        self.assertRaises(InvalidRecordNameError, self.do_add, *( label, domain, data ))
-
     def test_soa_condition(self):
         label = ""
         domain = self.c_g
         data = "foo.com"
-        self.assertRaises(InvalidRecordNameError, self.do_add, *( label, domain, data ))
+        self.assertRaises(ValidationError, self.do_add, *( label, domain, data ))
 
     def test_data_domain(self):
         label = "fo1"
@@ -84,3 +83,8 @@ class CNAMETests(TestCase):
 
         self.assertTrue( self.d == cn.data_domain )
 
+    def test_add_bad(self):
+        label = ""
+        domain = self.g
+        data = "..foo.com"
+        self.assertRaises(ValidationError, self.do_add, *( label, domain, data ))

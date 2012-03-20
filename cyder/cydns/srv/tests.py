@@ -6,9 +6,8 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
-from cyder.cydns.cydns import InvalidRecordNameError
 from cyder.cydns.srv.models import SRV
 from cyder.cydns.domain.models import Domain
 
@@ -56,30 +55,29 @@ class SRVTests(TestCase):
     def test_invalid_add_update(self):
         data = { 'label':'_df' ,'domain':self.o_e ,'target':'relay.oregonstate.edu' ,'priority':2 ,'weight':2222 , 'port': 222 }
         srv0 = self.do_generic_add( data )
-        self.assertRaises( IntegrityError, self.do_generic_add, data )
+        self.assertRaises( ValidationError, self.do_generic_add, data )
         data = { 'label':'_df' ,'domain':self.o_e ,'target':'foo.oregonstate.edu' ,'priority':2 ,'weight':2222 , 'port': 222 }
+
         srv1 = self.do_generic_add( data )
-        self.assertRaises( IntegrityError, self.do_generic_add, data )
+        self.assertRaises( ValidationError, self.do_generic_add, data )
 
         srv0.target = "foo.oregonstate.edu"
-        self.assertRaises( IntegrityError, srv0.save )
+        self.assertRaises( ValidationError, srv0.save )
 
         srv0.port = 65536
-        self.assertRaises( InvalidRecordNameError, srv0.save )
+        self.assertRaises( ValidationError, srv0.save )
+
         srv0.port = 1
-
         srv0.priority = 65536
-        self.assertRaises( InvalidRecordNameError, srv0.save )
+        self.assertRaises( ValidationError, srv0.save )
+
         srv0.priority = 1
-
         srv0.weight = 65536
-        self.assertRaises( InvalidRecordNameError, srv0.save )
-        srv0.weight = 1
+        self.assertRaises( ValidationError, srv0.save )
 
-        srv0.target = 123
-        self.assertRaises( InvalidRecordNameError, srv0.save )
         srv0.target = "asdfas"
-
         srv0.label = "no_first"
-        self.assertRaises( InvalidRecordNameError, srv0.save )
+        self.assertRaises( ValidationError, srv0.save )
+
         srv0.target = "_df"
+        self.assertRaises( ValidationError, srv0.save )

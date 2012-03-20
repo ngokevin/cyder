@@ -6,12 +6,12 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from django.db import IntegrityError
+from django.core.exceptions import ValidationError
+
 
 import ipaddr
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain, ReverseDomain
-from cyder.cydns.cydns import CyAddressValueError
 import pdb
 
 class SimpleTest(TestCase):
@@ -58,7 +58,7 @@ class SimpleTest(TestCase):
         try:
             rd = boot_strap_add_ipv6_reverse_domain('f')
             rd.save()
-        except IntegrityError, e:
+        except ValidationError, e:
             pass
         ip_str = 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'
         ip = ipaddr.IPv6Address(ip_str)
@@ -70,7 +70,7 @@ class SimpleTest(TestCase):
         self.assertEqual(ip.__int__(), new_ip.__int__())
 
     def bad_ipv6(self):
-        self.assertRaises(CyAddressValueError, ipv6_to_longs, {'addr':"1::::"})
+        self.assertRaises(ValidationError, ipv6_to_longs, {'addr':"1::::"})
 
 
     def test_int_ip(self):
@@ -94,9 +94,9 @@ class SimpleTest(TestCase):
             ip = Ip( ip_str = "130.193.1.2" ) # Forget the ip_type
             ip.clean()
 
-        except CyAddressValueError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( CyAddressValueError, type(e))
+        self.assertEqual( ValidationError, type(e))
 
         ip = Ip( ip_str = "130.193.1.2", ip_type='4' )
         self.assertFalse( ip.ip_upper and ip.ip_lower and ip.reverse_domain )
@@ -105,12 +105,12 @@ class SimpleTest(TestCase):
 
     def test_bad_create(self):
         ip = Ip( ip_str = "66.193.1.2", ip_type='x' )
-        self.assertRaises(CyAddressValueError, ip.save)
+        self.assertRaises(ValidationError, ip.save)
         ip = Ip( ip_str = "66.193.1.2", ip_type=None )
-        self.assertRaises(CyAddressValueError, ip.save)
+        self.assertRaises(ValidationError, ip.save)
         ip = Ip( ip_str = "66.193.1.2", ip_type=99 )
-        self.assertRaises(CyAddressValueError, ip.save)
+        self.assertRaises(ValidationError, ip.save)
 
     def test_ipv6_to_longs(self):
         addr = "herp derp, not an ip"
-        self.assertRaises(CyAddressValueError, ipv6_to_longs, addr)
+        self.assertRaises(ValidationError, ipv6_to_longs, addr)

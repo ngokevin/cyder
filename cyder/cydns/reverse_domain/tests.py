@@ -6,19 +6,15 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 
-from cyder.cydns.reverse_domain.models import ReverseDomain, ReverseDomainNotFoundError,ReverseChildDomainExistsError
-from cyder.cydns.reverse_domain.models import MasterReverseDomainNotFoundError
+from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain, nibblize
 
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
 
-from cyder.cydns.domain.models import Domain, MasterDomainNotFoundError
-
-#from cyder.cydns.address_record.models import remove_domain_str, remove_domain, remove_domain, RecordExistsError
-from cyder.cydns.cydns import InvalidRecordNameError, CyAddressValueError
+from cyder.cydns.domain.models import Domain
 
 import ipaddr
 import pdb
@@ -78,15 +74,15 @@ class ReverseDomainTests(TestCase):
 
     def test_bad_nibble(self):
         bad_data = { 'addr' : "asdfas" }
-        self.do_generic_invalid_operation( bad_data, CyAddressValueError, nibblize )
+        self.do_generic_invalid_operation( bad_data, ValidationError, nibblize )
         bad_data = { 'addr' :12341245 }
-        self.do_generic_invalid_operation( bad_data, CyAddressValueError, nibblize )
+        self.do_generic_invalid_operation( bad_data, ValidationError, nibblize )
         bad_data = { 'addr' : "123.123.123.123" }
-        self.do_generic_invalid_operation( bad_data, CyAddressValueError, nibblize )
+        self.do_generic_invalid_operation( bad_data, ValidationError, nibblize )
         bad_data = { 'addr' : True }
-        self.do_generic_invalid_operation( bad_data, CyAddressValueError, nibblize )
+        self.do_generic_invalid_operation( bad_data, ValidationError, nibblize )
         bad_data = { 'addr' : False }
-        self.do_generic_invalid_operation( bad_data, CyAddressValueError, nibblize )
+        self.do_generic_invalid_operation( bad_data, ValidationError, nibblize )
 
     def test_remove_invalid_reverse_domain(self):
         rd1 = ReverseDomain(name = '130', ip_type='4')
@@ -97,9 +93,9 @@ class ReverseDomainTests(TestCase):
         rd3.save()
         try:
             rd1.delete()
-        except ReverseChildDomainExistsError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( ReverseChildDomainExistsError, type(e))
+        self.assertEqual( ValidationError, type(e))
 
     def test_master_reverse_domain(self):
         rd1 = ReverseDomain(name = '128', ip_type='4')
@@ -117,9 +113,9 @@ class ReverseDomainTests(TestCase):
     def test_add_reverse_domains(self):
         try:
             ReverseDomain(name='192.168',ip_type='4').save()
-        except MasterReverseDomainNotFoundError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( MasterReverseDomainNotFoundError, type(e))
+        self.assertEqual( ValidationError, type(e))
         e = None
         rdx = ReverseDomain(name='192', ip_type='4')
         rdx.save()
@@ -127,9 +123,9 @@ class ReverseDomainTests(TestCase):
         rdy.save()
         try:
             ReverseDomain(name='192.168', ip_type='4').save()
-        except IntegrityError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual(IntegrityError, type(e))
+        self.assertEqual(ValidationError, type(e))
         e = None
 
         rd = ReverseDomain(name = '128', ip_type='4').save()
@@ -169,33 +165,33 @@ class ReverseDomainTests(TestCase):
         boot_strap_add_ipv6_reverse_domain( test_dname )
         try:
             ReverseDomain( name='2.6.2.1.1.0.5.f.0.0.0', ip_type='6').save()
-        except IntegrityError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( IntegrityError, type(e))
+        self.assertEqual( ValidationError, type(e))
         e = None
         try:
             ReverseDomain( name = '2.6.2.1', ip_type='6').save()
-        except IntegrityError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( IntegrityError, type(e))
+        self.assertEqual( ValidationError, type(e))
         e = None
         try:
             ReverseDomain( name = '2.6.2.1.1.0.5.F.0.0.0.d.e.a.d', ip_type='6').save()
-        except IntegrityError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( IntegrityError, type(e))
+        self.assertEqual( ValidationError, type(e))
         e = None
         try:
             ReverseDomain( name = '2.6.2.1.1.0.5.F.0.0.0.d.e.a.d.b.e.e.f', ip_type='6').save()
-        except IntegrityError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( IntegrityError, type(e))
+        self.assertEqual( ValidationError, type(e))
         e = None
         try:
             ReverseDomain( name = test_dname, ip_type='6').save()
-        except IntegrityError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( IntegrityError, type(e))
+        self.assertEqual( ValidationError, type(e))
         e = None
         # These should pass
         boot_strap_add_ipv6_reverse_domain('7.6.2.4')
@@ -207,23 +203,23 @@ class ReverseDomainTests(TestCase):
     def test_add_reverse_domainless_ips(self):
         try:
             self.add_str_ipv4('8.8.8.8')
-        except ReverseDomainNotFoundError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( ReverseDomainNotFoundError, type(e))
+        self.assertEqual( ValidationError, type(e))
         e = None
 
         try:
             self.add_str_ipv6('2001:0db8:85a3:0000:0000:8a2e:0370:733')
-        except ReverseDomainNotFoundError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( ReverseDomainNotFoundError, type(e))
+        self.assertEqual( ValidationError, type(e))
         e = None
         rd0 = boot_strap_add_ipv6_reverse_domain("2.0.0.1")
         try:
             ReverseDomain( name = '2.0.0.1', ip_type='6').save()
-        except IntegrityError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( IntegrityError, type(e))
+        self.assertEqual( ValidationError, type(e))
         e = None
         self.add_str_ipv6('2001:0db8:85a3:0000:0000:8a2e:0370:733')
 
@@ -235,23 +231,23 @@ class ReverseDomainTests(TestCase):
     def test_bad_names(self):
         name = None
         rd = ReverseDomain(name=name, ip_type='6')
-        self.assertRaises(InvalidRecordNameError, rd.save)
+        self.assertRaises(ValidationError, rd.save)
         name = 124
         rd = ReverseDomain(name=name, ip_type='6')
-        self.assertRaises(InvalidRecordNameError, rd.save)
+        self.assertRaises(ValidationError, rd.save)
         name = "asdf"
         rd = ReverseDomain(name=name, ip_type='6')
-        self.assertRaises(InvalidRecordNameError, rd.save)
+        self.assertRaises(ValidationError, rd.save)
         name = "9.9.9"
         ip_type = "asdf"
         rd = ReverseDomain(name=name, ip_type=ip_type)
-        self.assertRaises(InvalidRecordNameError, rd.save)
+        self.assertRaises(ValidationError, rd.save)
         ip_type = None
         rd = ReverseDomain(name=name, ip_type=ip_type)
-        self.assertRaises(InvalidRecordNameError, rd.save)
+        self.assertRaises(ValidationError, rd.save)
         ip_type = 1234
         rd = ReverseDomain(name=name, ip_type=ip_type)
-        self.assertRaises(InvalidRecordNameError, rd.save)
+        self.assertRaises(ValidationError, rd.save)
 
     def test_add_remove_reverse_ipv6_domains(self):
         osu_block = "2620:105:F000"
@@ -437,6 +433,6 @@ class ReverseDomainTests(TestCase):
 
         try:
             ReverseDomain.objects.filter( name='1.2.8.3.0.0.0.0.4.3.4.5.6.6.5.6.7.0.0', ip_type='6')[0].delete()
-        except ReverseChildDomainExistsError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( ReverseChildDomainExistsError, type(e))
+        self.assertEqual( ValidationError, type(e))
