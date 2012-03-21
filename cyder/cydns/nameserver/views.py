@@ -61,19 +61,17 @@ class NSCreateView(CreateView):
         # find user credentials in self.request
         domain_pk = self.kwargs.get('domain', False)
         if domain_pk:
-            form = slim_form( domain_pk, form)
+            form = slim_form( domain_pk=domain_pk, form=form )
         return form
 
     # Handle this post manually.
+    def get(self, request, *args, **kwargs ):
+        ret = super(NSCreateView, self).get(request, *args, **kwargs)
+        return ret
     def post(self, request, *args, **kwargs ):
         server = request.POST.get('server', False)
-        domain_pk = request.POST.get('domain', False)
-        try:
-            domain = Domain.objects.get( pk = int(domain_pk) )
-        except ValueError, e:
-            messages.error( request, "Something went very wrong. domain was not type int." )
-            return self.get(self, request, *args, **kwargs)
-
+        domain_pk = self.kwargs.get('domain', False)
+        domain = get_object_or_404(Nameserver, domain_pk)
         if not server:
             messages.error( request, "NS servers must have a server field." )
             return self.get(self, request, *args, **kwargs)

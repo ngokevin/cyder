@@ -6,12 +6,11 @@ from django.views.generic import DetailView, ListView, CreateView, UpdateView
 from django.forms import ValidationError
 
 
-from cyder.cydns.domain.models import Domain, DomainHasChildDomains
+from cyder.cydns.domain.models import Domain
 from cyder.cydns.domain.forms import DomainForm, DomainUpdateForm
-from cyder.cydns.domain.models import DomainExistsError, MasterDomainNotFoundError
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.common.utils import tablefy
-from cyder.cydns.common.views import CommonDeleteView
+from cyder.cydns.common.views import CommonDeleteView, CommonListView
 
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.nameserver.models import Nameserver
@@ -31,9 +30,9 @@ class DomainView(object):
 class DomainDeleteView(DomainView, CommonDeleteView):
     """ """
 
-class DomainListView(DomainView, ListView):
-    template_name       = "domain_list.html"
-    context_object_name = "domains"
+class DomainListView(DomainView, CommonListView):
+    """ """
+    #context_object_name = "domains"
 
 
 class DomainDetailView(DomainView, DetailView):
@@ -47,6 +46,7 @@ class DomainDetailView(DomainView, DetailView):
             return context
         # TODO
         # This process can be generalized. It's not very high priority.
+        # TODO, doing this sooo wrong. I should be using the entity sets which will cache things.
         address_objects = AddressRecord.objects.filter( domain = domain )
         adr_headers, adr_matrix, adr_urls = tablefy( address_objects )
 
@@ -155,7 +155,7 @@ class DomainUpdateView( DomainView, UpdateView ):
             domain.save() # Major exception handling logic goes here.
         except ValidationError, e:
             domain_form = DomainUpdateForm(instance=domain)
-            messages.error( request, e.__str__() )
+            messages.error( request, str(e) )
             return render( request, "domain_update.html", { "domain_form": domain_form } )
 
         messages.success(request, '%s was successfully updated.' % (domain.name))

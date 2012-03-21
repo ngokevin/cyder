@@ -1,6 +1,9 @@
-
 Nameserver
 ==========
+
+.. automodule:: cyder.cydns.nameserver.models
+    :members:
+
 Name server (NS) records are handled with some extra logic. "If the name server does lie within the
 domain it should have a corresponding A record" -- `zytrax.com
 <http://www.zytrax.com/books/dns/ch8/ns.html>`. This corresponding A record is called a *glue
@@ -28,7 +31,3 @@ record::
 
 You do not need to create a glue record.
 
-
-
-.. automodule:: cyder.cydns.nameserver.models
-    :members:

@@ -1,9 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 <table>
-{% for obj in objects %}
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+
+    {% if page_obj.has_previous %}
+        &laquo; <a href="?page={{page_obj.previous_page_number() }}">Previous</a>
+    {% endif %}
+    {% if page_obj.has_next %}|
+        <a href="?page={{ page_obj.next_page_number() }}">Next</a> &raquo;
+    {% endif %}
+    {% for obj in objects %}
     <tr>
-        <td><a href='{{ obj.get_absolute_url() }}'>{{ obj }} </a></td>
+        <td><a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a></td>
     <tr>
 {% endfor %}
 </table>

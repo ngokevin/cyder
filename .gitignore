@@ -13,5 +13,13 @@ local.py
 cyder/settings/
 cyder_db
 cyder_db_test
+cyder_db
+cyder_db_test
+cyder/settings/local*
+cyder/settings/local.py
 vendor/
+vendor-local/
 .coverage
+cyder/maintain2cyder/*.cfg
+cyder/maintain2cyder/build_dir/
+cyder/maintain2cyder/sync_prod_to_test.py

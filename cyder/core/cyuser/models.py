@@ -3,7 +3,7 @@ from django.db import models
 
 class CyUser(User):
     """
-    Extend Django user model to better support custom authorization backend
+    Extend Django user model to override permission methods
     """
     default_ctnr    = models.IntegerField(default=0)
     phone_number    = models.IntegerField(null=True)

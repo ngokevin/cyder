@@ -6,17 +6,17 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 
-from cyder.cydns.reverse_domain.models import ReverseDomain, ReverseDomainNotFoundError
-from cyder.cydns.reverse_domain.models import ReverseDomainExistsError,MasterReverseDomainNotFoundError
+from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
 
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
 
-from cyder.cydns.domain.models import Domain, DomainExistsError, MasterDomainNotFoundError
-from cyder.cydns.domain.models import DomainNotFoundError, DomainHasChildDomains, _name_to_domain
+from cyder.cydns.domain.models import Domain
+from cyder.cydns.domain.models import ValidationError, _name_to_domain
 
-from cyder.cydns.cydns import InvalidRecordNameError
+from cyder.cydns.cydns import ValidationError
 
 import ipaddr
 import pdb
@@ -30,7 +30,7 @@ class DomainTests(TestCase):
         f_c.save()
         f_c.delete()
         foo = Domain( name = 'foo.com' )
-        foo.__str__()
+        str(foo)
         foo.__repr__()
 
     def test_add_domain(self):
@@ -57,20 +57,17 @@ class DomainTests(TestCase):
     def test__name_to_master_domain(self):
         try:
             Domain( name = 'foo.cn' ).save()
-        except MasterDomainNotFoundError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( MasterDomainNotFoundError, type(e))
-        e.__str__()
+        self.assertEqual( ValidationError, type(e))
+        str(e)
         e = None
 
         Domain( name = 'cn' ).save()
-        Domain( name = 'foo.cn').save()
-        try:
-            Domain( name = 'foo.cn').save()
-        except DomainExistsError, e:
-            pass
-        self.assertEqual( DomainExistsError, type(e))
-        e = None
+        d = Domain( name = 'foo.cn')
+        d.save()
+        d = Domain( name = 'foo.cn')
+        self.assertRaises(ValidationError, d.save)
 
 
     def test_create_domain(self):
@@ -78,9 +75,9 @@ class DomainTests(TestCase):
         Domain( name = 'oregonstate.edu' )
         try:
             Domain( name = 'foo.bar.oregonstate.edu' ).save()
-        except MasterDomainNotFoundError, e:
+        except ValidationError, e:
             pass
-        self.assertEqual( MasterDomainNotFoundError, type(e))
+        self.assertEqual( ValidationError, type(e))
         e = None
 
     def test_remove_has_child_domain(self):
@@ -88,40 +85,29 @@ class DomainTests(TestCase):
         f_c = Domain( name = 'foo.com')
         f_c.save()
         Domain( name = 'boo.foo.com').save()
-        self.assertRaises(DomainHasChildDomains, f_c.delete)
+        self.assertRaises(ValidationError, f_c.delete)
 
     def test_invalid_add(self):
-        bad = 12324
-        dom = Domain( name = bad )
-        self.assertRaises(InvalidRecordNameError, dom.save)
 
         bad = "asfda.as df"
         dom = Domain( name = bad )
-        self.assertRaises(InvalidRecordNameError, dom.save)
+        self.assertRaises(ValidationError, dom.save)
 
         bad = "."
         dom = Domain( name = bad )
-        self.assertRaises(InvalidRecordNameError, dom.save)
+        self.assertRaises(ValidationError, dom.save)
 
         bad = "edu. "
         dom = Domain( name = bad )
-        self.assertRaises(InvalidRecordNameError, dom.save)
+        self.assertRaises(ValidationError, dom.save)
 
-        bad = None
+        bad = ""
         dom = Domain( name = bad )
-        self.assertRaises(InvalidRecordNameError, dom.save)
-
-        bad = True
-        dom = Domain( name = bad )
-        self.assertRaises(InvalidRecordNameError, dom.save)
-
-        bad = False
-        dom = Domain( name = bad )
-        self.assertRaises(InvalidRecordNameError, dom.save)
+        self.assertRaises(ValidationError, dom.save)
 
         bad = "!@#$"
         dom = Domain( name = bad )
-        self.assertRaises(InvalidRecordNameError, dom.save)
+        self.assertRaises(ValidationError, dom.save)
 
     def test_remove_has_child_records(self):
         pass
