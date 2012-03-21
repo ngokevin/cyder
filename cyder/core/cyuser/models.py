@@ -1,20 +1,16 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, UserManager
 from django.db import models
-from django.db.models import signals
 
-from cyder.core.ctnr.models import Ctnr
-
-
-class UserProfile( models.Model ):
-    user            = models.OneToOneField(User)
-    default_ctnr    = models.ForeignKey(Ctnr, default=0)
+class CyUser(User):
+    """
+    Extend Django user model to better support custom authorization backend
+    """
+    default_ctnr    = models.IntegerField(default=0)
     phone_number    = models.IntegerField(null=True)
 
+    def has_perm(self, request, perm, obj):
+        print "YEAH"
 
-def create_user_profile(sender, **kwargs):
-    user = kwargs['instance']
-    if kwargs['created']:
-        profile = UserProfile(user=user)
-        profile.save()
+    # Use UserManager to get the create_user method, etc.
+    objects = UserManager()
 
-signals.post_save.connect(create_user_profile, sender=User)

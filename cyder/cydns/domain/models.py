@@ -52,6 +52,13 @@ class Domain( models.Model ):
     class Meta:
         db_table = 'domain'
 
+        permissions = (
+            ("create", "Can create"),
+            ("view", "Can view"),
+            ("update", "Can update"),
+            ("delete", "Can delete"),
+        )
+
 
 def _check_for_children( domain ):
     if Domain.objects.filter( master_domain = domain ):

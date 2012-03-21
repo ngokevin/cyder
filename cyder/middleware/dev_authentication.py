@@ -32,5 +32,5 @@ class DevAuthenticationMiddleware(object):
             else:
                 request.session['ctnr'] = Ctnr.objects.get(id=default_ctnr.id)
         else:
-            # print request.user.has_perm(request.session['ctnr'])
+            print request.user.has_perm('cyder.cydns.domain.create', obj=request.session['ctnr'])
             return None

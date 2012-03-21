@@ -18,6 +18,7 @@ class AuthorizationBackend:
         return user_obj._perm_cache
 
     def has_perm(self, user_obj, perm, obj=None):
+        print "HY"
         return True
         # container_user = Container_User.objects.get(container=request.session
 
