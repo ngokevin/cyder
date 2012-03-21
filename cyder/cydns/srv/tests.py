@@ -6,12 +6,13 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from cyder.cydns.cydns import RecordExistsError, InvalidRecordNameError
+from django.core.exceptions import ValidationError
+
 from cyder.cydns.srv.models import SRV
 from cyder.cydns.domain.models import Domain
 
 
-class SimpleTest(TestCase):
+class SRVTests(TestCase):
     def setUp(self):
         self.o = Domain( name = "org" )
         self.o.save()
@@ -48,36 +49,35 @@ class SimpleTest(TestCase):
         data = { 'label':'_faf' ,'domain':self.o ,'target':'foo.com.nar' ,'priority':1234 ,'weight':23414 , 'port': 222 }
         self.do_remove( data )
 
-        data = { 'label':'bar' ,'domain':self.o_e ,'target':'relay.oregonstate.edu' ,'priority':2 ,'weight':2222 , 'port': 222 }
+        data = { 'label':'_bar' ,'domain':self.o_e ,'target':'relay.oregonstate.edu' ,'priority':2 ,'weight':2222 , 'port': 222 }
         self.do_remove( data )
 
     def test_invalid_add_update(self):
         data = { 'label':'_df' ,'domain':self.o_e ,'target':'relay.oregonstate.edu' ,'priority':2 ,'weight':2222 , 'port': 222 }
         srv0 = self.do_generic_add( data )
-        self.assertRaises( RecordExistsError, self.do_generic_add, data )
+        self.assertRaises( ValidationError, self.do_generic_add, data )
         data = { 'label':'_df' ,'domain':self.o_e ,'target':'foo.oregonstate.edu' ,'priority':2 ,'weight':2222 , 'port': 222 }
+
         srv1 = self.do_generic_add( data )
-        self.assertRaises( RecordExistsError, self.do_generic_add, data )
+        self.assertRaises( ValidationError, self.do_generic_add, data )
 
         srv0.target = "foo.oregonstate.edu"
-        self.assertRaises( RecordExistsError, srv0.save )
+        self.assertRaises( ValidationError, srv0.save )
 
         srv0.port = 65536
-        self.assertRaises( InvalidRecordNameError, srv0.save )
+        self.assertRaises( ValidationError, srv0.save )
+
         srv0.port = 1
-
         srv0.priority = 65536
-        self.assertRaises( InvalidRecordNameError, srv0.save )
+        self.assertRaises( ValidationError, srv0.save )
+
         srv0.priority = 1
-
         srv0.weight = 65536
-        self.assertRaises( InvalidRecordNameError, srv0.save )
-        srv0.weight = 1
+        self.assertRaises( ValidationError, srv0.save )
 
-        srv0.target = 123
-        self.assertRaises( InvalidRecordNameError, srv0.save )
         srv0.target = "asdfas"
-
         srv0.label = "no_first"
-        self.assertRaises( InvalidRecordNameError, srv0.save )
+        self.assertRaises( ValidationError, srv0.save )
+
         srv0.target = "_df"
+        self.assertRaises( ValidationError, srv0.save )

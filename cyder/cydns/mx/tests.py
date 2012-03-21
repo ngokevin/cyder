@@ -6,7 +6,8 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from cyder.cydns.cydns import RecordExistsError, InvalidRecordNameError
+from django.core.exceptions import ValidationError
+
 from cyder.cydns.mx.models import MX
 from cyder.cydns.domain.models import Domain
 
@@ -48,23 +49,24 @@ class MXTests(TestCase):
 
     def test_add_invalid(self):
         data = { 'label': 'bar','domain':self.o_e,'server':'mail.oregonstate.edu','priority':123,'ttl':23}
-        self.assertRaises(InvalidRecordNameError, self.do_generic_add, data ) # TLD condition
+        self.assertRaises(ValidationError, self.do_generic_add, data ) # TLD condition
         data = { 'label':'adsf,com' ,'domain':self.o_e ,'server':'mail.oregonstate.edu' ,'priority':123 ,'ttl':23 }
-        self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
+        self.assertRaises(ValidationError, self.do_generic_add, data )
         data = { 'label':'foo' ,'domain':self.o_e ,'server':'mail..com' ,'priority':34 ,'ttl':1234 }
-        self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
+        self.assertRaises(ValidationError, self.do_generic_add, data )
         data = { 'label':'foo.bar' ,'domain':self.o_e ,'server':'mail.com' ,'priority':3 ,'ttl':23424 }
-        self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
-        data = { 'label':123 ,'domain':self.o_e ,'server':'sdf' ,'priority':2 ,'ttl':32 }
-        self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
+        self.assertRaises(ValidationError, self.do_generic_add, data )
         data = { 'label':"asdf#$@" ,'domain':self.o_e ,'server':'coo.com' ,'priority':123 ,'ttl':23 }
-        self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
+        self.assertRaises(ValidationError, self.do_generic_add, data )
         data = { 'label':"asdf" ,'domain':self.o_e ,'server':'coo.com' ,'priority':-1 ,'ttl':23 }
-        self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
+        self.assertRaises(ValidationError, self.do_generic_add, data )
         data = { 'label':"asdf" ,'domain':self.o_e ,'server':'coo.com' ,'priority':65536 ,'ttl':23 }
-        self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
+        self.assertRaises(ValidationError, self.do_generic_add, data )
         data = { 'label':"asdf" ,'domain':self.o_e ,'server':234 ,'priority':65536 ,'ttl':23 }
-        self.assertRaises(InvalidRecordNameError, self.do_generic_add, data )
+        self.assertRaises(ValidationError, self.do_generic_add, data )
+
+        data = { 'label':"a" ,'domain':self.o_e ,'server':'foo' ,'priority':6556 ,'ttl':91234241254 }
+        self.assertRaises(ValidationError, self.do_generic_add, data )
 
     def do_remove(self, data):
         mx = self.do_generic_add( data )
@@ -87,12 +89,12 @@ class MXTests(TestCase):
     def test_add_and_update_dup(self):
         data = { 'label':'' ,'domain':self.o_e ,'server':'relaydf.oregonstate.edu' ,'priority':2 ,'ttl':2222 }
         mx0 = self.do_generic_add( data )
-        self.assertRaises( RecordExistsError, self.do_generic_add, data )
+        self.assertRaises( ValidationError, self.do_generic_add, data )
         data = { 'label':'' ,'domain':self.o_e ,'server':'mail.sddf.fo' ,'priority':9 ,'ttl':34234 }
         mx1 = self.do_generic_add( data )
-        self.assertRaises( RecordExistsError, self.do_generic_add, data )
+        self.assertRaises( ValidationError, self.do_generic_add, data )
 
         mx0.server = "mail.sddf.fo"
         mx0.priority = 9
         mx0.ttl = 34234
-        self.assertRaises( RecordExistsError, mx0.save )
+        self.assertRaises( ValidationError, mx0.save )

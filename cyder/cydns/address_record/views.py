@@ -34,7 +34,6 @@ class AddressRecordCreateView(AddressRecordView, CreateView):
         ip_form = IpForm( request.POST, instance=Ip() )
         # Attempt to create record.
         try:
-            errors = False
             ip_type = request.POST['ip_type']
             record_form.instance.ip_type, ip_form.instance.ip_type = ip_type, ip_type
 
@@ -54,7 +53,7 @@ class AddressRecordCreateView(AddressRecordView, CreateView):
     def get( self, request, *args, **kwargs ):
         domain_pk = self.kwargs.get('domain', False)
         if domain_pk:
-            record_form = slim_form( domain_pk, AddressRecordForm())
+            record_form = slim_form( domain_pk=domain_pk, form=AddressRecordForm())
         else:
             record_form = AddressRecordForm()
         ip_form = IpForm()

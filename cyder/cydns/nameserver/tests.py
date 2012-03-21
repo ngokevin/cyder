@@ -6,13 +6,13 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 
-from cyder.cydns.domain.models import Domain, DomainExistsError, MasterDomainNotFoundError, DomainNotFoundError
-from cyder.cydns.address_record.models import AddressRecord,RecordExistsError, RecordNotFoundError
-from cyder.cydns.nameserver.models import Nameserver,NSRecordMisconfiguredError
+from cyder.cydns.domain.models import Domain
+from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.nameserver.models import Nameserver
 from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.ip.models import Ip
-from cyder.cydns.cydns import RecordExistsError, InvalidRecordNameError
 import pdb
 
 class NSTests(TestCase):
@@ -47,7 +47,7 @@ class NSTests(TestCase):
 
     def test_add_TLD(self):
         data = { 'domain':self.r , 'server':'bar.foo.ru' }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
 
     def test_add_ns(self):
         data = { 'domain':self.r , 'server':'ns2.moot.ru' }
@@ -71,11 +71,11 @@ class NSTests(TestCase):
         glue = AddressRecord( label='ns2', domain = self.r, ip = ip, ip_type='4' )
         glue.save()
         data = { 'domain':self.f_r , 'server':'asdf.asdf', 'glue':glue }
-        self.assertRaises(NSRecordMisconfiguredError, self.do_add, **data)
+        self.assertRaises(ValidationError, self.do_add, **data)
 
     def test_add_invalid(self):
         data = { 'domain':self.f_r , 'server':'ns3.foo.ru' }
-        self.assertRaises( NSRecordMisconfiguredError, self.do_add, **data  )
+        self.assertRaises( ValidationError, self.do_add, **data  )
 
     def testtest_add_ns_in_domain(self):
         ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
@@ -123,7 +123,7 @@ class NSTests(TestCase):
 
         ns.server = "ns4.ru"
         ns.glue = glue
-        self.assertRaises(NSRecordMisconfiguredError, ns.save )
+        self.assertRaises(ValidationError, ns.save )
 
 
 
@@ -148,20 +148,20 @@ class NSTests(TestCase):
         glue.save()
 
         data = { 'domain':self.r , 'server':'ns2 .ru', 'glue':glue }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
         data = { 'domain':self.r , 'server':'ns2$.ru', 'glue':glue }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
         data = { 'domain':self.r , 'server':'ns2..ru', 'glue':glue }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
         data = { 'domain':self.r , 'server':'ns2.ru ', 'glue':glue }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
         data = { 'domain':self.r , 'server':True, 'glue':glue }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
         data = { 'domain':self.r , 'server':'', 'glue':glue }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
 
     def test_add_dup(self):
         data = { 'domain':self.r , 'server':'ns2.moot.ru' }
         self.do_add( **data )
 
-        self.assertRaises( RecordExistsError, self.do_add, **data)
+        self.assertRaises( ValidationError, self.do_add, **data)

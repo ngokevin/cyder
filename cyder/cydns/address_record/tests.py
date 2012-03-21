@@ -6,19 +6,17 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
-from cyder.cydns.reverse_domain.models import ReverseDomain, ReverseDomainNotFoundError
-from cyder.cydns.reverse_domain.models import ReverseDomainExistsError,MasterReverseDomainNotFoundError
+from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
 
 from cyder.cydns.ip.models import Ip, ipv6_to_longs
 
-from cyder.cydns.domain.models import Domain, DomainExistsError, MasterDomainNotFoundError
-from cyder.cydns.domain.models import DomainNotFoundError
+from cyder.cydns.domain.models import Domain
 
-from cyder.cydns.cydns import InvalidRecordNameError, CyAddressValueError
-from cyder.cydns.address_record.models import RecordNotFoundError
-from cyder.cydns.address_record.models import AddressRecord,RecordExistsError
+from cyder.cydns.address_record.models import AddressRecord
 
 import ipaddr
 import pdb
@@ -30,53 +28,53 @@ class AddressRecordTests(TestCase):
         try:
             self.e = Domain( name='edu' )
             self.e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             pass
         try:
             self.o_e = Domain( name='oregonstate.edu' )
             self.o_e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             self.o_e = Domain.objects.filter( name = 'oregonstate.edu' )[0]
             pass
 
         try:
             self.f_o_e = Domain( name='foo.oregonstate.edu' )
             self.f_o_e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             self.f_o_e = Domain.objects.filter( name = 'foo.oregonstate.edu' )[0]
             pass
 
         try:
             self.m_o_e = Domain( name= 'max.oregonstate.edu')
             self.m_o_e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             self.m_o_e = Domain.objects.filter( name = 'max.oregonstate.edu' )[0]
             pass
 
         try:
             self.z_o_e = Domain( name='zax.oregonstate.edu')
             self.z_o_e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             self.z_o_e = Domain.objects.filter( name = 'zax.oregonstate.edu' )[0]
             pass
         try:
             self.g_o_e = Domain( name='george.oregonstate.edu')
             self.g_o_e.save()
-        except DomainExistsError, e:
+        except IntegrityError, e:
             self.g_o_e = Domain.objects.filter( name = 'george.oregonstate.edu' )[0]
             pass
 
         try:
             self._128 = ReverseDomain(name='128')
             self._128.save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             self._128 = ReverseDomain.objects.filter( name = '128' )[0]
             pass
 
         try:
              self._128_193 = ReverseDomain( name = '128.193')
              self._128_193.save()
-        except ReverseDomainExistsError, e:
+        except IntegrityError, e:
             self._128_193 = ReverseDomain.objects.filter( name = '128.193' )[0]
             pass
 
@@ -103,10 +101,10 @@ class AddressRecordTests(TestCase):
         rec1.save()
 
         rec1.label = "foo"
-        self.assertRaises(RecordExistsError,rec1.save)
+        self.assertRaises(ValidationError,rec1.save)
 
         rec3.label = "bar"
-        self.assertRaises(RecordExistsError,rec3.save)
+        self.assertRaises(ValidationError,rec3.save)
 
         test_ip4 = Ip(ip_str =osu_block+":1", ip_type='6')
         test_ip4.save()
@@ -125,10 +123,10 @@ class AddressRecordTests(TestCase):
         data = { 'A_record':rec2, 'new_ip':osu_block+":1"}
         rec2.ip.ip_str = data['new_ip']
         rec2.ip.save()
-        self.assertRaises(RecordExistsError,rec2.save)
+        self.assertRaises(ValidationError,rec2.save)
 
         rec3.label = 'bar'
-        self.assertRaises(RecordExistsError,rec3.save)
+        self.assertRaises(ValidationError,rec3.save)
 
     """
     Things that could go wrong.
@@ -249,21 +247,19 @@ class AddressRecordTests(TestCase):
         test_ip1.save()
         rec1 = AddressRecord( label = 'foo',domain= self.m_o_e , ip = test_ip , ip_type='4')
         # BAD Names
-        self.assertRaises( InvalidRecordNameError,self.do_update_A_record,**{'record': rec1,'new_name': ".","new_ip": None})
-        self.assertRaises( InvalidRecordNameError,self.do_update_A_record,**{'record': rec0,'new_name': " sdfsa ","new_ip": None})
-        self.assertRaises( InvalidRecordNameError,self.do_update_A_record,**{'record': rec0,'new_name': -1,"new_ip": None})
-        self.assertRaises( InvalidRecordNameError,self.do_update_A_record,**{'record': rec0,'new_name': 34871,"new_ip": None})
-        self.assertRaises( InvalidRecordNameError,self.do_update_A_record,**{'record': rec0,'new_name': "asdf.","new_ip": None})
+        self.assertRaises( ValidationError,self.do_update_A_record,**{'record': rec1,'new_name': ".","new_ip": None})
+        self.assertRaises( ValidationError,self.do_update_A_record,**{'record': rec0,'new_name': " sdfsa ","new_ip": None})
+        self.assertRaises( ValidationError,self.do_update_A_record,**{'record': rec0,'new_name': "asdf.","new_ip": None})
 
         # BAD IPs
-        self.assertRaises( CyAddressValueError,self.do_update_A_record,**{'record': rec0,'new_name': None,"new_ip": 71134})
-        self.assertRaises( CyAddressValueError,self.do_update_A_record,**{'record': rec0,'new_name': None,"new_ip": "19.193.23.1.2"})
-        self.assertRaises( CyAddressValueError,self.do_update_A_record,**{'record': rec0,'new_name': None,"new_ip": 12314123})
-        self.assertRaises( CyAddressValueError,self.do_update_A_record,**{'record': rec0,'new_name': "narf","new_ip": 1214123})
-        self.assertRaises( CyAddressValueError,self.do_update_A_record,**{'record': rec0,'new_name': "%asdfsaf","new_ip": "1928.193.23.1"})
-        self.assertRaises( CyAddressValueError,self.do_update_A_record,**{'record': rec0,'new_name': None,"new_ip": "1928.193.23.1"})
+        self.assertRaises( ValidationError,self.do_update_A_record,**{'record': rec0,'new_name': None,"new_ip": 71134})
+        self.assertRaises( ValidationError,self.do_update_A_record,**{'record': rec0,'new_name': None,"new_ip": "19.193.23.1.2"})
+        self.assertRaises( ValidationError,self.do_update_A_record,**{'record': rec0,'new_name': None,"new_ip": 12314123})
+        self.assertRaises( ValidationError,self.do_update_A_record,**{'record': rec0,'new_name': "narf","new_ip": 1214123})
+        self.assertRaises( ValidationError,self.do_update_A_record,**{'record': rec0,'new_name': "%asdfsaf","new_ip": "1928.193.23.1"})
+        self.assertRaises( ValidationError,self.do_update_A_record,**{'record': rec0,'new_name': None,"new_ip": "1928.193.23.1"})
 
-        self.assertRaises( ReverseDomainNotFoundError,self.do_update_A_record,**{'record': rec0,'new_name': "asdfa","new_ip": "88.67.67.67"})
+        self.assertRaises( ValidationError,self.do_update_A_record,**{'record': rec0,'new_name': "asdfa","new_ip": "88.67.67.67"})
 
     def test_update_invalid_ip_AAAA_record(self):
         osu_block = "7620:105:F000:"
@@ -276,18 +272,17 @@ class AddressRecordTests(TestCase):
         test_ip0.save()
         rec0 = AddressRecord( label='foo', domain=self.z_o_e ,ip=test_ip0, ip_type='6')
 
-        #self.assertRaises( InvalidRecordNameError,self.do_update_AAAA_record( rec1, "foo", osu_block+":1"))
-        #self.assertRaises( InvalidRecordNameError,self.do_update_AAAA_record, { rec1, "george", osu_block+":1"})
-        self.assertRaises( CyAddressValueError,self.do_update_AAAA_record,**{ 'record':rec0, 'new_name':None, 'new_ip':71134})
-        self.assertRaises( CyAddressValueError,self.do_update_AAAA_record, **{'record': rec0,'new_name': None,'new_ip': osu_block+":::"})
-        self.assertRaises( CyAddressValueError,self.do_update_AAAA_record, **{'record': rec0,'new_name': "%asdfsaf",'new_ip': osu_block})
-        self.assertRaises( CyAddressValueError,self.do_update_AAAA_record, **{'record': rec0,'new_name': "sdfsa",'new_ip': 1239812472934623847})
-        self.assertRaises( CyAddressValueError,self.do_update_AAAA_record, **{'record': rec0,'new_name': None,'new_ip': "128.193.1.1"})
-        self.assertRaises( InvalidRecordNameError,self.do_update_AAAA_record, **{'record': rec0,'new_name': -1,'new_ip': None})
-        self.assertRaises( InvalidRecordNameError,self.do_update_AAAA_record, **{'record': rec0,'new_name': "%asdfsaf",'new_ip': osu_block+":1"})
-        self.assertRaises( InvalidRecordNameError,self.do_update_AAAA_record, **{'record': rec0,'new_name': " sdfsa ",'new_ip': None})
+        #self.assertRaises( ValidationError,self.do_update_AAAA_record( rec1, "foo", osu_block+":1"))
+        #self.assertRaises( ValidationError,self.do_update_AAAA_record, { rec1, "george", osu_block+":1"})
+        self.assertRaises( ValidationError,self.do_update_AAAA_record,**{ 'record':rec0, 'new_name':None, 'new_ip':71134})
+        self.assertRaises( ValidationError,self.do_update_AAAA_record, **{'record': rec0,'new_name': None,'new_ip': osu_block+":::"})
+        self.assertRaises( ValidationError,self.do_update_AAAA_record, **{'record': rec0,'new_name': "%asdfsaf",'new_ip': osu_block})
+        self.assertRaises( ValidationError,self.do_update_AAAA_record, **{'record': rec0,'new_name': "sdfsa",'new_ip': 1239812472934623847})
+        self.assertRaises( ValidationError,self.do_update_AAAA_record, **{'record': rec0,'new_name': None,'new_ip': "128.193.1.1"})
+        self.assertRaises( ValidationError,self.do_update_AAAA_record, **{'record': rec0,'new_name': "%asdfsaf",'new_ip': osu_block+":1"})
+        self.assertRaises( ValidationError,self.do_update_AAAA_record, **{'record': rec0,'new_name': " sdfsa ",'new_ip': None})
 
-        self.assertRaises( ReverseDomainNotFoundError,self.do_update_AAAA_record, **{'record': rec0,'new_name': "asdfa",'new_ip': "6435:234:"+":1"})
+        self.assertRaises( ValidationError,self.do_update_AAAA_record, **{'record': rec0,'new_name': "asdfa",'new_ip': "6435:234:"+":1"})
 
 
     ######################
@@ -460,59 +455,59 @@ class AddressRecordTests(TestCase):
         ip.save()
         rec = AddressRecord(label = data['label'], domain=data['domain'], ip_type='x')
         rec.ip = ip
-        self.assertRaises(CyAddressValueError, rec.save)
+        self.assertRaises(ValidationError, rec.save)
 
         data = {'label': 'uuu','domain': self.f_o_e ,'ip': '128.193.4.1'}
         ip = Ip(ip_str=data['ip'], ip_type = '4')
         ip.save()
         rec = AddressRecord(label = data['label'], domain=data['domain'])
         rec.ip = ip
-        self.assertRaises(CyAddressValueError, rec.save)
+        self.assertRaises(ValidationError, rec.save)
 
 
     def test_bad_A_ip(self):
         #IPv4 Tests
         osu_block = "2620:105:F000:"
         data = {'label': 'asdf0','domain': self.o_e ,'ip': osu_block+":1"}
-        self.assertRaises(CyAddressValueError ,self.do_add_record,data)
+        self.assertRaises(ValidationError ,self.do_add_record,data)
 
         data = {'label': 'asdf1','domain': self.o_e ,'ip': 123142314}
-        self.assertRaises(CyAddressValueError ,self.do_add_record,data)
+        self.assertRaises(ValidationError ,self.do_add_record,data)
 
         data = {'label': 'asdf1','domain': self.o_e ,'ip': "128.193.0.1.22"}
-        self.assertRaises(CyAddressValueError ,self.do_add_record,data)
+        self.assertRaises(ValidationError ,self.do_add_record,data)
 
         data = {'label': 'asdf2','domain': self.o_e ,'ip': "128.193.8"}
-        self.assertRaises(CyAddressValueError ,self.do_add_record,data)
+        self.assertRaises(ValidationError ,self.do_add_record,data)
 
         data = {'label': 'asdf3','domain': self.o_e ,'ip': "99.193.8.1"}
-        self.assertRaises(ReverseDomainNotFoundError ,self.do_add_record, data)
+        self.assertRaises(ValidationError ,self.do_add_record, data)
 
     def test_bad_AAAA_ip(self):
         # IPv6 Tests
         osu_block = "2620:105:F000:"
         data = {'label': 'asdf5','domain': self.o_e ,'ip': "128.193.8.1"}
-        self.assertRaises(CyAddressValueError ,self.do_add_record6, data)
+        self.assertRaises(ValidationError ,self.do_add_record6, data)
         data = {'label': 'asdf4','domain': self.o_e ,'ip': osu_block+":::"}
-        self.assertRaises(CyAddressValueError ,self.do_add_record6, data)
+        self.assertRaises(ValidationError ,self.do_add_record6, data)
 
         data = {'label': 'asdf4','domain': self.o_e ,'ip': 123213487823762347612346}
-        self.assertRaises(CyAddressValueError ,self.do_add_record6,data)
+        self.assertRaises(ValidationError ,self.do_add_record6,data)
 
         data = {'label': 'asdf6','domain': self.o_e ,'ip': "1009::1"}
-        self.assertRaises(ReverseDomainNotFoundError ,self.do_add_record6, data)
+        self.assertRaises(ValidationError ,self.do_add_record6, data)
         data = {'label': 'asdf6','domain': self.o_e ,'ip': "9213:123:213:12::1"}
-        self.assertRaises(ReverseDomainNotFoundError ,self.do_add_record6, data)
+        self.assertRaises(ValidationError ,self.do_add_record6, data)
 
     def test_add_A_records_exist(self):
         data = {'label': '','domain': self.f_o_e ,'ip':"128.193.0.2" }
         self.do_add_record(data)
-        self.assertRaises(RecordExistsError ,self.do_add_record,data)
+        self.assertRaises(ValidationError ,self.do_add_record,data)
 
 
         data = {'label': 'new','domain': self.f_o_e ,'ip':"128.193.0.2" }
         self.do_add_record(data)
-        self.assertRaises(RecordExistsError ,self.do_add_record,data)
+        self.assertRaises(ValidationError ,self.do_add_record,data)
 
 
     def test_add_AAAA_records_exist(self):
@@ -521,67 +516,67 @@ class AddressRecordTests(TestCase):
 
         data = {'label': 'new','domain': self.f_o_e ,'ip':osu_block+":2"}
         self.do_add_record6(data)
-        self.assertRaises(RecordExistsError ,self.do_add_record6,data)
+        self.assertRaises(ValidationError ,self.do_add_record6,data)
 
         data = {'label': 'new','domain': self.f_o_e ,'ip':osu_block+":0:9"}
         self.do_add_record6(data)
-        self.assertRaises(RecordExistsError ,self.do_add_record6,data)
+        self.assertRaises(ValidationError ,self.do_add_record6,data)
 
 
         data = {'label': 'nope','domain': self.o_e ,'ip':osu_block+":4"}
         self.do_add_record6(data)
-        self.assertRaises(RecordExistsError ,self.do_add_record6,data)
+        self.assertRaises(ValidationError ,self.do_add_record6,data)
 
     def test_add_A_invalid_address_records(self):
 
         data = {'label': "oregonstate",'domain': self.e,'ip': "128.193.0.2"}
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record, data)
+        self.assertRaises(ValidationError ,self.do_add_record, data)
 
         data = {'label': "foo",'domain': self.o_e,'ip': "128.193.0.2"}
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record, data)
+        self.assertRaises(ValidationError ,self.do_add_record, data)
 
         data = {'label': 'foo.nas','domain': self.o_e ,'ip':"128.193.0.2" }
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record, data)
+        self.assertRaises(ValidationError ,self.do_add_record, data)
 
         data = {'label': 'foo.bar.nas','domain': self.o_e ,'ip':"128.193.0.2" }
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record, data)
+        self.assertRaises(ValidationError ,self.do_add_record, data)
 
         data = {'label': 'foo.baz.bar.nas','domain': self.o_e ,'ip':"128.193.0.2" }
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record, data)
+        self.assertRaises(ValidationError ,self.do_add_record, data)
 
         data = {'label': 'n as','domain': self.o_e ,'ip':"128.193.0.2" }
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record, data)
+        self.assertRaises(ValidationError ,self.do_add_record, data)
 
         data = {'label': 'n as','domain': self.o_e ,'ip':"128.193.0.2" }
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record, data)
+        self.assertRaises(ValidationError ,self.do_add_record, data)
 
         data = {'label': 'n%as','domain': self.o_e ,'ip':"128.193.0.2" }
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record, data)
+        self.assertRaises(ValidationError ,self.do_add_record, data)
 
         data = {'label': 'n+as','domain': self.o_e ,'ip':"128.193.0.2" }
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record, data)
+        self.assertRaises(ValidationError ,self.do_add_record, data)
 
     def test_add_AAAA_invalid_address_records(self):
         osu_block = "3620:105:F000:"
         boot_strap_add_ipv6_reverse_domain("3.6.2.0")
 
         data = {'label': 'foo.nas','domain': self.o_e ,'ip': osu_block+":1"}
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record6, data)
+        self.assertRaises(ValidationError ,self.do_add_record6, data)
 
         data = {'label': 'foo.bar.nas','domain': self.o_e ,'ip':osu_block+":2"}
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record6, data)
+        self.assertRaises(ValidationError ,self.do_add_record6, data)
 
         data = {'label': 'foo.baz.bar.nas','domain': self.o_e ,'ip':osu_block+":3"}
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record6, data)
+        self.assertRaises(ValidationError ,self.do_add_record6, data)
 
         data = {'label': 'n as','domain': self.o_e ,'ip':osu_block+":4"}
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record6, data)
+        self.assertRaises(ValidationError ,self.do_add_record6, data)
 
         data = {'label': 'n!+/*&%$#@as','domain': self.o_e ,'ip':osu_block+":5"}
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record6, data)
+        self.assertRaises(ValidationError ,self.do_add_record6, data)
 
         data = {'label': 'n%as','domain': self.o_e ,'ip':osu_block+":6"}
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record6, data)
+        self.assertRaises(ValidationError ,self.do_add_record6, data)
 
         data = {'label': 'n+as','domain': self.o_e ,'ip':osu_block+":7"}
-        self.assertRaises(InvalidRecordNameError ,self.do_add_record6, data)
+        self.assertRaises(ValidationError ,self.do_add_record6, data)

@@ -6,8 +6,9 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.core.exceptions import ValidationError
+
 from cyder.cydns.soa.models import *
-from cyder.cydns.cydns import InvalidRecordNameError
 from cyder.cydns.domain.models import Domain
 
 
@@ -81,16 +82,22 @@ class SOATests(TestCase):
         soa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh=refresh )
         self.assertTrue( len(soa) == 0 )
 
+        # Add dup
+        soa = self.do_generic_add(primary, contact,retry, refresh)
+        soa.save()
+        soa = SOA(primary=primary, contact=contact,retry=retry, refresh=refresh)
+        self.assertRaises(ValidationError, soa.save)
+
     def test_add_invalid(self):
         data = { 'primary':"daf..fff" , 'contact':"foo.com" }
         soa = SOA(**data)
-        self.assertRaises(InvalidRecordNameError, soa.save)
+        self.assertRaises(ValidationError, soa.save)
         data = { 'primary':'foo.com' , 'contact':'dkfa..' }
         soa = SOA(**data)
-        self.assertRaises(InvalidRecordNameError, soa.save)
+        self.assertRaises(ValidationError, soa.save)
         data = { 'primary':'adf' , 'contact':'*@#$;' }
         soa = SOA(**data)
-        self.assertRaises(InvalidRecordNameError, soa.save)
+        self.assertRaises(ValidationError, soa.save)
 
     def test_chain_soa_domain_add(self):
         data = { 'primary':"ns1.foo.com" , 'contact':"email.foo.com" }
