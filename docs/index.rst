@@ -12,7 +12,7 @@ last version released. Maintain 3 was written in purely in PHP and didn't work t
 Aside from initially being written almost a decade ago, Maintain has been used in production at OSU
 for over 10 years.
 
-Taken from Maintain's REAME, here are the abridged requirements of Maintain:
+Taken from Maintain's README, here are the abridged requirements of Maintain:
 
 * Web-based interface
 * Ability to delegate authority of zone information to individual users/groups
