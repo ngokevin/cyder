@@ -1,16 +1,28 @@
-from django.contrib.auth.models import User, UserManager
+from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import signals
 
-class CyUser(User):
-    """
-    Extend Django user model to override permission methods
-    """
-    default_ctnr    = models.IntegerField(default=0)
-    phone_number    = models.IntegerField(null=True)
+from cyder.core.ctnr.models import Ctnr
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User)
+    default_ctnr = models.ForeignKey(Ctnr, default=0)
+    phone_number = models.IntegerField(null=True)
 
     def has_perm(self, request, perm, obj):
-        print "YEAH"
+        pass
 
-    # Use UserManager to get the create_user method, etc.
-    objects = UserManager()
+    class Meta:
+        db_table = 'auth_user_profile'
+
+
+def create_user_profile(sender, **kwargs):
+    user = kwargs['instance']
+    if kwargs['created']:
+        profile = UserProfile(user=user)
+        profile.save()
+
+
+signals.post_save.connect(create_user_profile, sender=User)
 

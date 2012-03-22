@@ -2,7 +2,6 @@
 # repo. If you need to override a setting locally, use settings_local.py
 
 import os
-import sys
 
 from funfactory.settings_base import *
 
@@ -11,12 +10,12 @@ CAS_SERVER_URL = "https://login.oregonstate.edu/cas/login"
 CYDER_BASE_URL = "/cyder"
 CYDNS_BASE_URL = CYDER_BASE_URL + "/cydns"
 
-#os.environ['FORCE_DB']='1'
+os.environ['FORCE_DB']='1'
 
 JINJA_CONFIG = {'autoescape': False}
 
 # NOSE_ARGS = ['-s', '-v', '-d' ]
-NOSE_ARGS = [ '-s', '-d', '--cover-package=cyder', "--with-coverage"  ]
+NOSE_ARGS = [ '-s', '-v', '-d', '--cover-package=cyder', "--with-coverage"  ]
 
 # Bundles is a dictionary of two dictionaries, css and js, which list css files
 # and js files that can be bundled together by the minify app.
@@ -48,7 +47,6 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.sites',
     'django.contrib.messages',
     # Application base, containing global templates.
-    'cyder.maintain2cyder',
     'cyder.base',
     'cyder.core.cyuser',
     'cyder.core',
@@ -76,7 +74,6 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'cyder.cydhcp.range',
     'cyder.cydhcp.subnet',
     'cyder.cydhcp.subnet_option',
-
 ]
 
 
@@ -108,10 +105,8 @@ AUTH_PROFILE_MODULE = 'cyuser.UserProfile'
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'django_cas.backends.CASBackend',
-    'cyder.core.cyuser.AuthorizationBackend',
 )
 
-"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -119,7 +114,6 @@ DATABASES = {
         'TEST_NAME':'cyder_db_test',
         },
 }
-"""
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -127,11 +121,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django_cas.middleware.CASMiddleware',
     'cyder.middleware.authentication.AuthenticationMiddleware',
-)
-
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-    'django_cas.backends.CASBackend',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (

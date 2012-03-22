@@ -1,7 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
-from cyder.core.cyuser.backends import AuthorizationBackend
 from cyder.core.ctnr.models import Ctnr
 
 import pdb
@@ -32,5 +31,4 @@ class DevAuthenticationMiddleware(object):
             else:
                 request.session['ctnr'] = Ctnr.objects.get(id=default_ctnr.id)
         else:
-            print request.user.has_perm('cyder.cydns.domain.create', obj=request.session['ctnr'])
             return None
