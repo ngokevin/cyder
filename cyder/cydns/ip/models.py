@@ -25,11 +25,11 @@ class Ip( models.Model ):
         197.1.1.1   PTR     foo.bob.com
 
     If we were building the file ``197.in-addr.arpa``, all IP addresses in the ``197`` domain would
-    need to be in this file. Also, forward mappings give no information about which reverse domain their
-    data lies in. To reduce the complexity of finding records for a reverse domain an IP is linked
-    to the appropriate reverse domain when it is created. It's mapping is updated when it's reverse
-    domain is deleted or a more appropritate reverse domain is added. Note that keeping the ``Ip``
-    feild on PTR and ``AddressRecords`` will help preformance since both need to be searched.
+    need to be in this file. To reduce the complexity of finding records for a reverse domain an IP
+    is linked to the appropriate reverse domain when it is created. It's mapping is updated when
+    it's reverse domain is deleted or a more appropritate reverse domain is added. Note that keeping
+    the ``Ip`` feild on PTR and ``AddressRecords`` will help preformance since both need to be
+    searched.
 
     The algorithm for determineing which reverse domain an ``Ip`` belongs to is done by applying a
     `longest prefix match` to all reverse domains in the ``ReverseDomain`` table.
