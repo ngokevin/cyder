@@ -24,13 +24,14 @@ class NSTests(TestCase):
         self.b_f_r = Domain( name = "bar.foo.ru" )
         self.b_f_r.save()
 
+        self.f = Domain( name = "fam" )
+        self.f.save()
+
         self._128 = ReverseDomain( name = '128', ip_type= '4' )
         self._128.save()
 
-    def do_add(self, domain, server, glue = False):
+    def do_add(self, domain, server):
         ns = Nameserver( domain = domain, server = server)
-        if glue:
-            ns.glue = glue
         ns.save()
         ns.save()
         self.assertTrue(ns.__repr__())
@@ -39,9 +40,6 @@ class NSTests(TestCase):
         self.assertTrue(ns.get_edit_url())
         self.assertTrue(ns.get_delete_url())
         ret = Nameserver.objects.filter( domain = domain, server = server )
-        if glue:
-            fglue = AddressRecord.objects.get( pk = ns.glue.pk )
-            self.assertEqual( len(ret), 1 )
         self.assertEqual( len(ret), 1 )
         return ns
 
@@ -65,14 +63,6 @@ class NSTests(TestCase):
         data = { 'domain':self.r , 'server':'asdf.asdf' }
         self.do_add( **data )
 
-        # Test no need for glue
-        ip = Ip( ip_str = '128.193.1.36', ip_type = '4' )
-        ip.save()
-        glue = AddressRecord( label='ns2', domain = self.r, ip = ip, ip_type='4' )
-        glue.save()
-        data = { 'domain':self.f_r , 'server':'asdf.asdf', 'glue':glue }
-        self.assertRaises(ValidationError, self.do_add, **data)
-
     def test_add_invalid(self):
         data = { 'domain':self.f_r , 'server':'ns3.foo.ru' }
         self.assertRaises( ValidationError, self.do_add, **data  )
@@ -82,7 +72,7 @@ class NSTests(TestCase):
         ip.save()
         glue = AddressRecord( label='ns2', domain = self.r, ip = ip, ip_type='4' )
         glue.save()
-        data = { 'domain':self.r , 'server':'ns2.ru', 'glue':glue }
+        data = { 'domain':self.r , 'server':'ns2.ru' }
         ns = self.do_add( **data )
         self.assertTrue( ns.glue )
         self.assertEqual( ns.server, ns.glue.fqdn() )
@@ -91,7 +81,7 @@ class NSTests(TestCase):
         ip.save()
         glue = AddressRecord( label='ns3', domain = self.f_r, ip = ip, ip_type='4' )
         glue.save()
-        data = { 'domain':self.f_r , 'server':'ns3.foo.ru', 'glue':glue }
+        data = { 'domain':self.f_r , 'server':'ns3.foo.ru' }
         ns = self.do_add( **data )
         self.assertTrue( ns.glue )
         self.assertEqual( ns.server, ns.glue.fqdn() )
@@ -106,24 +96,13 @@ class NSTests(TestCase):
         ip.save()
         glue = AddressRecord( label='ns3', domain = self.r, ip = ip, ip_type='4' )
         glue.save()
-        data = { 'domain':self.r , 'server':'ns3.ru', 'glue':glue }
+        data = { 'domain':self.r , 'server':'ns3.ru' }
         ns = self.do_add( **data )
         self.assertTrue( ns.glue )
-        self.assertEqual( ns.server, ns.glue.fqdn() )
-        ns.server = "ns3.foo.com"
-        ns.glue = None
-        ns.save()
-        self.assertFalse( ns.glue )
 
-        ns.server = "ns3.ru"
-        ns.glue = glue
+        ns.server = "ns4.wee"
         ns.save()
-        self.assertTrue( ns.glue )
-        self.assertEqual( ns.server, ns.glue.fqdn() )
-
-        ns.server = "ns4.ru"
-        ns.glue = glue
-        self.assertRaises(ValidationError, ns.save )
+        self.assertTrue( ns.glue == None )
 
 
 
@@ -132,7 +111,7 @@ class NSTests(TestCase):
         ip.save()
         glue = AddressRecord( label='ns4', domain = self.f_r, ip = ip, ip_type='4' )
         glue.save()
-        data = { 'domain':self.f_r , 'server':'ns4.foo.ru', 'glue':glue }
+        data = { 'domain':self.f_r , 'server':'ns4.foo.ru' }
         ns = self.do_add( **data )
         self.assertTrue( ns.glue )
         self.assertEqual( ns.server, ns.glue.fqdn() )
@@ -147,17 +126,15 @@ class NSTests(TestCase):
         glue = AddressRecord( label='ns2', domain = self.r, ip = ip, ip_type = '4' )
         glue.save()
 
-        data = { 'domain':self.r , 'server':'ns2 .ru', 'glue':glue }
+        data = { 'domain':self.r , 'server':'ns2 .ru' }
         self.assertRaises( ValidationError, self.do_add, **data )
-        data = { 'domain':self.r , 'server':'ns2$.ru', 'glue':glue }
+        data = { 'domain':self.r , 'server':'ns2$.ru' }
         self.assertRaises( ValidationError, self.do_add, **data )
-        data = { 'domain':self.r , 'server':'ns2..ru', 'glue':glue }
+        data = { 'domain':self.r , 'server':'ns2..ru' }
         self.assertRaises( ValidationError, self.do_add, **data )
-        data = { 'domain':self.r , 'server':'ns2.ru ', 'glue':glue }
+        data = { 'domain':self.r , 'server':'ns2.ru ' }
         self.assertRaises( ValidationError, self.do_add, **data )
-        data = { 'domain':self.r , 'server':True, 'glue':glue }
-        self.assertRaises( ValidationError, self.do_add, **data )
-        data = { 'domain':self.r , 'server':'', 'glue':glue }
+        data = { 'domain':self.r , 'server':'' }
         self.assertRaises( ValidationError, self.do_add, **data )
 
     def test_add_dup(self):
