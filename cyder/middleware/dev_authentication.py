@@ -31,4 +31,5 @@ class DevAuthenticationMiddleware(object):
             else:
                 request.session['ctnr'] = Ctnr.objects.get(id=default_ctnr.id)
         else:
+            print request.user.get_profile().has_perm(request, "LOL", None)
             return None

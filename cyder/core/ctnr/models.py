@@ -23,9 +23,9 @@ class Ctnr( models.Model ):
 
 
 class CtnrUser(models.Model):
-    user            = models.ForeignKey(User)
-    ctnr       = models.ForeignKey(Ctnr)
-    level           = models.IntegerField()
+    user = models.ForeignKey(User)
+    ctnr = models.ForeignKey(Ctnr)
+    level = models.IntegerField()
 
     class Meta:
         db_table = 'ctnr_users'

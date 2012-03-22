@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import signals
 
+from cyder.core.cyuser import backends
 from cyder.core.ctnr.models import Ctnr
 
 
@@ -10,8 +11,7 @@ class UserProfile(models.Model):
     default_ctnr = models.ForeignKey(Ctnr, default=0)
     phone_number = models.IntegerField(null=True)
 
-    def has_perm(self, request, perm, obj):
-        pass
+    has_perm = backends.has_perm
 
     class Meta:
         db_table = 'auth_user_profile'
