@@ -6,6 +6,7 @@ from cyder.cydns.common.models import CommonRecord
 from cyder.cydns.cydns import  _validate_ttl, _validate_name
 
 def _validate_mx_priority(priority):
+    """Validate the priority of a MX record."""
     if priority > 65535 or priority < 0:
         raise ValidationError("Error: MX priority must be within the 0 to 65535\
             range. See RFC 1035")

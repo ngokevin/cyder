@@ -46,10 +46,6 @@ Maintain's existing DNS scheme *does* `support building bind files
 required due to poor data validation). Cyder is Maintain with a more formal structure. Cyder uses
 many core concepts from Maintain.
 
-DNS
-===
-Modules related to the DNS app.
-
 .. toctree::
    :maxdepth: 2
 
@@ -57,6 +53,7 @@ Modules related to the DNS app.
    ip
    domain
    reverse_domain
+   common_record
    address_record
    ptr
    nameserver
@@ -65,10 +62,10 @@ Modules related to the DNS app.
    soa
    srv
    txt
-
+DNS
+===
 Vocabulary
 ----------
-
 * Name and Label: "Each node in the DNS tree has a name consisting of zero or more labels"  `RFC4343 <http://tools.ietf.org/html/rfc4343>`_ . The name ``x.y.z`` consists of the labels ``x``, ``y``, and ``z``.
 
 * Forward: Used to reference the part of DNS that maps names to Ip addresses.
