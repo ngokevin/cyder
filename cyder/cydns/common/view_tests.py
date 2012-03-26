@@ -7,6 +7,8 @@ from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.mx.models import MX
 from cyder.cydns.soa.models import SOA
+from cyder.cydns.srv.models import SRV
+from cyder.cydns.txt.models import TXT
 
 import pdb
 
@@ -84,3 +86,27 @@ for test in builder.build_all_tests():
     if test.__name__.find("in_domain") > -1:
         continue
     setattr(SOAViewTests,test.__name__+"_soa", test)
+
+class SRVViewTests(CommonViewTests, TestCase):
+    def setUp(self):
+        test_data = { 'label':"_"+random_label() ,'target':random_label(),'priority':2 ,'weight':2222 , 'port': 222 }
+        do_setUp(self, "srv", SRV, test_data)
+
+    def post_data(self):
+        return { 'label':"_"+random_label() , 'domain':self.domain.pk, 'target':random_label(),'priority':2 ,'weight':2222 , 'port': 222 }
+
+builder = GenericViewTests()
+for test in builder.build_all_tests():
+    setattr(SRVViewTests,test.__name__+"_srv", test)
+
+class TXTViewTests(CommonViewTests, TestCase):
+    def setUp(self):
+        test_data = { 'label':random_label() ,'txt_data':random_label() }
+        do_setUp(self, "txt", TXT, test_data)
+
+    def post_data(self):
+        return { 'label':random_label() , 'domain':self.domain.pk, 'txt_data':random_label()}
+
+builder = GenericViewTests()
+for test in builder.build_all_tests():
+    setattr(TXTViewTests,test.__name__+"_txt", test)
