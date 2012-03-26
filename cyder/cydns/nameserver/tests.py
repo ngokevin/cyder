@@ -53,7 +53,7 @@ class NSTestsModels(TestCase):
         data = { 'domain':self.r , 'server':'ns2.moot.ru' }
         self.do_add( **data )
 
-        data = { 'domain':self.r , 'server':'ns2.moot.ru' }
+        data = { 'domain':self.r , 'server':'ns5.moot.ru' }
         self.do_add( **data )
 
         data = { 'domain':self.r , 'server':u'ns3.moot.ru' }
