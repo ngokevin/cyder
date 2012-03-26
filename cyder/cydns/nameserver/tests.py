@@ -6,6 +6,8 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.test.client import Client
+
 from django.core.exceptions import ValidationError
 
 from cyder.cydns.domain.models import Domain
@@ -15,7 +17,7 @@ from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.ip.models import Ip
 import pdb
 
-class NSTests(TestCase):
+class NSTestsModels(TestCase):
     def setUp(self):
         self.r = Domain( name = "ru" )
         self.r.save()
@@ -48,6 +50,9 @@ class NSTests(TestCase):
         self.assertRaises( ValidationError, self.do_add, **data )
 
     def test_add_ns(self):
+        data = { 'domain':self.r , 'server':'ns2.moot.ru' }
+        self.do_add( **data )
+
         data = { 'domain':self.r , 'server':'ns2.moot.ru' }
         self.do_add( **data )
 
