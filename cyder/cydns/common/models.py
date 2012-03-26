@@ -1,7 +1,6 @@
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from cyder.cydns.domain.models import Domain
-from cyder.settings import CYDNS_BASE_URL
 from cyder.cydns.models import ObjectUrlMixin
 from cyder.cydns.cydns import _validate_label, _validate_name
 import pdb

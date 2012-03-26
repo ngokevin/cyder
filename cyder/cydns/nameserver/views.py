@@ -42,13 +42,14 @@ class NSDeleteView(NSView, CommonDeleteView):
     """ """
 
 class NSDetailView(NSView, CommonDetailView):
-    template_name = "ns_detail.html"
+    """ """
 
 class NSListView(NSView, CommonListView):
     """ """
 
 class NSCreateView(NSView, CommonCreateView):
-    template_name = "ns_form.html"
+    """ """
+
 
 class NSUpdateView(NSView, CommonUpdateView):
-    template_name = "ns_form.html"
+    """ """

@@ -33,6 +33,9 @@ class ReverseNameserver(BaseNameserver):
         db_table = 'reverse_nameserver'
         unique_together = ('reverse_domain', 'server')
 
+    def get_absolute_url(self):
+        return "/cyder/cydns/reverse_nameserver/%s/detail" % (self.pk)
+
     def details(self):
         details =  (
                     ('Reverese Domain', self.reverse_domain.name),
