@@ -14,20 +14,26 @@ def _validate_ip_type(ip_type):
         raise ValidationError("Error: Plase provide the type of Address Record")
 
 class ReverseDomain(models.Model, ObjectUrlMixin):
-    """ A reverse DNS domain is used build reverse bind files.
-        ReverseDomainNotFoundError:
-        This exception is thrown when you are trying to add an Ip to the database and it cannot be
-        paired with a reverse domain. The solution is to create a reverse domain for the Ip to live
-        in.
+    """
+    A reverse DNS domain is used to build reverse bind files. Every ``Ip`` object is mapped back to a
+    ``ReverseDomain`` object.
 
-        ReverseChildDomainExistsError
-        This exception is thrown when you try to delete a reverse domain that has child reverese
-        domains. A reverse domain should only be deleted when it has no child reverse domains.
+    A ``ValidationError`` is raised when you are trying to add an Ip to the database and it cannot
+    be paired with a reverse domain. The solution is to create a reverse domain for the Ip to live
+    in.
 
-        MasterReverseDomainNotFoundError
-        All reverse domains should have a logical master (or parent) reverse domain. If you try to
-        create a reverse domain that should have a master reverse domain and *doesn't* this
-        exception is thrown.
+    A ``ValidationError`` is raised when you try to delete a reverse domain that has child reverse
+    domains. A reverse domain should only be deleted when it has no child reverse domains.
+
+    All reverse domains should have a master (or parent) reverse domain. A ``ValidationError`` will
+    be raised if you try to create a reverse domain that should have a master reverse domain.
+
+    The ``ip_type`` must be either '4' or '6'. Any other values will cause a ``ValidationError`` to
+    be raised when calling an objects ``full_clean`` method.
+
+    If you are not authoritative for a reverse domain, set the ``soa`` field to ``None``.
+
+    The ``name`` field must be unique. Failing to make it unique will raise a ``ValidationError``.
     """
     IP_TYPE_CHOICES = (('4','IPv4'),('6','IPv6'))
     id                      = models.AutoField(primary_key=True)

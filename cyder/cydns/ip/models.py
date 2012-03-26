@@ -10,7 +10,29 @@ import pdb
 
 
 class Ip( models.Model ):
-    """Ip represents either an IPv4 or IPv6 address. All A, CNAME, PTR, and any other classes that use an ip will import and use this class.
+    """
+    An ``Ip`` instance represents either an IPv4 or IPv6 address.
+
+    ``Ip`` instances are used in ``AddressRecords`` (A and AAAA records) and in ``PTR`` records.
+    All ``Ip`` instances must be mapped back to a ``ReverseDomain`` object. A ``ValidationError`` is
+    raised if an eligible ``ReverseDomain`` cannot be found when trying to create an ``Ip``.
+
+    The reason why an IP must be mapped back to a ``ReverseDomain`` has to do with how bind files
+    are written. In a reverse zone file, ip addresses are mapped from IP to DATA. For instance an
+    PTR record would look like this::
+
+        IP                  DATA
+        197.1.1.1   PTR     foo.bob.com
+
+    If we were building the file ``197.in-addr.arpa``, all IP addresses in the ``197`` domain would
+    need to be in this file. To reduce the complexity of finding records for a reverse domain an IP
+    is linked to the appropriate reverse domain when it is created. It's mapping is updated when
+    it's reverse domain is deleted or a more appropritate reverse domain is added. Note that keeping
+    the ``Ip`` feild on PTR and ``AddressRecords`` will help preformance since both need to be
+    searched.
+
+    The algorithm for determineing which reverse domain an ``Ip`` belongs to is done by applying a
+    `longest prefix match` to all reverse domains in the ``ReverseDomain`` table.
 
     note::
         Django's BigInteger wasn't "Big" enough, so there is code in `cyder/cydns/ip/sql/ip.sql` that
@@ -88,7 +110,9 @@ class Ip( models.Model ):
             raise ValidationError("Error: Plase provide the string representation of the IP")
 
 def ipv6_to_longs(addr):
-    """This function will turn an IPv6 into two long. The first will be reprsenting the first 64 bits of the address and second will be the lower 64 bits.
+    """
+    This function will turn an IPv6 into two longs. The first number represents the first 64 bits
+    of the address and second represents the lower 64 bits.
 
     :param addr: IPv6 to be converted.
     :type addr: str
