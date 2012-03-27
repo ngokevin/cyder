@@ -1,14 +1,17 @@
 from cyder.cybind.build import *
 from django.core.management.base import BaseCommand, CommandError
-from cyder.cydns.domain.models import Domain
+from cyder.cydns.soa.models import SOA
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        d1 = Domain.objects.filter(name='foo.gaz')[0] # temporary hack for testing purposes
-        s = d1.soa
-        print "################## SOA file ###################"
-        print gen_soa(s)
-        print "############# Domain file for %s ##############" % (d1.name)
-        print gen_domain(d1)
+        for soa in SOA.objects.all():
+            print "### SOA file"
+            print gen_soa(soa) # Eventually write to file
+            domains_in_zone = soa.domain_set.all()
+            for domain in domains_in_zone:
+                print "+++ Domain file for %s" % (domain.name)
+                print gen_domain(domain) # Eventually write to file
+
+            print
 

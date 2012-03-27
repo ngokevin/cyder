@@ -1,4 +1,4 @@
-{% for nameserver in nameserver_set %}
+{%- for nameserver in nameserver_set %}
 @   IN  NS  {{ nameserver.server }}
 {%- endfor %}
 
@@ -8,7 +8,7 @@ $TTL {{ mx.ttl }}
 {%- endfor %}
 
 $TTL {{ default_ttl }}
-{% for addr_rec in addressrecord_set %}
+{%- for addr_rec in addressrecord_set %}
     {%- if addr_rec.ip.ip_type == '4' %}
         {%- if addr_rec.label == '' %}
 @ IN  A   {{ addr_rec.ip }}
@@ -24,14 +24,14 @@ $TTL {{ default_ttl }}
     {%- endif %}
 {%- endfor %}
 
-{% for cname in cname_set %}
+{%- for cname in cname_set %}
 {{ cname.label }} IN  CNAME {{ cname.data }}
 {%- endfor %}
 
-{% for srv in srv_set %}
+{%- for srv in srv_set %}
 {{ srv.label }} IN  SRV {{ srv.priority }} {{ srv.weight }} {{ srv.port }} {{ srv.target }}
 {%- endfor %}
 
-{% for txt in txt_set %}
+{%- for txt in txt_set %}
 {{ txt.label }} IN  TXT {{ txt.txt_data }}
 {%- endfor %}
