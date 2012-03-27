@@ -18,7 +18,7 @@ import pdb
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
-sys.path.append("/home/uberj/cyder/")
+sys.path.append("/nfs/milo/u1/uberj/cyder_env/cyder/")
 # Edit this if necessary or override the variable in your environment.
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cyder.settings'
 
@@ -39,7 +39,7 @@ except ImportError, e:
     sys.path.remove(tmp_path)
 
 
-manage.setup_environ("/home/uberj/cyder/manage.py", more_pythonic=True)
+manage.setup_environ("/nfs/milo/u1/uberj/cyder_env/cyder/manage.py", more_pythonic=True)
 
 # -- General configuration -----------------------------------------------------
 

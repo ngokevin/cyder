@@ -62,6 +62,8 @@ many core concepts from Maintain.
    soa
    srv
    txt
+   cybind
+
 DNS
 ===
 Vocabulary
