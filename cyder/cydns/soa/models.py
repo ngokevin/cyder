@@ -13,6 +13,15 @@ DEFAULT_RETRY = ONE_WEEK/7 # One day
 DEFAULT_REFRESH = 180 # 3 min
 
 class SOA(models.Model, ObjectUrlMixin):
+    """
+    The SOA record class::
+
+        SOA( primary = primary, contact = contact, retry = retry, refresh = refresh, comment = comment )
+
+    Each DNS zone must have it's own SOA object. Use the comment field to remind yourself of which
+    zone an SOA corresponds to if a zone has similar ``primary`` and ``contact`` values.
+    """
+
     id              = models.AutoField(primary_key=True)
     primary         = models.CharField(max_length=100, validators=[_validate_name])
     contact         = models.CharField(max_length=100, validators=[_validate_name])
@@ -25,10 +34,13 @@ class SOA(models.Model, ObjectUrlMixin):
     refresh         = models.PositiveIntegerField(null=False, default = DEFAULT_REFRESH)
     # This indicates if this zone needs to be rebuilt
     dirty           = models.BooleanField(default = False)
+    comment         = models.CharField(max_length=200, null=True, blank=True)
 
     class Meta:
         db_table = 'soa'
-        unique_together = ('primary', 'contact')
+        # We are using the comment field here to stop the same SOA from being assigned to multiple
+        # zones. See the documentation in the Domain models.py file for more info.
+        unique_together = ('primary', 'contact', 'comment')
 
     def details(self):
         return  (
@@ -38,6 +50,7 @@ class SOA(models.Model, ObjectUrlMixin):
                     ('Expire', self.expire),
                     ('Retry', self.retry),
                     ('Refresh', self.refresh),
+                    ('Comment', self.comment),
                 )
 
     def delete(self, *args, **kwargs):

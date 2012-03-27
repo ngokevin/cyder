@@ -67,26 +67,6 @@ builder = GenericViewTests()
 for test in builder.build_all_tests():
     setattr(MXViewTests,test.__name__+"_mx", test)
 
-class SOAViewTests(CommonViewTests, TestCase):
-    def setUp(self):
-        test_data = {
-                'primary': random_label(),
-                'contact': random_label(),
-                'expire': 123,
-                'retry': 123,
-                'refresh': 1234
-                }
-        do_setUp(self, "soa", SOA, test_data, use_domain=False)
-
-    def post_data(self):
-        return {'label': random_label(), 'domain':self.domain.pk, 'server':random_label(), 'priority':123 ,'ttl':213 }
-
-builder = GenericViewTests()
-for test in builder.build_all_tests():
-    if test.__name__.find("in_domain") > -1:
-        continue
-    setattr(SOAViewTests,test.__name__+"_soa", test)
-
 class SRVViewTests(CommonViewTests, TestCase):
     def setUp(self):
         test_data = { 'label':"_"+random_label() ,'target':random_label(),'priority':2 ,'weight':2222 , 'port': 222 }

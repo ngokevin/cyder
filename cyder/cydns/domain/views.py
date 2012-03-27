@@ -115,21 +115,21 @@ class DomainCreateView(DomainView, CreateView):
         try:
             domain = domain_form.save(commit=False)
         except ValueError, e:
-            return render( request, "domain_form.html", { 'domain_form': domain_form } )
+            return render( request, "domain_form.html", { 'form': domain_form } )
 
         if domain_form.cleaned_data['inherit_soa'] and domain.master_domain:
             domain.soa = domain.master_domain.soa
         try:
             domain.save()
         except ValidationError, e:
-            return render( request, "domain_form.html", { 'domain_form': domain_form } )
+            return render( request, "domain_form.html", { 'form': domain_form } )
         # Success. Redirect.
         messages.success(request, '%s was successfully created.' % (domain.name))
         return redirect( domain )
 
     def get( self, request, *args, **kwargs ):
         domain_form = DomainForm()
-        return render( request, "domain_form.html", { 'domain_form': domain_form } )
+        return render( request, "domain_form.html", { 'form': domain_form } )
 
 
 class DomainUpdateView( DomainView, UpdateView ):
@@ -143,7 +143,10 @@ class DomainUpdateView( DomainView, UpdateView ):
             domain_form = DomainUpdateForm(request.POST)
             new_soa_pk = domain_form.data.get('soa', None)
             if new_soa_pk:
-                new_soa = SOA.objects.get( pk = new_soa_pk )
+                new_soa = get_object_or_404(SOA, pk = new_soa_pk )
+
+                if new_soa == domain.soa: # Nothing changed.
+                    return render( request, "domain_update.html", { "form": domain_form } )
                 domain.soa = new_soa
 
             if domain.soa and not new_soa_pk:
@@ -156,7 +159,7 @@ class DomainUpdateView( DomainView, UpdateView ):
         except ValidationError, e:
             domain_form = DomainUpdateForm(instance=domain)
             messages.error( request, str(e) )
-            return render( request, "domain_update.html", { "domain_form": domain_form } )
+            return render( request, "domain_update.html", { "form": domain_form } )
 
         messages.success(request, '%s was successfully updated.' % (domain.name))
 
