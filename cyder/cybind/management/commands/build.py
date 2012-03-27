@@ -1,15 +1,14 @@
-from cyder.cydns.domain.models import Domain
-from cyder.cydns.reverse_domain.models import ReverseDomain
-from cyder.cydns.soa.models import SOA
-from cyder.cydns.ip.models import Ip
-from cyder.cydns.address_record.models import AddressRecord
-from cyder.cydns.nameserver.models import Nameserver
 from cyder.cybind.build import *
-
+from django.core.management.base import BaseCommand, CommandError
+from cyder.cydns.domain.models import Domain
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
+        d1 = Domain.objects.filter(name='foo.gaz')[0] # temporary hack for testing purposes
+        s = d1.soa
+        print "################## SOA file ###################"
         print gen_soa(s)
+        print "############# Domain file for %s ##############" % (d1.name)
         print gen_domain(d1)
 

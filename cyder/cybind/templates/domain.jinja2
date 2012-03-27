@@ -10,9 +10,17 @@ $TTL {{ mx.ttl }}
 $TTL {{ default_ttl }}
 {% for addr_rec in addressrecord_set %}
     {%- if addr_rec.ip.ip_type == '4' %}
+        {%- if addr_rec.label == '' %}
+@ IN  A   {{ addr_rec.ip }}
+        {%- else %}
 {{ addr_rec.label|indent(0) }} IN  A   {{ addr_rec.ip }}
+        {%- endif %}
     {%- else %}
+        {%- if addr_rec.label == '' %}
+@ IN  AAAA   {{ addr_rec.ip }}
+        {%- else %}
 {{ addr_rec.label }} IN  AAAA   {{ addr_rec.ip }}
+        {%- endif %}
     {%- endif %}
 {%- endfor %}
 
