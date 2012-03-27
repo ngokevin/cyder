@@ -1,3 +1,5 @@
+.. _coding_standards:
+
 Coding Ideas (Standards)
 ========================
 

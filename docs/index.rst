@@ -83,7 +83,7 @@ process and will allow individual domain files to be built. This document goes o
 Domains
 +++++++
 
-Domains are stored recusivly where every domain name with
+A :ref:`domain` name in cyder a key part of the ordering of DNS records. Every domain name with
 more than two labels has a ``master_domain`` that is not ``None``. A ``master_domain`` consists of the domain's name with the pre-fix label removed.
 
 Consider ``foo.oregonstate.edu``. The labels ``foo``, ``oregonstate``, and ``edu`` all make up the
@@ -182,14 +182,10 @@ authoritative for the domain::
     2   cat.com                 1               1
     3   cute.cat.com            2               1
 
-Building Bind Files
-```````````````````
-Maintaining a complete tree removes a few edge cases for building bind files.
-
 Reverse Domains
 +++++++++++++++
 
-The ``reverse_domain`` table has the following scheme::
+The ``reverse_domain`` table stores the :ref:`reverse_domain` objects and has the following scheme::
 
     +--------------------------+--------------+------+-----+---------+----------------+
     | Field                    | Type         | Null | Key | Default | Extra          |
@@ -243,7 +239,7 @@ Adding Reverse Domains
 ``````````````````````
 Adding IPv4 reverse domains is easy to do by hand. It is not easy to do add IPv6 reverse domains by
 hand. IPv6 reverse domain names are very long and it is tedious to add them one by one. There is a
-function, ``bootstap_ipv6_reverse_domain``, that can aid in the construction of reverse domains.
+function, ``bootstap_ipv6_reverse_domain`` in the :ref:`reverse_domain` module, that can aid in the construction of IPv6 reverse domains.
 
 Reason For Reverse Domains
 ``````````````````````````
@@ -252,7 +248,7 @@ reverse domain. This mapping is explored in more detail in the Ip(link?) section
 
 TLD's (Top Level Domains)
 +++++++++++++++++++++++++
-It is necisccary to have records (like A records) that exist at the top level of a domain. Assume
+It is necisccary to have records (like :ref:`address_record`) that exist at the top level of a domain. Assume
 we have two domains::
 
     oregonstate.edu
@@ -292,6 +288,9 @@ When an existing A or AAAA record becomes a domain (for example ``bar.oregonstat
 Eventually, it might be nice to have a feature in the UI that does the migration from an A
 or AAAA to a domain automatically. A nice `make this record into a domain` button.
 
+SOA Records, Domains, and Zones
+-------------------------------
+An ``SOA`` record can only exist in one zone. It is critical that no two domains point to the same ``SOA`` record *and* be in different zones. See the :ref:`domain` documentation.
 
 
 Indices and tables

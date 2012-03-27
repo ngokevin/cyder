@@ -1,3 +1,5 @@
+.. _common_record:
+
 Common Record
 =============
 

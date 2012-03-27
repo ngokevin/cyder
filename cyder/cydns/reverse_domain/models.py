@@ -171,7 +171,8 @@ def _reassign_reverse_ips(reverse_domain_1, reverse_domain_2, ip_type):
             ip.save()
 
 def boot_strap_add_ipv6_reverse_domain(ip, soa=None):
-    """This function is here to help create IPv6 reverse domains.
+    """
+    This function is here to help create IPv6 reverse domains.
 
     .. note::
         Every nibble in the reverse domain should not exists for this function to exit successfully.

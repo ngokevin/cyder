@@ -1,3 +1,5 @@
+.. _mx:
+
 MX (Mail Server Record)
 =======================
 

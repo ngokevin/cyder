@@ -1,3 +1,5 @@
+.. _soa:
+
 SOA (Start Of Authority)
 ========================
 
