@@ -7,7 +7,7 @@ from cyder.cydns.cydns import _validate_name
 from cyder.cydns.models import ObjectUrlMixin
 
 class PTR( Ip, ObjectUrlMixin ):
-    """A PTR is used to map an IP to a domain name"""
+    """A PTR is used to map an IP to a domain name."""
     id              = models.AutoField(primary_key=True)
     name            = models.CharField(max_length=255, validators=[_validate_name])
     domain          = models.ForeignKey(Domain, null=True, blank=True)
