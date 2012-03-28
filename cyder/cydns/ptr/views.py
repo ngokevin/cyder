@@ -19,6 +19,7 @@ class PTRDeleteView(PTRView, CommonDeleteView):
 
 class PTRDetailView(PTRView, CommonDetailView):
     """ """
+    template_name = "ptr_detail.html"
 
 class PTRCreateView(PTRView, CommonCreateView):
     """ """
