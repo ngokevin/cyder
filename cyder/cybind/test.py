@@ -60,6 +60,11 @@ def add_some_records():
 
     _128 , _= ReverseDomain.objects.get_or_create(name='128')
 
+    rs, _ = ReverseNameserver.objects.get_or_create( reverse_domain= _128, server="ns1.foo.com")
+    rs.save()
+    rs = ReverseNameserver.objects.get_or_create( reverse_domain= _128, server="ns1.foo1.com")
+    rs.save()
+
     test_ip = Ip( ip_str = "128.193.0.1", ip_type = '4' )
     test_ip.save()
     try:

@@ -39,37 +39,87 @@ iteself::
 
 
 """
+from cyder.cydns.soa.models import SOA
 from jinja2 import Environment, PackageLoader
+
 import pdb
 
 env = Environment(loader=PackageLoader('cyder.cybind', 'templates'))
 
 soa_template = env.get_template("soa.jinja2")
 domain_template = env.get_template("domain.jinja2")
-BIND_PATH = "/nfs/milo/u1/uberj/cyder_env/cyder/cyder/cybind/build"
+reverse_domain_template = env.get_template("reverse_domain.jinja2")
+BUILD_PATH = "/nfs/milo/u1/uberj/cyder_env/cyder/cyder/cybind/build"
 DEFAULT_TTL = 999
 
-def walk_tree(domain):
-    gen_domain(domain)
-    for child_domain in Domain.objects.filter(master_domain = domain):
-        walk_tree(child_domain)
 
-def gen_domain(domain):
+def find_reverse_root_domain(reverse_domains):
     """
-    Get all objects in a domain and render them in their respected domain file.
+    It is nessicary to know which reverse domain is at the top of a zone. This function returns
+    that domain.
     """
-    data = domain_template.render(
-                            default_ttl=DEFAULT_TTL,\
-                            nameserver_set = domain.nameserver_set.all(),\
-                            mx_set = domain.mx_set.all(),\
-                            addressrecord_set = domain.addressrecord_set.all(),\
-                            cname_set = domain.cname_set.all(),\
-                            srv_set = domain.srv_set.all(),\
-                            txt_set = domain.txt_set.all(),\
-                          )
-    return data
+    if not reverse_domains:
+        return None
+    root_reverse_domain = reverse_domains[0]
+    while True:
+        if root_reverse_domain is None:
+            raise Exception
+        elif not root_reverse_domain.master_reverse_domain:
+            break
+        elif root_reverse_domain.master_reverse_domain.soa != root_reverse_domain.soa:
+            break
+        else:
+            root_reverse_domain = root_reverse_domain.master_reverse_domain
 
-def find_root_domain(domains):
+    return root_reverse_domain
+
+def gen_reverse_domain(reverse_domain):
+    """
+    Get all objects in a reverse_domain and render them in their respected domain file.
+    """
+    data = reverse_domain_template.render(
+                            nameserver_set = reverse_domain.reversenameserver_set.all(),\
+                            ptr_set = reverse_domain.ptr_set.all()
+                            )
+    file_name = reverse_domain.name
+    return (file_name, data)
+
+def gen_reverse_soa(soa):
+    """
+    Generate the SOA file along with all of it's $INCLUDE statements.
+    """
+    # Find the first domain with the soa. This is the root of the zone.
+    reverse_domains = soa.reversedomain_set.all()
+    root_reverse_domain = find_reverse_root_domain(reverse_domains)
+    if not root_reverse_domain:
+        return
+
+    data = soa_template.render(
+                                soa=soa, root_domain=root_reverse_domain,\
+                                domains=reverse_domains, bind_path=BUILD_PATH,\
+                              )
+    file_name = "%s.soa" % (root_reverse_domain.name)
+    return (file_name, data)
+
+
+def build_reverse_zone_files():
+        for soa in SOA.objects.all():
+            info = gen_reverse_soa(soa)
+            if not info:
+                continue
+            open("%s/%s" % (BUILD_PATH, info[0]), "w+").write(info[1])
+
+            domains_in_zone = soa.reversedomain_set.all()
+            for domain in domains_in_zone:
+                info = gen_reverse_domain(domain)
+                if not info:
+                    continue
+                open("%s/%s" % (BUILD_PATH, info[0]), "w+").write(info[1])
+
+
+
+#### Forward Build Functions ####
+def find_forward_root_domain(domains):
     """
     It is nessicary to know which domain is at the top of a zone. This function returns
     that domain.
@@ -89,23 +139,42 @@ def find_root_domain(domains):
 
     return root_domain
 
-def gen_soa(soa):
+
+def gen_domain(domain):
+    """
+    Get all objects in a domain and render them in their respected domain file.
+    """
+    data = domain_template.render(
+                            default_ttl=DEFAULT_TTL,\
+                            nameserver_set = domain.nameserver_set.all(),\
+                            mx_set = domain.mx_set.all(),\
+                            addressrecord_set = domain.addressrecord_set.all(),\
+                            cname_set = domain.cname_set.all(),\
+                            srv_set = domain.srv_set.all(),\
+                            txt_set = domain.txt_set.all(),\
+                            )
+    file_name = domain.name
+    return (file_name, data)
+
+
+def gen_forward_soa(soa):
     """
     Generate the SOA file along with all of it's $INCLUDE statements.
     """
     # Find the first domain with the soa. This is the root of the zone.
     domains = soa.domain_set.all()
-    root_domain = find_root_domain(domains)
+    root_domain = find_forward_root_domain(domains)
     if not root_domain:
         return
 
     data = soa_template.render(
                                 soa=soa, root_domain=root_domain,\
-                                domains=domains, bind_path=BIND_PATH,\
+                                domains=domains, bind_path=BUILD_PATH,\
                               )
-    return data
+    file_name = "%s.soa" % (root_domain.name)
+    return (file_name, data)
 
-def quick_update(domain):
+def quick_forward_update(domain):
     """
     Regenerate the new domain, then regenerate the file with the soa in it to change
     the serials. Finally, send a notify to the slave name servers.
@@ -113,5 +182,18 @@ def quick_update(domain):
     We may want to consider using a global lock for this function.
     """
     gen_domain(domain)
-    gen_soa(domain.soa)
+    gen_forward_soa(domain.soa)
 
+def build_forward_zone_files():
+        for soa in SOA.objects.all():
+            info = gen_forward_soa(soa)
+            # Open a file (create if doesn't exist) in build path. Write data to it. Close it.
+            open("%s/%s" % (BUILD_PATH, info[0]), "w+").write(info[1])
+            domains_in_zone = soa.domain_set.all()
+            for domain in domains_in_zone:
+                info = gen_domain(domain)
+                open("%s/%s" % (BUILD_PATH, info[0]), "w+").write(info[1])
+
+
+def build_dns(*args, **kwargs):
+    build_reverse_zone_files()
