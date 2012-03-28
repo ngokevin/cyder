@@ -4,7 +4,7 @@
     {{ common }}
     <br >
     <a href='{{ common.get_edit_url() }}'>Edit</a>
-    <a href='{{ common.ip.reverse_domain.get_absolute_url() }}'>View Reverse Domain</a>
+    <a href='{{ common.reverse_domain.get_absolute_url() }}'>View Reverse Domain</a>
     {% if common.domain %}
         <a href='{{ common.domain.get_absolute_url() }}'>View Forward Domain</a>
     {% endif %}
