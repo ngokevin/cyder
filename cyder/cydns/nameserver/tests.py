@@ -14,7 +14,6 @@ from cyder.cydns.domain.models import Domain
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.nameserver.models import Nameserver
 from cyder.cydns.reverse_domain.models import ReverseDomain
-from cyder.cydns.ip.models import Ip
 import pdb
 
 class NSTestsModels(TestCase):
@@ -73,18 +72,14 @@ class NSTestsModels(TestCase):
         self.assertRaises( ValidationError, self.do_add, **data  )
 
     def testtest_add_ns_in_domain(self):
-        ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
-        ip.save()
-        glue = AddressRecord( label='ns2', domain = self.r, ip = ip, ip_type='4' )
+        glue = AddressRecord( label='ns2', domain = self.r, ip_str = '128.193.1.10', ip_type='4' )
         glue.save()
         data = { 'domain':self.r , 'server':'ns2.ru' }
         ns = self.do_add( **data )
         self.assertTrue( ns.glue )
         self.assertEqual( ns.server, ns.glue.fqdn() )
 
-        ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
-        ip.save()
-        glue = AddressRecord( label='ns3', domain = self.f_r, ip = ip, ip_type='4' )
+        glue = AddressRecord( label='ns3', domain = self.f_r, ip_str = '128.193.1.10', ip_type='4' )
         glue.save()
         data = { 'domain':self.f_r , 'server':'ns3.foo.ru' }
         ns = self.do_add( **data )
@@ -97,9 +92,7 @@ class NSTestsModels(TestCase):
         self.assertFalse( ns.glue )
 
     def test_update_glue_to_no_glue(self):
-        ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
-        ip.save()
-        glue = AddressRecord( label='ns3', domain = self.r, ip = ip, ip_type='4' )
+        glue = AddressRecord( label='ns3', domain = self.r, ip_str = '128.193.1.10', ip_type='4' )
         glue.save()
         data = { 'domain':self.r , 'server':'ns3.ru' }
         ns = self.do_add( **data )
@@ -112,9 +105,7 @@ class NSTestsModels(TestCase):
 
 
     def test_delete_ns(self):
-        ip = Ip( ip_str = '128.196.1.10', ip_type = '4' )
-        ip.save()
-        glue = AddressRecord( label='ns4', domain = self.f_r, ip = ip, ip_type='4' )
+        glue = AddressRecord( label='ns4', domain = self.f_r, ip_str = '128.196.1.10', ip_type='4' )
         glue.save()
         data = { 'domain':self.f_r , 'server':'ns4.foo.ru' }
         ns = self.do_add( **data )
@@ -126,9 +117,7 @@ class NSTestsModels(TestCase):
         self.assertFalse( nsret )
 
     def test_invalid_create(self):
-        ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
-        ip.save()
-        glue = AddressRecord( label='ns2', domain = self.r, ip = ip, ip_type = '4' )
+        glue = AddressRecord( label='ns2', domain = self.r, ip_str = '128.193.1.10', ip_type = '4' )
         glue.save()
 
         data = { 'domain':self.r , 'server':'ns2 .ru' }

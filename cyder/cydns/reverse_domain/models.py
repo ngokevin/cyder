@@ -84,10 +84,10 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
             of an Ip, save it, and then delete the old reverse_domain.
         """
         # TODO is there a better way of doing this?
-        ips = self.ip_set.iterator()
-        for ip in ips:
-            ip.reverse_domain = self.master_reverse_domain
-            ip.save(**{'update_reverse_domain':False})
+        ptrs = self.ptr_set.iterator()
+        for ptr in ptrs:
+            ptr.reverse_domain = self.master_reverse_domain
+            ptr.save(**{'update_reverse_domain':False})
 
     def _check_for_children(self):
         children = ReverseDomain.objects.filter(master_reverse_domain = self)
@@ -163,12 +163,14 @@ def _reassign_reverse_ips(reverse_domain_1, reverse_domain_2, ip_type):
 
     if reverse_domain_2 is None:
         return
-    ips = reverse_domain_2.ip_set.iterator()
-    for ip in ips:
-        correct_reverse_domain = ip_to_reverse_domain(str(ip), ip_type=ip_type)
-        if correct_reverse_domain != ip.reverse_domain:
-            ip.reverse_domain = correct_reverse_domain
-            ip.save()
+    ptrs = reverse_domain_2.ptr_set.iterator()
+    for ptr in ptrs:
+        correct_reverse_domain = ip_to_reverse_domain(ptr.ip_str, ip_type=ptr.ip_type)
+        if correct_reverse_domain != ptr.reverse_domain:
+            # TODO, is this needed? The save() function (actually the clean_ip function)
+            # will assign the correct reverse domain.
+            ptr.reverse_domain = correct_reverse_domain
+            ptr.save()
 
 def boot_strap_add_ipv6_reverse_domain(ip, soa=None):
     """

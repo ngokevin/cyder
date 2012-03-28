@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django import forms
 
 from cyder.cydns.soa.models import SOA
-from cyder.cydns.cydns import _validate_domain_name
+from cyder.cydns.cydns import _validate_domain_name, _name_type_check
 from cyder.cydns.models import ObjectUrlMixin
 
 import pdb
@@ -150,6 +150,7 @@ def _name_to_master_domain(name):
     return master_domain
 
 def _name_to_domain(fqdn):
+    _name_type_check(fqdn)
     labels = fqdn.split('.')
     for i in range(len(labels)):
         name = '.'.join(labels[i:])
