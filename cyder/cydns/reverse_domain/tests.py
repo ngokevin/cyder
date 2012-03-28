@@ -16,6 +16,7 @@ from cyder.cydns.tests.view_tests import random_label
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
 
 from cyder.cydns.domain.models import Domain
+from cyder.cydns.soa.models import SOA
 
 import ipaddr
 import pdb
@@ -36,6 +37,69 @@ class ReverseDomainTests(TestCase):
         return ptr
 
     # Reverse Domain test functions
+    def test_soa_validators(self):
+        m = ReverseDomain( name = '8')
+        m.save()
+
+        f_m = ReverseDomain( name = '8.2')
+        f_m.save()
+
+        n_f_m = ReverseDomain( name = '8.2.3')
+        n_f_m.save()
+
+        b_m = ReverseDomain( name = '8.3')
+        b_m.save()
+
+        s = SOA( primary="ns1.foo.com", contact="asdf", comment="test")
+        s.save()
+
+        f_m.soa = s
+        f_m.save()
+
+        b_m.soa = s
+        self.assertRaises(ValidationError, b_m.save)
+
+        n_f_m = ReverseDomain.objects.get(pk=n_f_m.pk) # Refresh object
+        n_f_m.soa = s
+        n_f_m.save()
+
+        m.soa = s
+        m.save()
+
+        b_m = ReverseDomain.objects.get(pk=b_m.pk) # Refresh object
+        b_m.soa = s
+        b_m.save()
+
+        m.soa = None
+        self.assertRaises(ValidationError, m.save)
+
+        s2 = SOA( primary="ns1.foo.com", contact="asdf", comment="test2")
+        s2.save()
+
+        m.soa = s2
+        self.assertRaises(ValidationError, m.save)
+
+    def test_2_soa_validators(self):
+        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact = "hostmaster.foo",        comment="foo.gaz2")
+        d, _ = ReverseDomain.objects.get_or_create(name="11")
+        d.soa = None
+        d.save()
+        d1, _ = ReverseDomain.objects.get_or_create(name="12")
+        d1.soa = s1
+        d1.save()
+
+    def test_3_soa_validators(self):
+        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo2.gaz", contact = "hostmaster.foo",       comment="foo.gaz2")
+
+        d, _ = Domain.objects.get_or_create(name="gaz")
+        d.soa = s1
+        d.save()
+
+        r, _ = ReverseDomain.objects.get_or_create(name='9')
+        r.soa = s1
+        self.assertRaises(ValidationError, r.save)
+
+
 
     def test_remove_reverse_domain(self):
         ReverseDomain(name='127',ip_type='4').save()
