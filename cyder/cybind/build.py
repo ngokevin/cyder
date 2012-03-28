@@ -51,6 +51,7 @@ domain_template = env.get_template("domain.jinja2")
 reverse_domain_template = env.get_template("reverse_domain.jinja2")
 BUILD_PATH = "/nfs/milo/u1/uberj/cyder_env/cyder/cyder/cybind/build"
 DEFAULT_TTL = 999
+DEBUG = True
 
 
 def find_reverse_root_domain(reverse_domains):
@@ -82,6 +83,7 @@ def gen_reverse_domain(reverse_domain):
                             ptr_set = reverse_domain.ptr_set.all()
                             )
     file_name = reverse_domain.name
+    if DEBUG: print data
     return (file_name, data)
 
 def gen_reverse_soa(soa):
@@ -98,7 +100,9 @@ def gen_reverse_soa(soa):
                                 soa=soa, root_domain=root_reverse_domain,\
                                 domains=reverse_domains, bind_path=BUILD_PATH,\
                               )
+    print "============================================================================"
     file_name = "%s.soa" % (root_reverse_domain.name)
+    if DEBUG: print data
     return (file_name, data)
 
 
@@ -154,6 +158,7 @@ def gen_domain(domain):
                             txt_set = domain.txt_set.all(),\
                             )
     file_name = domain.name
+    if DEBUG: print data
     return (file_name, data)
 
 
@@ -171,7 +176,9 @@ def gen_forward_soa(soa):
                                 soa=soa, root_domain=root_domain,\
                                 domains=domains, bind_path=BUILD_PATH,\
                               )
+    print "============================================================================"
     file_name = "%s.soa" % (root_domain.name)
+    if DEBUG: print data
     return (file_name, data)
 
 def quick_forward_update(domain):
@@ -185,15 +192,16 @@ def quick_forward_update(domain):
     gen_forward_soa(domain.soa)
 
 def build_forward_zone_files():
-        for soa in SOA.objects.all():
-            info = gen_forward_soa(soa)
-            # Open a file (create if doesn't exist) in build path. Write data to it. Close it.
+    for soa in SOA.objects.all():
+        info = gen_forward_soa(soa)
+        # Open a file (create if doesn't exist) in build path. Write data to it. Close it.
+        open("%s/%s" % (BUILD_PATH, info[0]), "w+").write(info[1])
+        domains_in_zone = soa.domain_set.all()
+        for domain in domains_in_zone:
+            info = gen_domain(domain)
             open("%s/%s" % (BUILD_PATH, info[0]), "w+").write(info[1])
-            domains_in_zone = soa.domain_set.all()
-            for domain in domains_in_zone:
-                info = gen_domain(domain)
-                open("%s/%s" % (BUILD_PATH, info[0]), "w+").write(info[1])
 
 
 def build_dns(*args, **kwargs):
+    build_forward_zone_files()
     build_reverse_zone_files()
