@@ -99,26 +99,6 @@ class Domain(models.Model, ObjectUrlMixin):
 
 
 # A bunch of handy functions that would cause circular dependencies if they were in another file.
-def find_root_domain(domains):
-    """
-    It is necessary to know which domain is at the top of a zone. This function returns
-    that domain.
-    """
-    if not domains:
-        return None
-    root_domain = domains[0]
-    while True:
-        if root_domain is None:
-            raise Exception
-        elif not root_domain.master_domain:
-            break
-        elif root_domain.master_domain.soa != root_domain.soa:
-            break
-        else:
-            root_domain = root_domain.master_domain
-
-    return root_domain
-
 """
 Given an name return the most specific domain that the ip can belong to.
 This is used to check for rule 1 in add_domain() rules.
