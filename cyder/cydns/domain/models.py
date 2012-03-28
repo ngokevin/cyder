@@ -61,13 +61,18 @@ class Domain(models.Model, ObjectUrlMixin):
         """
         if not self.soa:
             return
+        reverse_zone = self.soa.reversedomain_set.all()
+        if reverse_zone:
+            raise ValidationError("This SOA is used for the reverse zone %s." % (reverse_zone[0]))
 
         if not self.soa.domain_set.all():
             return # No zone uses this soa.
 
         if self.master_domain and self.master_domain.soa != self.soa:
             # Someone uses this soa, make sure the domain is part of that zone (i.e. has a parent in
-            # the zone.
+            # the zone or is the root domain of the zone).
+            if self.find_root_domain() == self:
+                return
             raise ValidationError("This SOA is used for a different zone.")
 
     def _check_for_soa_partition(self):
@@ -90,6 +95,27 @@ class Domain(models.Model, ObjectUrlMixin):
                         domains %s and %s to become two zones that share the same SOA. Change %s or\
                         %s's SOA before changing this SOA" % (self.name, i_domain.name,\
                         j_domain.name, i_domain.name, j_domain.name))
+
+    def find_root_domain(self):
+        """
+        It is nessicary to know which domain is at the top of a zone. This function returns
+        that domain.
+        """
+        domains = self.soa.domain_set.all()
+        if not domains:
+            return None
+        root_domain = domains[0]
+        while True:
+            if root_domain is None:
+                raise Exception
+            elif not root_domain.master_domain:
+                break
+            elif root_domain.master_domain.soa != root_domain.soa:
+                break
+            else:
+                root_domain = root_domain.master_domain
+
+        return root_domain
 
 
     def _check_for_children(self):

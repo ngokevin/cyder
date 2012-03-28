@@ -97,7 +97,6 @@ class DomainTests(TestCase):
 
     def test_2_soa_validators(self):
         s1, _ = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact = "hostmaster.foo", comment="foo.gaz2")
-        s2, _ = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact = "hostmaster.foo", comment="baz.gaz3")
         d, _ = Domain.objects.get_or_create(name="gaz")
         d.soa = None
         d.save()
@@ -105,8 +104,16 @@ class DomainTests(TestCase):
         d1.soa = s1
         d1.save()
 
+    def test_3_soa_validators(self):
+        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo2.gaz", contact = "hostmaster.foo", comment="foo.gaz2")
 
+        r, _ = ReverseDomain.objects.get_or_create(name='9')
+        r.soa = s1
+        r.save()
 
+        d, _ = Domain.objects.get_or_create(name="gaz")
+        d.soa = s1
+        self.assertRaises(ValidationError, d.save)
 
     def test__name_to_master_domain(self):
         try:
