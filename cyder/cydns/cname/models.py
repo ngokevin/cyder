@@ -19,7 +19,7 @@ class CNAME(CommonRecord):
                     ('FQDN', self.fqdn),
                     ('Record Type', 'CNAME'),
                     ('Data', self.data),
-                )
+               )
 
     class Meta:
         db_table = 'cname'
@@ -59,5 +59,5 @@ class CNAME(CommonRecord):
         """MX records should not point to CNAMES."""
         # TODO, cite an RFC.
         from cyder.cydns.mx.models import MX
-        if MX.objects.filter( server = self.fqdn ):
+        if MX.objects.filter(server = self.fqdn):
             raise ValidationError("MX records should not point to CNAMES.")
