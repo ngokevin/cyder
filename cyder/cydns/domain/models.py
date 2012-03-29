@@ -75,27 +75,6 @@ class Domain(models.Model, ObjectUrlMixin):
                 return
             raise ValidationError("This SOA is used for a different zone.")
 
-    def _check_for_soa_partition(self):
-        """
-        This function determines if changing your soa causes sub domains to become their own zones
-        and if those zones share a common SOA (not allowed).
-
-        :raises: ValidationError
-        """
-        child_domains = self.domain_set.all()
-        for i_domain in child_domains:
-            if i_domain.soa == self.soa:
-                continue # Valid child.
-            for j_domain in child_domains:
-                # Make sure the child domain does not share an SOA with one of it's siblings.
-                if i_domain == j_domain:
-                    continue
-                if i_domain.soa == j_domain.soa:
-                    raise ValidationError("Changing the SOA for the %s domain would cause the child\
-                        domains %s and %s to become two zones that share the same SOA. Change %s or\
-                        %s's SOA before changing this SOA" % (self.name, i_domain.name,\
-                        j_domain.name, i_domain.name, j_domain.name))
-
     def find_root_domain(self):
         """
         It is nessicary to know which domain is at the top of a zone. This function returns
@@ -117,6 +96,26 @@ class Domain(models.Model, ObjectUrlMixin):
 
         return root_domain
 
+    def _check_for_soa_partition(self):
+        """
+        This function determines if changing your soa causes sub domains to become their own zones
+        and if those zones share a common SOA (not allowed).
+
+        :raises: ValidationError
+        """
+        child_domains = self.domain_set.all()
+        for i_domain in child_domains:
+            if i_domain.soa == self.soa:
+                continue # Valid child.
+            for j_domain in child_domains:
+                # Make sure the child domain does not share an SOA with one of it's siblings.
+                if i_domain == j_domain:
+                    continue
+                if i_domain.soa == j_domain.soa:
+                    raise ValidationError("Changing the SOA for the %s domain would cause the child\
+                        domains %s and %s to become two zones that share the same SOA. Change %s or\
+                        %s's SOA before changing this SOA" % (self.name, i_domain.name,\
+                        j_domain.name, i_domain.name, j_domain.name))
 
     def _check_for_children(self):
         if self.domain_set.all():
