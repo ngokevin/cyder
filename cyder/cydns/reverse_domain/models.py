@@ -84,6 +84,10 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
         if not self.soa:
             return
 
+        zone = self.soa.domain_set.all()
+        if zone:
+            raise ValidationError("This SOA is used for the forward zone %s." % (zone[0]))
+
         if self.soa.domain_set.all():
             raise ValidationError("This SOA is used for reverse zone.")
 
@@ -93,7 +97,30 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
         if self.master_reverse_domain and self.master_reverse_domain.soa != self.soa:
             # Someone uses this soa, make sure the domain is part of that zone (i.e. has a parent in
             # the zone.
+            if self.find_root_domain() == self:
+                return
             raise ValidationError("This SOA is used for a different zone.")
+
+    def find_root_domain(self):
+        """
+        It is nessicary to know which domain is at the top of a zone. This function returns
+        that domain.
+        """
+        reverse_domains = self.soa.reversedomain_set.all()
+        if not reverse_domains:
+            return None
+        root_reverse_domain = reverse_domains[0]
+        while True:
+            if root_reverse_domain is None:
+                raise Exception
+            elif not root_reverse_domain.master_reverse_domain:
+                break
+            elif root_reverse_domain.master_reverse_domain.soa != root_reverse_domain.soa:
+                break
+            else:
+                root_reverse_domain = root_reverse_domain.master_reverse_domain
+
+        return root_reverse_domain
 
     def _check_for_soa_partition(self):
         """
