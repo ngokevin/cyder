@@ -107,7 +107,7 @@ class MXTests(TestCase):
         cn = CNAME( label = label, domain = domain, data = data )
         cn.save()
 
-        data = { 'label':'' ,'domain':self.o_e ,'server':'cnamederp.oregonstate.edu' ,'priority':2 ,'ttl':2222 }
+        data = { 'label':'' ,'domain':self.o_e ,'server':'cnamederp.oregonstate.org' ,'priority':2 ,'ttl':2222 }
         mx = MX( **data )
         self.assertRaises( ValidationError, mx.save )
 
