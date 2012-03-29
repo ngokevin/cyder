@@ -328,6 +328,8 @@ class AddressRecordTests(TestCase):
 
     def test_add_A_address_records(self):
         rec = AddressRecord( label = '', domain = self.o_e , ip_str= "128.193.0.1", ip_type='4')
+        rec.clean()
+        rec.save()
         self.assertEqual( rec.__str__(), "oregonstate.edu A 128.193.0.1" )
 
         data = {'label': 'foob1ar','domain': self.f_o_e ,'ip': "128.193.0.10"}

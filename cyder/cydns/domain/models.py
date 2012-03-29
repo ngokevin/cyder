@@ -167,7 +167,7 @@ def _name_to_domain(fqdn):
 
 
 def _check_TLD_condition(record):
-    domain = Domain.objects.filter(name = record.fqdn())
+    domain = Domain.objects.filter(name = record.fqdn)
     if not domain:
         return
     if record.label == '' and domain[0] == record.domain:

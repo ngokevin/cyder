@@ -12,7 +12,7 @@ class CNAME(CommonRecord):
 
     def details(self):
         return  (
-                    ('FQDN', self.fqdn()),
+                    ('FQDN', self.fqdn),
                     ('Record Type', 'CNAME'),
                     ('Data', self.data),
                 )
@@ -36,10 +36,10 @@ class CNAME(CommonRecord):
         self.data_domain = _name_to_domain(self.data)
 
     def __str__(self):
-        return "%s CNAME %s" % (self.fqdn(), self.data)
+        return "%s CNAME %s" % (self.fqdn, self.data)
 
     def _check_SOA_condition(self):
-        domain = Domain.objects.filter(name = self.fqdn())
+        domain = Domain.objects.filter(name = self.fqdn)
         if not domain:
             return
         # We need to check if the domain is the root domain in a zone.

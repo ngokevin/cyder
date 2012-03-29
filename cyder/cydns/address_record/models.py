@@ -23,12 +23,13 @@ class AddressRecord( Ip, CommonRecord ):
 
     def details(self):
         return  (
-                    ('FQDN', self.fqdn()),
+                    ('FQDN', self.fqdn),
                     ('Record Type', self.record_type()),
                     ('IP', str(self.ip_str)),
                 )
 
     def clean( self ):
+        super(AddressRecord, self).clean()
         self.clean_ip(update_reverse_domain=False) # Function from Ip class.
         _check_TLD_condition( self )
 
@@ -45,7 +46,7 @@ class AddressRecord( Ip, CommonRecord ):
             return 'AAAA'
 
     def __str__(self):
-        return "%s %s %s" % ( self.fqdn(), self.record_type(), str(self.ip_str) )
+        return "%s %s %s" % ( self.fqdn, self.record_type(), str(self.ip_str) )
 
     def __repr__(self):
         return "<Address Record '%s'>" % (str(self))
