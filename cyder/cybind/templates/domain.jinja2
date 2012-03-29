@@ -2,12 +2,11 @@
 @   IN  NS  {{ nameserver.server }}
 {%- endfor %}
 
-{% for mx in mx_set %}
+{%- for mx in mx_set -%}
 $TTL {{ mx.ttl }}
 {{ mx.label }} IN  MX   {{ mx.priority }}  {{ mx.server }}
 {%- endfor %}
 
-$TTL {{ default_ttl }}
 {%- for addr_rec in addressrecord_set %}
     {%- if addr_rec.ip_type == '4' %}
         {%- if addr_rec.label == '' %}
