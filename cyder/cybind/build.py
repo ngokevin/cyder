@@ -195,6 +195,8 @@ def build_forward_zone_files():
     DEBUG_STRING = ''
     for soa in SOA.objects.all():
         info = gen_forward_soa(soa)
+        if not info:
+            continue
         # Open a file (create if doesn't exist) in build path. Write data to it. Close it.
         open("%s/%s" % (BUILD_PATH, info[0]), "w+").write(info[1])
         if DEBUG: DEBUG_STRING += "%s File: %s %s \n%s\n" % ("="*20, info[0], "="*20, info[1])
