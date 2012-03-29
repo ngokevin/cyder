@@ -46,26 +46,25 @@ class DomainDetailView(DomainView, DetailView):
             return context
         # TODO
         # This process can be generalized. It's not very high priority.
-        # TODO, doing this sooo wrong. I should be using the entity sets which will cache things.
-        address_objects = AddressRecord.objects.filter( domain = domain )
+        address_objects = domain.addressrecord_set.all()
         adr_headers, adr_matrix, adr_urls = tablefy( address_objects )
 
-        mx_objects = MX.objects.filter( domain = domain )
+        mx_objects = domain.mx_set.all()
         mx_headers, mx_matrix, mx_urls = tablefy( mx_objects )
 
-        srv_objects = SRV.objects.filter( domain = domain )
+        srv_objects = domain.srv_set.all()
         srv_headers, srv_matrix, srv_urls = tablefy( srv_objects )
 
-        txt_objects = TXT.objects.filter( domain = domain )
+        txt_objects = domain.txt_set.all()
         txt_headers, txt_matrix, txt_urls = tablefy( txt_objects )
 
-        cname_objects = CNAME.objects.filter( domain = domain )
+        cname_objects = domain.cname_set.all()
         cname_headers, cname_matrix, cname_urls = tablefy( cname_objects )
 
-        ptr_objects = PTR.objects.filter( domain = domain )
+        ptr_objects = domain.ptr_set.all()
         ptr_headers, ptr_matrix, ptr_urls = tablefy( ptr_objects )
 
-        ns_objects = Nameserver.objects.filter( domain = domain )
+        ns_objects = domain.nameserver_set.all()
         ns_headers, ns_matrix, ns_urls = tablefy( ns_objects )
 
         # Join the two dicts
