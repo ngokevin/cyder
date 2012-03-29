@@ -37,7 +37,8 @@ class AddressRecord( Ip, CommonRecord ):
         super(AddressRecord, self).save(*args, **kwargs)
 
     def record_type(self):
-        # TODO, why don't we use 'A' and 'AAAA' instead of '4' and '6'?
+        # If PTR didn't share this field, we would use 'A' and 'AAAA' instead of
+        # '4' and '6'.
         if self.ip_type == '4':
             return 'A'
         else:
