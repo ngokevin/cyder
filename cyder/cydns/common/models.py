@@ -29,6 +29,8 @@ class CommonRecord(models.Model, ObjectUrlMixin):
 
     This field makes searching for records much easier. Instead of looking at ``obj.label`` together
     with ``obj.domain.name``, you can just search the ``obj.fqdn`` field.
+
+    As of commit 7b2fd19f, the build scripts do not care about ``fqdn``. This could change.
     """
 
     domain          = models.ForeignKey(Domain, null=False)
