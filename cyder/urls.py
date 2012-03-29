@@ -20,6 +20,7 @@ from cyder.cydns.reverse_domain.views import ReverseDomainDeleteView
 from cyder.cydns.address_record.views import AddressRecordDetailView, AddressRecordCreateView
 from cyder.cydns.address_record.views import AddressRecordUpdateView, AddressRecordDeleteView
 
+from cyder.cybind.views import sample_build
 
 
 # Uncomment the next two lines to enable the admin:
@@ -30,6 +31,17 @@ urlpatterns = patterns('',
 
     url(r'^$', Cydns.as_view() ),
     url(r'^cyder/cydns$', Cydns.as_view() ),
+    url(r'^cyder/cydns/build$', sample_build ),
+    # CAS
+    url(r'^login$', 'django_cas.views.login'),
+    url(r'^logout$', 'django_cas.views.logout'),
+
+    #########
+    # CYDNS #
+    #########
+    # NS
+    url(r'^cyder/cydns/nameserver$', NSListView.as_view() ),
+    url(r'^cyder/cydns/nameserver/create$', NSCreateView.as_view()),
     # CAS
     url(r'^login$', 'django_cas.views.login'),
     url(r'^logout$', 'django_cas.views.logout'),
