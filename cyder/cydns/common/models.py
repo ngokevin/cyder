@@ -31,6 +31,9 @@ class CommonRecord(models.Model, ObjectUrlMixin):
     with ``obj.domain.name``, you can just search the ``obj.fqdn`` field.
 
     As of commit 7b2fd19f, the build scripts do not care about ``fqdn``. This could change.
+
+    ""the total number of octets that represent a name (i.e., the sum of all label octets and label
+    lengths) is limited to 255" - RFC 4471
     """
 
     domain          = models.ForeignKey(Domain, null=False)
