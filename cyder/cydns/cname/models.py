@@ -7,7 +7,10 @@ from cyder.cydns.cydns import _validate_name
 
 class CNAME(CommonRecord):
     """
-    CNAMES can't point to an MX record.
+    CNAMES can't point to an MX record. CNAMES are aliases::
+
+        CNAME( label = label, domain = domain, data = data )
+
     """
     # TODO cite an RFC
     id              = models.AutoField(primary_key=True)
