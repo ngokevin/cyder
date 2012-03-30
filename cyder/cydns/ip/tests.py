@@ -32,6 +32,21 @@ class SimpleTest(TestCase):
         ip = ipaddr.IPv4Address(ip_str)
         Ip( ip_str = ip_str, ip_type = '4' ).clean_ip()
 
+    def test_update_ipv4_str(self):
+        ip_str = '66.168.1.1'
+        v_ip = ipaddr.IPv4Address(ip_str)
+        ip = Ip( ip_str = ip_str, ip_type='4' )
+        ip.clean_ip()
+        self.assertEqual(ip.ip_upper, 0)
+        self.assertEqual(ip.ip_lower, int(v_ip))
+
+        # Make sure ip_lower is update.
+        ip_str = '66.213.1.9'
+        v_ip = ipaddr.IPv4Address(ip_str)
+        ip.ip_str = ip_str
+        ip.clean_ip()
+        self.assertEqual(ip.ip_upper, 0)
+        self.assertEqual(ip.ip_lower, int(v_ip))
 
     def test_ipv6_str(self):
         rd = boot_strap_add_ipv6_reverse_domain('1.2.3.4')
