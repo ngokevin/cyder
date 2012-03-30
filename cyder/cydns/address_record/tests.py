@@ -17,6 +17,7 @@ from cyder.cydns.ip.models import ipv6_to_longs
 from cyder.cydns.domain.models import Domain
 
 from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.nameserver.models import Nameserver
 
 import ipaddr
 import pdb
@@ -491,3 +492,30 @@ class AddressRecordTests(TestCase):
 
         data = {'label': 'n+as','domain': self.o_e ,'ip':osu_block+":7"}
         self.assertRaises(ValidationError ,self.do_add_record6, data)
+
+    def test_no_update_when_glue(self):
+        """A record shouldn't update it's label or domain when it is a glue record"""
+        label = 'ns99'
+        glue = AddressRecord( label=label, domain = self.o_e, ip_str = '128.193.1.10', ip_type = '4' )
+        glue.save()
+
+        server = "%s.%s" % (label, self.o_e)
+        ns = Nameserver(domain = self.o_e, server = server)
+        ns.save()
+        self.assertTrue( ns.glue == glue )
+
+        # Shouldn't be able to edit label or domain.
+        glue.label = "ns100"
+        self.assertRaises(ValidationError, glue.save)
+        glue.domain = self.m_o_e
+        self.assertRaises(ValidationError, glue.save)
+
+        glue = AddressRecord.objects.get(pk=glue.pk)
+        glue.label = "ns101"
+        glue.domain = self.e
+        self.assertRaises(ValidationError, glue.save)
+
+        # Ip can change.
+        glue = AddressRecord.objects.get(pk=glue.pk)
+        glue.ip_str = "192.192.12.12"
+        glue.save()

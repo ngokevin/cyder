@@ -28,7 +28,10 @@ class AddressRecord( Ip, CommonRecord ):
                     ('IP', str(self.ip_str)),
                 )
 
+    #def __setattr__(self, *args, **kwargs):
+
     def clean( self ):
+        self._check_glue_status()
         super(AddressRecord, self).clean()
         self.clean_ip(update_reverse_domain=False) # Function from Ip class.
         _check_TLD_condition( self )
@@ -36,6 +39,24 @@ class AddressRecord( Ip, CommonRecord ):
     def save(self, *args, **kwargs):
         self.full_clean()
         super(AddressRecord, self).save(*args, **kwargs)
+
+    def _check_glue_status(self):
+        """
+        If this record is a 'glue' record for a Nameserver instance, do not allow modifications to
+        this record. The Nameserver will need to point to a different record before this record can
+        be updated.
+        """
+        if self.pk is None:
+            return
+        # First get this object from the database and compare it to the object about to be saved.
+        db_self = AddressRecord.objects.get(pk=self.pk)
+        if db_self.label == self.label and db_self.domain == self.domain:
+            return
+        # The label of the domain changed. Make sure it's not a glue record
+        from cyder.cydns.nameserver.models import Nameserver # This avoids cyclic imports
+        if Nameserver.objects.filter(glue=self).exists():
+            raise ValidationError("This record is a glue record for a Nameserver. Change the\
+                    Nameserver to edit this record.")
 
     def record_type(self):
         # If PTR didn't share this field, we would use 'A' and 'AAAA' instead of
