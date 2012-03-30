@@ -10,7 +10,12 @@ import pdb
 
 # This is the A and AAAA record class
 class AddressRecord( Ip, CommonRecord ):
-    """AddressRecord is the class that generates A and AAAA records."""
+    """
+    AddressRecord is the class that generates A and AAAA records::
+
+        AddressRecord(label=label, domain=domain_object, ip_str=ip_str, ip_type=ip_type)
+
+    """
     id              = models.AutoField(primary_key=True)
     ############################
     # See Ip for all ip fields #
