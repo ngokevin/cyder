@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from django import forms
 
 from cyder.cydns.reverse_domain.models import ReverseDomain, ip_to_reverse_domain
 
@@ -10,30 +9,62 @@ import pdb
 
 
 class Ip( models.Model ):
-    """Ip represents either an IPv4 or IPv6 address. All A, CNAME, PTR, and any other classes that use an ip will import and use this class.
+    """
+    An ``Ip`` instance represents either an IPv4 or IPv6 address.
+
+    ``Ip`` instances are used in ``AddressRecords`` (A and AAAA records) and in ``PTR`` records.
+
+    ``Ip`` instances in a PTR record must be mapped back to a ``ReverseDomain`` object. A
+    ``ValidationError`` is raised if an eligible ``ReverseDomain`` cannot be found when trying to
+    create the ``PTR``'s ``Ip``.
+
+    The reason why an IP must be mapped back to a ``ReverseDomain`` has to do with how bind files
+    are written. In a reverse zone file, ip addresses are mapped from IP to DATA. For instance an
+    PTR record would look like this::
+
+        IP                  DATA
+        197.1.1.1   PTR     foo.bob.com
+
+    If we were building the file ``197.in-addr.arpa``, all IP addresses in the ``197`` domain would
+    need to be in this file. To reduce the complexity of finding records for a reverse domain, an
+    ``IP`` is linked to it's appropriate reverse domain when it is created. It's mapping is updated
+    when it's reverse domain is deleted or a more appropritate reverse domain is added.  Keeping the
+    ``Ip`` feild on PTR  will help preformance when building reverse zone files.
+
+    The algorithm for determineing which reverse domain an ``Ip`` belongs to is done by applying a
+    `longest prefix match` to all reverse domains in the ``ReverseDomain`` table.
+
+    ``AddressRecords`` need the validation that happens in this class but do not need their ``Ip``'s
+    to be tied back to a reverse domain.
 
     note::
         Django's BigInteger wasn't "Big" enough, so there is code in `cyder/cydns/ip/sql/ip.sql` that
         Alters the IP table.
+
     """
     IP_TYPE_CHOICES = ( ('4','ipv4'),('6','ipv6') )
-    id              = models.AutoField(primary_key=True)
     ip_str          = models.CharField(max_length=39, editable=True)
-    ip_upper        = models.BigIntegerField(null=False)
-    ip_lower        = models.BigIntegerField(null=False)
-    reverse_domain  = models.ForeignKey(ReverseDomain, null=False)
+
+    # ip_upper/lower are calculated from ip_str on ip_clean.
+    ip_upper        = models.BigIntegerField(null=False, blank=True) # Used for IPv6, set to 0 for IPv4
+    ip_lower        = models.BigIntegerField(null=False, blank=True)
+    # TODO, should reverse_domain go into the PTR model?
+    # I would think it shouldn't because it is used in this class during the ip_clean function.
+    # Technically the ip_clean function would work if the field existed in the PTR model, but
+    # overall it would hurt readability.
+    #
+    # reactor.addCallback(think_about_it)
+    reverse_domain  = models.ForeignKey(ReverseDomain, null=True, blank=True)
     ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=True)
 
     class Meta:
-        db_table = 'ip'
+        abstract = True
 
-    def clean(self, update_reverse_domain=True):
-        """ The clean method in Ip is different from the rest. It needs to be called with the
-            update_reverse_domain flag. Sometimes we need to not update the reverse domain of
-            an IP (i.e. when we are deleting a reverse_domain).
-
-            Basically, we need fine grain control over the save and clean function so we are
-            not using full_clean.
+    def clean_ip(self, update_reverse_domain=True):
+        """
+        The clean method in Ip is different from the rest. It needs to be called with the
+        update_reverse_domain flag. Sometimes we need to not update the reverse domain of
+        an IP (i.e. when we are deleting a reverse_domain).
         """
         # TODO, it's a fucking hack. Car babies.
         self._validate_ip_type()
@@ -59,25 +90,12 @@ class Ip( models.Model ):
                 self.reverse_domain = ip_to_reverse_domain( self.ip_str, ip_type='6' )
             self.ip_upper, self.ip_lower =  ipv6_to_longs(int(ip))
 
-    def save(self, *args, **kwargs):
-        if kwargs.has_key('update_reverse_domain'):
-            urd = kwargs.pop('update_reverse_domain')
-            self.clean( update_reverse_domain = urd )
-        else:
-            self.clean()
-        super(Ip, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return self.ip_str
 
     def __int__(self):
         if self.ip_type == '4':
             self.ip_lower
         if self.ip_type == '6':
             return (self.ip_upper*(2**64))+self.ip_lower
-
-    def __repr__(self):
-        return "<Ip '%s'>" % (str(self))
 
     def _validate_ip_type( self ):
         if self.ip_type not in ('4', '6'):
@@ -88,7 +106,9 @@ class Ip( models.Model ):
             raise ValidationError("Error: Plase provide the string representation of the IP")
 
 def ipv6_to_longs(addr):
-    """This function will turn an IPv6 into two long. The first will be reprsenting the first 64 bits of the address and second will be the lower 64 bits.
+    """
+    This function will turn an IPv6 into two longs. The first number represents the first 64 bits
+    of the address and second represents the lower 64 bits.
 
     :param addr: IPv6 to be converted.
     :type addr: str

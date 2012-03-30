@@ -19,28 +19,10 @@ class PTRDeleteView(PTRView, CommonDeleteView):
 
 class PTRDetailView(PTRView, CommonDetailView):
     """ """
+    template_name = "ptr_detail.html"
 
 class PTRCreateView(PTRView, CommonCreateView):
     """ """
-    def post( self, request, *args, **kwargs ):
-        ip_form = IpForm( request.POST )
-        ptr_form = PTRForm( request.POST )
-        try:
-            ip = ip_form.save()
-            ptr = ptr_form.save(commit = False)
-            ptr.ip = ip
-            ptr.ip_type = ip.ip_type
-            ptr.save()
-        except ValueError, e:
-            return render( request, "ptr_create.html", { "ptr_form": ptr_form, "ip_form": ip_form } )
-
-        messages.success( request, "Successfully Created PTR Record." )
-        return redirect( ptr )
-
-    def get( self, request, *args, **kwargs ):
-        ip_form = IpForm()
-        ptr_form = PTRForm()
-        return render( request, "ptr_create.html", { "ptr_form": ptr_form, "ip_form": ip_form } )
 
 class PTRUpdateView(PTRView, CommonUpdateView):
     """ """

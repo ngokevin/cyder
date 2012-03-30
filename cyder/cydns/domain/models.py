@@ -3,22 +3,34 @@ from django.core.exceptions import ValidationError
 from django import forms
 
 from cyder.cydns.soa.models import SOA
-from cyder.cydns.cydns import _validate_domain_name
+from cyder.cydns.cydns import _validate_domain_name, _name_type_check
 from cyder.cydns.models import ObjectUrlMixin
 
 import pdb
 
 
 class Domain(models.Model, ObjectUrlMixin):
-    """A Domain is used for most DNS records."""
+    """
+    A Domain is used as a foreign key for most DNS records.
+
+    A domain's SOA should be shared by only domains within it's zone.
+
+    If two domains are part of different zones, they (and their subdomains) will need
+    different SOA objects even if the data contained in the SOA is exactly the same. Use the comment
+    field to distinguish between similar SOAs. Cyder enforces this condition and will raise a
+    ``ValidationError`` during ``clean_all`` if it is violated.
+
+    For example: Say you are authoritative for the domains (and zones) ``foo.com`` and ``baz.com``.
+    These zones should have different SOA's because they are part of two separate zones. If you had the
+    subdomain ``baz.foo.com``, it could have the same SOA as the ``foo.com`` domain because it is in
+    the same zone.
+    """
+
     id              = models.AutoField(primary_key=True)
     name            = models.CharField(max_length=100, unique=True,\
                         validators=[_validate_domain_name])
     master_domain   = models.ForeignKey("self", null=True, default=None, blank=True)
     soa             = models.ForeignKey(SOA, null=True, default=None, blank=True)
-
-    def __init__(self, *args, **kwargs):
-        super(Domain, self).__init__(*args, **kwargs)
 
     class Meta:
         db_table = 'domain'
@@ -33,29 +45,84 @@ class Domain(models.Model, ObjectUrlMixin):
 
     def clean(self):
         self.master_domain = _name_to_master_domain(self.name)
+        self._validate_zone_soa()
+        self._check_for_soa_partition()
 
     def __str__(self):
         return "%s" % (self.name)
     def __repr__(self):
         return "<Domain '%s'>" % (self.name)
 
+    def _validate_zone_soa(self):
+        """
+        Make sure the SOA assigned to this domain is the correct SOA for this domain. Also make sure
+        that the SOA is not used in a different zone.
+        """
+        if not self.soa:
+            return
+        reverse_zone = self.soa.reversedomain_set.all()
+        if reverse_zone:
+            raise ValidationError("This SOA is used for the reverse zone %s." % (reverse_zone[0]))
 
-        permissions = (
-            ("create", "Can create"),
-            ("view", "Can view"),
-            ("update", "Can update"),
-            ("delete", "Can delete"),
-        )
+        if not self.soa.domain_set.all():
+            return # No zone uses this soa.
 
+        if self.master_domain and self.master_domain.soa != self.soa:
+            # Someone uses this soa, make sure the domain is part of that zone (i.e. has a parent in
+            # the zone or is the root domain of the zone).
+            if self.find_root_domain() == self:
+                return
+            raise ValidationError("This SOA is used for a different zone.")
+
+    def find_root_domain(self):
+        """
+        It is nessicary to know which domain is at the top of a zone. This function returns
+        that domain.
+        """
+        domains = self.soa.domain_set.all()
+        if not domains:
+            return None
+        root_domain = domains[0]
+        while True:
+            if root_domain is None:
+                raise Exception
+            elif not root_domain.master_domain:
+                break
+            elif root_domain.master_domain.soa != root_domain.soa:
+                break
+            else:
+                root_domain = root_domain.master_domain
+
+        return root_domain
+
+    def _check_for_soa_partition(self):
+        """
+        This function determines if changing your soa causes sub domains to become their own zones
+        and if those zones share a common SOA (not allowed).
+
+        :raises: ValidationError
+        """
+        child_domains = self.domain_set.all()
+        for i_domain in child_domains:
+            if i_domain.soa == self.soa:
+                continue # Valid child.
+            for j_domain in child_domains:
+                # Make sure the child domain does not share an SOA with one of it's siblings.
+                if i_domain == j_domain:
+                    continue
+                if i_domain.soa == j_domain.soa:
+                    raise ValidationError("Changing the SOA for the %s domain would cause the child\
+                        domains %s and %s to become two zones that share the same SOA. Change %s or\
+                        %s's SOA before changing this SOA" % (self.name, i_domain.name,\
+                        j_domain.name, i_domain.name, j_domain.name))
 
     def _check_for_children(self):
-        if Domain.objects.filter(master_domain = self):
+        if self.domain_set.all():
             raise ValidationError("Before deleting this domain, please remove it's children.")
         pass
 
 
-# A bunch of handy functions that would cause circular dependancies if they were in another file.
-
+# A bunch of handy functions that would cause circular dependencies if they were in another file.
 """
 Given an name return the most specific domain that the ip can belong to.
 This is used to check for rule 1 in add_domain() rules.
@@ -87,6 +154,7 @@ def _name_to_master_domain(name):
     return master_domain
 
 def _name_to_domain(fqdn):
+    _name_type_check(fqdn)
     labels = fqdn.split('.')
     for i in range(len(labels)):
         name = '.'.join(labels[i:])
@@ -97,7 +165,7 @@ def _name_to_domain(fqdn):
 
 
 def _check_TLD_condition(record):
-    domain = Domain.objects.filter(name = record.fqdn())
+    domain = Domain.objects.filter(name = record.fqdn)
     if not domain:
         return
     if record.label == '' and domain[0] == record.domain:

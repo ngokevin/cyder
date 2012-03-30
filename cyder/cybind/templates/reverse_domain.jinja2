@@ -1,0 +1,7 @@
+{%- for nameserver in nameserver_set %}
+@   IN  NS  {{ nameserver.server }}
+{%- endfor %}
+
+{%- for ptr in ptr_set %}
+{{ ptr.ip_str }}  IN  PTR  {{ ptr.name }}
+{%- endfor %}

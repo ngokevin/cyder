@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.reverse_domain.models import ReverseDomain
@@ -32,6 +32,9 @@ class ReverseNameserver(BaseNameserver):
     class Meta:
         db_table = 'reverse_nameserver'
         unique_together = ('reverse_domain', 'server')
+
+    def get_absolute_url(self):
+        return "/cyder/cydns/reverse_nameserver/%s/detail" % (self.pk)
 
     def details(self):
         details =  (
@@ -72,15 +75,19 @@ class Nameserver(BaseNameserver):
     def clean(self):
         super(Nameserver, self).clean()
 
-        needs_glue = self._needs_glue()
-        if self.glue and self.glue.fqdn() != self.server:
-            if not needs_glue:
-                raise ValidationError("Error: %s does not need a glue record." % (str(self)))
+        if not self._needs_glue():
+            self.glue = None
+        else:
+            #Try to find any glue record. It will be the first elligible A record found.
+            glue_label = self.server.split('.')[0] # foo.com -> foo
+            glue = AddressRecord.objects.filter(label = glue_label, domain = self.domain)
+            if not glue:
+                raise ValidationError("NS needs glue record. Create a glue record for the\
+                        server before creating the NS record.")
             else:
-                raise ValidationError("Error: %s needs a correct glue record." % (str(self)))
-        if not self.glue and needs_glue:
-            raise ValidationError("Error: %s is in the %s domain. It needs a glue record." %\
-                    (self.server, self.domain.name))
+                self.glue = glue[0]
+
+
 
 
     def save(self, *args, **kwargs):
@@ -98,7 +105,12 @@ class Nameserver(BaseNameserver):
         # Replace the domain portion of the server with "".
         # if domain == foo.com and server == ns1.foo.com.
         #       ns1.foo.com --> ns1
-        possible_label = self.server.replace("."+self.domain.name, "")
+        try:
+            possible_label = self.server.replace("."+self.domain.name, "")
+        except ObjectDoesNotExist:
+            return False
+        if possible_label == self.server:
+            return False
         try:
             _validate_label(possible_label)
         except ValidationError:

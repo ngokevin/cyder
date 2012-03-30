@@ -9,6 +9,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 
 from cyder.cydns.mx.models import MX
+from cyder.cydns.cname.models import CNAME
 from cyder.cydns.domain.models import Domain
 
 import pdb
@@ -98,3 +99,15 @@ class MXTests(TestCase):
         mx0.priority = 9
         mx0.ttl = 34234
         self.assertRaises( ValidationError, mx0.save )
+
+    def test_add_with_cname(self):
+        label = "cnamederp"
+        domain = self.o_e
+        data = "foo.com"
+        cn = CNAME( label = label, domain = domain, data = data )
+        cn.save()
+
+        data = { 'label':'' ,'domain':self.o_e ,'server':'cnamederp.oregonstate.org' ,'priority':2 ,'ttl':2222 }
+        mx = MX( **data )
+        self.assertRaises( ValidationError, mx.save )
+

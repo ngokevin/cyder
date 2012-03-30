@@ -1,0 +1,10 @@
+{{ root_domain.name }}  IN  SOA {{ soa.primary }} {{ soa.contact }}. (
+            {{ soa.serial }}; Serial Number
+            {{ soa.refresh }}; Refresh
+            {{ soa.retry }}; Retry
+            {{ soa.expire }}; Expire
+            )
+
+{% for domain in domains %}
+    $INCLUDE {{ bind_path }}/{{ domain }}
+{%- endfor %}

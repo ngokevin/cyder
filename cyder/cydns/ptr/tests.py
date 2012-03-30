@@ -32,17 +32,9 @@ class PTRTests(TestCase):
         self.b_o_e.save()
 
 
-    def do_generic_add( self, ip, fqdn, ip_type, domain = None ):
-        if ip_type == '4':
-            ip = Ip( ip_str = ip, ip_type = ip_type )
-            ip.save()
-            ret = PTR( ip = ip, name = fqdn )
-            ret.save()
-        else:
-            ip = Ip( ip_str = ip, ip_type = ip_type )
-            ip.save()
-            ret = PTR( ip = ip, name = fqdn )
-            ret.save()
+    def do_generic_add( self, ip_str, fqdn, ip_type, domain = None ):
+        ret = PTR( name = fqdn, ip_str = ip_str, ip_type=ip_type )
+        ret.save()
 
 
         self.assertTrue(ret.details())
@@ -51,12 +43,15 @@ class PTRTests(TestCase):
         self.assertTrue(ret.get_delete_url())
 
 
-        ptr = PTR.objects.filter( name=fqdn, ip__ip_upper = ip.ip_upper, ip__ip_lower = ip.ip_lower )
+        ip = Ip( ip_str = ip_str, ip_type=ip_type )
+        ip.clean_ip()
+        ptr = PTR.objects.filter( name=fqdn, ip_upper = ip.ip_upper, ip_lower = ip.ip_lower )
         ptr.__repr__()
         self.assertTrue(ptr)
-        self.assertEqual( ptr[0].ip.__str__(), ip.__str__() )
+        ip_str = ip_str.lower()
+        self.assertEqual( ptr[0].ip_str, ip_str )
         if domain:
-            if prt[0].name == "":
+            if ptr[0].name == "":
                 self.assertEqual( fqdn, domain.name )
             else:
                 self.assertEqual( fqdn,ptr[0].name+"."+domain.name )
@@ -203,18 +198,15 @@ class PTRTests(TestCase):
         self.do_generic_invalid_add( "128.128.1.1", "foo.bar.oregondfastate.com", '4', ValidationError )
 
     def do_generic_remove( self, ip, fqdn, ip_type ):
-        ip = Ip( ip_str = ip, ip_type = ip_type )
-        ip.save()
-        ip_pk = ip.pk
-        ptr = PTR( ip = ip, name = fqdn )
+        ptr = PTR( ip_str = ip, name = fqdn, ip_type=ip_type )
         ptr.save()
 
         ptr.delete()
 
-        ptr = PTR.objects.filter( name=fqdn, ip__ip_upper = ip.ip_upper, ip__ip_lower = ip.ip_lower, domain = ptr.domain )
+        ip = Ip( ip_str = ip, ip_type=ip_type )
+        ip.clean_ip()
+        ptr = PTR.objects.filter( name=fqdn, ip_upper = ip.ip_upper, ip_lower = ip.ip_lower, domain = ptr.domain )
         self.assertFalse(ptr)
-        ip_search = Ip.objects.filter( ip_upper = ip.ip_upper, ip_lower = ip.ip_lower, ip_type = ip_type)
-        self.assertFalse(ip_search)
 
     def test_remove_ipv4( self ):
         ip = "128.255.233.244"
@@ -263,7 +255,7 @@ class PTRTests(TestCase):
             ptr.domain = domain
         ptr.save()
 
-        ptr = PTR.objects.filter( name=new_fqdn, ip__ip_upper = ptr.ip.ip_upper , ip__ip_lower = ptr.ip.ip_lower, domain = ptr.domain )
+        ptr = PTR.objects.filter( name=new_fqdn, ip_upper = ptr.ip_upper , ip_lower = ptr.ip_lower, domain = ptr.domain )
         self.assertTrue(ptr)
         if domain:
             self.assertEqual( new_fqdn,ptr[0].name+"."+domain.name )

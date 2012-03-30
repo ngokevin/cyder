@@ -16,8 +16,8 @@ class SOATests(TestCase):
     def setUp(self):
         pass
 
-    def do_generic_add(self, primary, contact, retry, refresh):
-        soa = SOA( primary = primary, contact = contact, retry = retry, refresh = refresh)
+    def do_generic_add(self, primary, contact, retry, refresh, comment):
+        soa = SOA( primary = primary, contact = contact, retry = retry, refresh = refresh, comment= comment )
         soa.save()
         soa.save()
         rsoa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh=refresh )
@@ -29,7 +29,8 @@ class SOATests(TestCase):
         contact = "admin.oregonstate.edu"
         retry = 1234
         refresh = 1234123
-        self.do_generic_add(primary, contact,retry, refresh)
+        comment = "1"
+        self.do_generic_add(primary, contact,retry, refresh, comment=comment)
         soa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh = refresh )
         soa[0].save()
         self.assertTrue( soa )
@@ -44,7 +45,8 @@ class SOATests(TestCase):
         contact = "admf.asdf"
         retry = 432152
         refresh = 1235146134
-        self.do_generic_add(primary, contact,retry, refresh)
+        comment = "2"
+        self.do_generic_add(primary, contact,retry, refresh, comment=comment)
         soa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh = refresh )
         self.assertTrue( soa )
         soa = soa[0]
@@ -68,7 +70,8 @@ class SOATests(TestCase):
         contact = "admin.oregonstate.edu"
         retry = 1234
         refresh = 1234123
-        soa = self.do_generic_add(primary, contact,retry, refresh)
+        comment = "3"
+        soa = self.do_generic_add(primary, contact,retry, refresh, comment=comment)
         soa.delete()
         soa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh=refresh )
         self.assertTrue( len(soa) == 0 )
@@ -77,16 +80,17 @@ class SOATests(TestCase):
         contact = "admf.asdf"
         retry = 432152
         refresh = 1235146134
-        soa = self.do_generic_add(primary, contact,retry, refresh)
+        comment = "4"
+        soa = self.do_generic_add(primary, contact,retry, refresh, comment=comment)
         soa.delete()
-        soa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh=refresh )
+        soa = SOA.objects.filter( primary = primary, contact = contact, retry = retry, refresh=refresh, comment=comment )
         self.assertTrue( len(soa) == 0 )
 
         # Add dup
-        soa = self.do_generic_add(primary, contact,retry, refresh)
+        comment = "4"
+        soa = self.do_generic_add(primary, contact,retry, refresh, comment=comment)
         soa.save()
-        soa = SOA(primary=primary, contact=contact,retry=retry, refresh=refresh)
-        self.assertRaises(ValidationError, soa.save)
+        self.assertRaises(ValidationError, self.do_generic_add, *(primary, contact,retry, refresh, comment))
 
     def test_add_invalid(self):
         data = { 'primary':"daf..fff" , 'contact':"foo.com" }

@@ -14,20 +14,26 @@ def _validate_ip_type(ip_type):
         raise ValidationError("Error: Plase provide the type of Address Record")
 
 class ReverseDomain(models.Model, ObjectUrlMixin):
-    """ A reverse DNS domain is used build reverse bind files.
-        ReverseDomainNotFoundError:
-        This exception is thrown when you are trying to add an Ip to the database and it cannot be
-        paired with a reverse domain. The solution is to create a reverse domain for the Ip to live
-        in.
+    """
+    A reverse DNS domain is used to build reverse bind files. Every ``Ip`` object is mapped back to a
+    ``ReverseDomain`` object.
 
-        ReverseChildDomainExistsError
-        This exception is thrown when you try to delete a reverse domain that has child reverese
-        domains. A reverse domain should only be deleted when it has no child reverse domains.
+    A ``ValidationError`` is raised when you are trying to add an Ip to the database and it cannot
+    be paired with a reverse domain. The solution is to create a reverse domain for the Ip to live
+    in.
 
-        MasterReverseDomainNotFoundError
-        All reverse domains should have a logical master (or parent) reverse domain. If you try to
-        create a reverse domain that should have a master reverse domain and *doesn't* this
-        exception is thrown.
+    A ``ValidationError`` is raised when you try to delete a reverse domain that has child reverse
+    domains. A reverse domain should only be deleted when it has no child reverse domains.
+
+    All reverse domains should have a master (or parent) reverse domain. A ``ValidationError`` will
+    be raised if you try to create a reverse domain that should have a master reverse domain.
+
+    The ``ip_type`` must be either '4' or '6'. Any other values will cause a ``ValidationError`` to
+    be raised when calling an objects ``full_clean`` method.
+
+    If you are not authoritative for a reverse domain, set the ``soa`` field to ``None``.
+
+    The ``name`` field must be unique. Failing to make it unique will raise a ``ValidationError``.
     """
     IP_TYPE_CHOICES = (('4','IPv4'),('6','IPv6'))
     id                      = models.AutoField(primary_key=True)
@@ -60,6 +66,8 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
         self.name = self.name.lower()
         master_reverse_domain = _name_to_master_reverse_domain(self.name,\
                                                                  ip_type=self.ip_type)
+        self._validate_zone_soa()
+        self._check_for_soa_partition()
         self.master_reverse_domain = master_reverse_domain
 
     def __str__(self):
@@ -67,6 +75,73 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
 
     def __repr__(self):
         return "<%s>" % (str(self))
+
+    def _validate_zone_soa(self):
+        """
+        Make sure the SOA assigned to this domain is the correct SOA for this domain. Also make sure
+        that the SOA is not used in a different zone.
+        """
+        if not self.soa:
+            return
+
+        zone = self.soa.domain_set.all()
+        if zone:
+            raise ValidationError("This SOA is used for the forward zone %s." % (zone[0]))
+
+        if self.soa.domain_set.all():
+            raise ValidationError("This SOA is used for reverse zone.")
+
+        if not self.soa.reversedomain_set.all():
+            return # No zone uses this soa.
+
+        if self.master_reverse_domain and self.master_reverse_domain.soa != self.soa:
+            # Someone uses this soa, make sure the domain is part of that zone (i.e. has a parent in
+            # the zone.
+            if self.find_root_domain() == self:
+                return
+            raise ValidationError("This SOA is used for a different zone.")
+
+    def find_root_domain(self):
+        """
+        It is nessicary to know which domain is at the top of a zone. This function returns
+        that domain.
+        """
+        reverse_domains = self.soa.reversedomain_set.all()
+        if not reverse_domains:
+            return None
+        root_reverse_domain = reverse_domains[0]
+        while True:
+            if root_reverse_domain is None:
+                raise Exception
+            elif not root_reverse_domain.master_reverse_domain:
+                break
+            elif root_reverse_domain.master_reverse_domain.soa != root_reverse_domain.soa:
+                break
+            else:
+                root_reverse_domain = root_reverse_domain.master_reverse_domain
+
+        return root_reverse_domain
+
+    def _check_for_soa_partition(self):
+        """
+        This function determines if changing your soa causes sub reverse_domains to become their own zones
+        and if those zones share a common SOA (not allowed).
+
+        :raises: ValidationError
+        """
+        child_reverse_domains = self.reversedomain_set.all()
+        for i_reverse_domain in child_reverse_domains:
+            if i_reverse_domain.soa == self.soa:
+                continue # Valid child.
+            for j_reverse_domain in child_reverse_domains:
+                # Make sure the child reverse_domain does not share an SOA with one of it's siblings.
+                if i_reverse_domain == j_reverse_domain:
+                    continue
+                if i_reverse_domain.soa == j_reverse_domain.soa:
+                    raise ValidationError("Changing the SOA for the %s reverse domain would cause the child\
+                        reverse domains %s and %s to become two zones that share the same SOA. Change %s or\
+                        %s's SOA before changing this SOA" % (self.name, i_reverse_domain.name,\
+                        j_reverse_domain.name, i_reverse_domain.name, j_reverse_domain.name))
 
     def _reassign_reverse_ips_delete(self):
         """ This function serves as a pretty subtle workaround.
@@ -78,10 +153,10 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
             of an Ip, save it, and then delete the old reverse_domain.
         """
         # TODO is there a better way of doing this?
-        ips = self.ip_set.iterator()
-        for ip in ips:
-            ip.reverse_domain = self.master_reverse_domain
-            ip.save(**{'update_reverse_domain':False})
+        ptrs = self.ptr_set.iterator()
+        for ptr in ptrs:
+            ptr.reverse_domain = self.master_reverse_domain
+            ptr.save(**{'update_reverse_domain':False})
 
     def _check_for_children(self):
         children = ReverseDomain.objects.filter(master_reverse_domain = self)
@@ -157,15 +232,18 @@ def _reassign_reverse_ips(reverse_domain_1, reverse_domain_2, ip_type):
 
     if reverse_domain_2 is None:
         return
-    ips = reverse_domain_2.ip_set.iterator()
-    for ip in ips:
-        correct_reverse_domain = ip_to_reverse_domain(str(ip), ip_type=ip_type)
-        if correct_reverse_domain != ip.reverse_domain:
-            ip.reverse_domain = correct_reverse_domain
-            ip.save()
+    ptrs = reverse_domain_2.ptr_set.iterator()
+    for ptr in ptrs:
+        correct_reverse_domain = ip_to_reverse_domain(ptr.ip_str, ip_type=ptr.ip_type)
+        if correct_reverse_domain != ptr.reverse_domain:
+            # TODO, is this needed? The save() function (actually the clean_ip function)
+            # will assign the correct reverse domain.
+            ptr.reverse_domain = correct_reverse_domain
+            ptr.save()
 
 def boot_strap_add_ipv6_reverse_domain(ip, soa=None):
-    """This function is here to help create IPv6 reverse domains.
+    """
+    This function is here to help create IPv6 reverse domains.
 
     .. note::
         Every nibble in the reverse domain should not exists for this function to exit successfully.
