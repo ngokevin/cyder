@@ -26,7 +26,12 @@ class BaseNameserver(models.Model, ObjectUrlMixin):
             raise ValidationError("You cannot create a NS record that is the name of a domain.")
 
 class ReverseNameserver(BaseNameserver):
-    """Name server for reverse domains."""
+    """
+    Name server for reverse domains.
+
+        ns = ReverseNameserver(reverse_domain = reverse_domain, server = server)
+
+    """
     reverse_domain          = models.ForeignKey(ReverseDomain, null=False)
 
     class Meta:
@@ -54,7 +59,12 @@ class ReverseNameserver(BaseNameserver):
         return "<Reverse '%s'>" % (str(self))
 
 class Nameserver(BaseNameserver):
-    """ Name server for forward domains. """
+    """
+    Name server for forward domains::
+
+            ns = Nameserver(domain = domain, server = server)
+
+    """
     domain          = models.ForeignKey(Domain, null=False)
     # "If the name server does lie within the domain it should have a corresponding A record."
     glue            = models.ForeignKey(AddressRecord, null=True, blank=True)
