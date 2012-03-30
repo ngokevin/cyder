@@ -30,18 +30,26 @@ def _validate_label(label, valid_chars=None):
         :param label: The name to be tested.
         :type label: str
 
-        "DNS domain names consist of "labels" separated by single dots."
         "Allowable characters in a label for a host name are only ASCII letters, digits, and the `-' character."
         "Labels may not be all numbers, but may have a leading digit"
+        "Labels must end and begin only with a letter or digit"
+        -- `RFC <http://tools.ietf.org/html/rfc1912>`_
+
+        "[T]he following characters are recommended for use in a host name: "A-Z", "a-z", "0-9", dash and underscore"
+        -- `RFC <http://tools.ietf.org/html/rfc1033>`_
 
     """
     _name_type_check(label)
 
     if not valid_chars:
         #"Allowable characters in a label for a host name are only ASCII letters, digits, and the `-' character."
+        #"[T]he following characters are recommended for use in a host name: "A-Z", "a-z", "0-9", dash and underscore"
         valid_chars = string.ascii_letters+"0123456789"+"-"
     # Labels may not be all numbers, but may have a leading digit
     # TODO
+    # Labels must end and begin only with a letter or digit
+    # TODO
+
     for char in label:
         if char == '.':
             raise ValidationError("Error: Ivalid name %s . Please do not span multiple domains when creating A records." % (label))
@@ -69,6 +77,11 @@ def _validate_name(fqdn):
         :param fqdn: The fqdn to be tested.
         :type fqdn: str
 
+
+        "DNS domain names consist of "labels" separated by single dots."
+        -- `RFC <http://tools.ietf.org/html/rfc1912>`_
+
+
         note::
             DNS name grammar
             <domain> ::= <subdomain> | " "
@@ -87,7 +100,7 @@ def _validate_name(fqdn):
             upper case and a through z in lower case
 
             <digit> ::= any one of the ten digits 0 through 9
-            RFC 1034 http://www.ietf.org/rfc/rfc1034.txt
+            --`RFC 1034 <http://www.ietf.org/rfc/rfc1034.txt>`_
     """
     # TODO, make sure the grammar is followed.
     _name_type_check(fqdn)
