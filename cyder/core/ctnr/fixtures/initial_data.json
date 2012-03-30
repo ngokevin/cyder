@@ -1,7 +1,7 @@
 [
   {
     "model": "ctnr.ctnr",
-    "pk": 0,
+    "pk": 1,
     "fields": {
       "description": "Default Ctnr",
       "name": "default"

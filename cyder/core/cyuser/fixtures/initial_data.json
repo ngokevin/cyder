@@ -1,7 +1,7 @@
 [
   {
     "model": "auth.user",
-    "pk": 0,
+    "pk": 1,
     "fields": {
         "username": "development",
         "first_name": "development",
