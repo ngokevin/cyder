@@ -18,7 +18,8 @@ class UserProfile(models.Model):
 
 def create_user_profile(sender, **kwargs):
     user = kwargs['instance']
-    if kwargs['created']:
+
+    if (kwargs.get('created', True) and not kwargs.get('raw', False)):
         profile = UserProfile(user=user)
         profile.save()
 
