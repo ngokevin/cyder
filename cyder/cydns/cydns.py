@@ -29,11 +29,19 @@ def _validate_label(label, valid_chars=None):
 
         :param label: The name to be tested.
         :type label: str
+
+        "DNS domain names consist of "labels" separated by single dots."
+        "Allowable characters in a label for a host name are only ASCII letters, digits, and the `-' character."
+        "Labels may not be all numbers, but may have a leading digit"
+
     """
     _name_type_check(label)
 
     if not valid_chars:
+        #"Allowable characters in a label for a host name are only ASCII letters, digits, and the `-' character."
         valid_chars = string.ascii_letters+"0123456789"+"-"
+    # Labels may not be all numbers, but may have a leading digit
+    # TODO
     for char in label:
         if char == '.':
             raise ValidationError("Error: Ivalid name %s . Please do not span multiple domains when creating A records." % (label))
