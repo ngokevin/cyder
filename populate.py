@@ -3,6 +3,7 @@ from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.ptr.models import PTR
 from cyder.cydns.nameserver.models import Nameserver
+from cyder.cydns.nameserver.models import ReverseNameserver
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.tests.view_tests import random_label
@@ -56,6 +57,9 @@ for domain in [ domain for domain in domains if domain.find('foo.foo') > -1 ]:
 
 d, _=Domain.objects.get_or_create(name=domains[1]) # bar.foo
 
+# Nameserver
+ns, _ = Nameserver.objects.get_or_create( domain= d, server = random_label()+"."+random_label()+"."+random_label() )
+
 for a_rec in a_recs:
     AddressRecord.objects.get_or_create( label = a_rec[0], domain=d, ip_str=a_rec[1], ip_type=a_rec[2])
 
@@ -64,6 +68,10 @@ d, _=Domain.objects.get_or_create(name=domains[2]) # foo.foo
 for i in range(100):
     AddressRecord.objects.get_or_create( label = random_label(), domain=d, ip_str=a_recs[1][1], ip_type=a_recs[1][2])
 
+# Nameserver
+ns, _ = Nameserver.objects.get_or_create( domain= d, server = random_label()+"."+random_label()+"."+random_label() )
+
+# CNAME
 label = "derp"
 domain = d
 data = "foo.com"
@@ -78,9 +86,15 @@ r, _ = ReverseDomain.objects.get_or_create(name='128.193')
 r.soa = s
 r.save()
 
+# ReverseNameserver
+rns, _ = ReverseNameserver.objects.get_or_create( reverse_domain= r, server = random_label()+"."+random_label()+"."+random_label() )
+
 r1, _ = ReverseDomain.objects.get_or_create(name='128.193.15')
 r1.soa = s1
 r1.save()
+
+# ReverseNameserver
+rns, _ = ReverseNameserver.objects.get_or_create( reverse_domain= r1, server = random_label()+"."+random_label()+"."+random_label() )
 
 for i in range(0, 100):
     PTR.objects.get_or_create( name = random_label(), ip_str= random_ipv4('128.193'), ip_type = '4')
