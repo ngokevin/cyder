@@ -21,10 +21,10 @@ def has_perm(self, request, perm, obj):
     obj_type = obj._meta.app_label
     obj_in_ctnr = False
 
-    domain_records = ['cname', 'mx', 'txt', 'srv', 'ptr',
-        'address_record', 'name_server']
+    domain_records = ['cname', 'mx', 'txt', 'srv', 'address_record',
+        'name_server']
 
-    reverse_domain_records = ['ip', 'reverse_nameserver']
+    reverse_domain_records = ['ptr', 'reverse_nameserver']
 
     # domains
     if obj_type == 'domain':
@@ -32,7 +32,7 @@ def has_perm(self, request, perm, obj):
         if obj in domains:
             obj_in_ctnr = True
 
-    # [cname, mx, txt, srv, ptr]
+    # [cname, mx, txt, srv]
     elif obj_type in domain_records:
         domains = ctnr.domains.all()
         if obj.domain in domains:
@@ -51,7 +51,7 @@ def has_perm(self, request, perm, obj):
         if obj in reverse_domains:
             obj_in_ctnr = True
 
-    # [ip, reverse_nameserver]
+    # [ptr, reverse_nameserver]
     elif obj_type in reverse_domain_records:
         reverse_domains = ctnr.reverse_domains.all()
         if obj.reverse_domain in reverse_domains:
