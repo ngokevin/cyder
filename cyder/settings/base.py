@@ -48,7 +48,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.sites',
     'django.contrib.messages',
     # Application base, containing global templates.
-    'django.contrib.staticfiles',
+    #'django.contrib.staticfiles',
     'cyder.maintain2cyder',
     'cyder.cybind',
     'cyder.base',
@@ -122,14 +122,14 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django_cas.middleware.CASMiddleware',
-    'cyder.middleware.require_login.RequireLoginMiddleware',
+    #'django_cas.middleware.CASMiddleware',
+    #'cyder.middleware.require_login.RequireLoginMiddleware',
 
 )
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'django_cas.backends.CASBackend',
+    #'django_cas.backends.CASBackend',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
