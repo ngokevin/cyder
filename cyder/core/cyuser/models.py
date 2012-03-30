@@ -5,7 +5,6 @@ from django.db.models import signals
 from cyder.core.cyuser import backends
 from cyder.core.ctnr.models import Ctnr
 
-
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     default_ctnr = models.ForeignKey(Ctnr, default=0)
