@@ -1,6 +1,11 @@
 Welcome to cyder's documentation!
 =================================
 
+    "It is highly recommended that you use some software which automates this checking, or generate your
+    DNS data from a database which automatically creates consistent data."
+
+    -- `RFC 1912 <http://tools.ietf.org/html/rfc1912>`_
+
 `cyder <https://github.com/uberj/cyder>`_ is an `IPAM <http://en.wikipedia.org/wiki/IP_address_management>`_ solution. It is split up into two logically separate apps; ``cydns`` (DNS) and ``cydhcp`` (DHCP). The goal is two have the two apps be standalone and have less generic code 'glue' them together.
 
 The 'glue' (not to be confused with DNS glue records) is found in ``core/``.
