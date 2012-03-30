@@ -7,6 +7,11 @@ cyder/build/
 cyder/doc_build/
 cyder/make.bat
 cyder/Makefile
+cyder/settings/local*
+local.py
+cyder/settings/
+cyder_db
+cyder_db_test
 cyder_db
 cyder_db_test
 cyder/settings/local*
