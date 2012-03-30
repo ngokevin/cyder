@@ -15,7 +15,6 @@ class Ctnr( models.Model ):
     admins          = models.ManyToManyField(User, null=False, related_name='admins')
     description     = models.CharField(max_length=200)
     name            = models.CharField(max_length=100)
-    notify          = models.BooleanField()
     purgeable       = models.BooleanField()
 
     class Meta:

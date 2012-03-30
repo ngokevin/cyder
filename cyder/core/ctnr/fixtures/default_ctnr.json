@@ -1,0 +1,12 @@
+[
+  {
+    "model": "ctnr.ctnr",
+    "pk": 0,
+    "fields": {
+      "description": "Default Ctnr",
+      "name": "default"
+    }
+  }
+]
+
+
