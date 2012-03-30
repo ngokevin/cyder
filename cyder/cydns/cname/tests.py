@@ -9,6 +9,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 
 from cyder.cydns.cname.models import CNAME
+from cyder.cydns.mx.models import MX
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.domain.models import Domain
 
@@ -88,3 +89,17 @@ class CNAMETests(TestCase):
         domain = self.g
         data = "..foo.com"
         self.assertRaises(ValidationError, self.do_add, *( label, domain, data ))
+
+    def test_add_with_cname(self):
+        label = "cnamederp1"
+        domain = self.c_g
+        data = "foo.com"
+
+        fqdn = label+'.'+domain.name
+        data = { 'label':'' ,'domain':self.c_g ,'server':fqdn ,'priority':2 ,'ttl':2222 }
+        mx = MX( **data )
+        mx.save()
+
+        cn = CNAME( label = label, domain = domain, data = data )
+
+        self.assertRaises( ValidationError, cn.save )

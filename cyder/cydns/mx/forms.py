@@ -4,3 +4,4 @@ from cyder.cydns.mx.models import MX
 class MXForm( ModelForm ):
     class Meta:
         model   = MX
+        exclude = ('fqdn',)

@@ -13,7 +13,7 @@
             <td>{{ object.domain.name }}</td>
             <td>{{ object.server }}</td>
             {% if object.glue %}
-            <td><a href='{{ object.glue.get_absolute_url() }}'>{{ object.glue.fqdn() }}</a></td>
+            <td><a href='{{ object.glue.get_absolute_url() }}'>{{ object.glue.fqdn }}</a></td>
         </tr>
 
         {% endif %}

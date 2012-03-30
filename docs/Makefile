@@ -6,6 +6,8 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
+WEBHOST		  ="shell.onid.oregonstate.edu"
+USER		  ="uberj"
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -40,6 +42,11 @@ html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+	@echo
+scp:
+	@echo "Secure Copying files to $(WEBHOST)."
+	scp -r _build/html/ $(USER)@$(WEBHOST):~/public_html
+
 
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml

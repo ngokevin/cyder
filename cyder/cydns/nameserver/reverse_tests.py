@@ -12,7 +12,6 @@ from cyder.cydns.domain.models import Domain
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.nameserver.models import ReverseNameserver
 from cyder.cydns.reverse_domain.models import ReverseDomain
-from cyder.cydns.ip.models import Ip
 
 import pdb
 
@@ -66,9 +65,6 @@ class RevNSTests(TestCase):
 
 
     def test_invalid_create(self):
-        ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
-        ip.save()
-
         data = { 'reverse_domain':self.r , 'server':'ns2 .ru', }
         self.assertRaises( ValidationError, self.do_add, **data )
         data = { 'reverse_domain':self.r , 'server':'ns2$.ru', }

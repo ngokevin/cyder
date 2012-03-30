@@ -3,9 +3,12 @@ from django.core.exceptions import ValidationError
 
 from cyder.cydns.domain.models import _check_TLD_condition
 from cyder.cydns.common.models import CommonRecord
+from cyder.cydns.cname.models import CNAME
+
 from cyder.cydns.cydns import  _validate_ttl, _validate_name
 
 def _validate_mx_priority(priority):
+    """Validate the priority of a MX record."""
     if priority > 65535 or priority < 0:
         raise ValidationError("Error: MX priority must be within the 0 to 65535\
             range. See RFC 1035")
@@ -19,7 +22,7 @@ class MX(CommonRecord):
 
     def details(self):
         return  (
-                    ('FQDN', self.fqdn()),
+                    ('FQDN', self.fqdn),
                     ('Record Type', 'MX'),
                     ('Server', self.server),
                     ('Priority', self.priority),
@@ -37,10 +40,16 @@ class MX(CommonRecord):
     def clean(self, *args, **kwargs):
         super(MX, self).clean(*args, **kwargs)
         _check_TLD_condition(self)
+        self._validate_no_cname()
 
     def __str__(self):
-        return "%s %s %s %s %s %s" % (self.fqdn(), self.ttl, 'IN', 'MX',\
+        return "%s %s %s %s %s %s" % (self.fqdn, self.ttl, 'IN', 'MX',\
                                         self.priority, self.server)
     def __repr__(self):
         return "<MX '%s'>" % (str(self))
 
+    def _validate_no_cname(self):
+        """MX records should not point to CNAMES."""
+        # TODO, cite an RFC.
+        if CNAME.objects.filter( fqdn = self.server ):
+            raise ValidationError("MX records should not point to CNAMES.")

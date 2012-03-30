@@ -106,17 +106,14 @@ def _validate_reverse_name(reverse_name, ip_type):
         raise ValidationError("Error: IPv6 reverse domains should be a maximum of 32 nibbles")
 
     for chunk in reverse_name.split('.'):
-        try:
-            if ip_type == '6':
-                if valid_ipv6.find(chunk) < 0:
-                    raise ValidationError("Error: Ivalid Ipv6 name %s . Character '%s' is invalid." %\
-                                                                                    (reverse_name, chunk))
-            else:
-                if not(int(chunk) <= 255 and int(chunk) >= 0):
-                    raise ValidationError("Error: Ivalid Ipv4 name %s . Character '%s' is invalid." %\
-                                                                                    (reverse_name, chunk))
-        except Exception: #Umm, lol. What am I doing here? TODO Is this exception even needed?
-            raise ValidationError("Error: Ivalid Ipv%s name %s." % (ip_type, reverse_name))
+        if ip_type == '6':
+            if valid_ipv6.find(chunk) < 0:
+                raise ValidationError("Error: Ivalid Ipv6 name %s . Character '%s' is invalid." %\
+                                                                                (reverse_name, chunk))
+        else:
+            if not(int(chunk) <= 255 and int(chunk) >= 0):
+                raise ValidationError("Error: Ivalid Ipv4 name %s . Character '%s' is invalid." %\
+                                                                                (reverse_name, chunk))
 
 def _validate_ttl(ttl):
     if ttl < 0 or ttl > 2147483647: # See RFC 2181
