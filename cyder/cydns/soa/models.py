@@ -14,7 +14,16 @@ DEFAULT_REFRESH = 180 # 3 min
 
 class SOA(models.Model, ObjectUrlMixin):
     """
-    The SOA record class::
+    The structure of an SOA via `RFC 1033 <http://tools.ietf.org/html/rfc1033>`_::
+
+        <name>  [<ttl>]  [<class>]  SOA  <origin>  <person>  (
+                           <serial>
+                           <refresh>
+                           <retry>
+                           <expire>
+                           <minimum> )
+
+    An SOA instance can be created using the SOA class constructure::
 
         SOA( primary = primary, contact = contact, retry = retry, refresh = refresh, comment = comment )
 
