@@ -141,20 +141,28 @@ class DomainUpdateView( DomainView, UpdateView ):
         try:
             domain_form = DomainUpdateForm(request.POST)
             new_soa_pk = domain_form.data.get('soa', None)
+            delegation_status = domain_form.data.get('delegated', False)
+
             if new_soa_pk:
                 new_soa = get_object_or_404(SOA, pk = new_soa_pk )
+            else:
+                new_soa = None
 
-                if new_soa == domain.soa: # Nothing changed.
-                    return render( request, "domain_update.html", { "form": domain_form } )
+            if delegation_status == 'on':
+                new_delegation_status = True
+            else:
+                new_delegation_status = False
+
+            updated = False
+            if domain.soa != new_soa:
                 domain.soa = new_soa
+                updated = True
+            if domain.delegated != new_delegation_status:
+                domain.delegated = new_delegation_status
+                updated = True
 
-            if domain.soa and not new_soa_pk:
-                domain.soa = None
-
-            if domain_form.data.get('inherit_soa', False) and domain.master_domain:
-                domain.soa = domain.master_domain.soa
-
-            domain.save() # Major exception handling logic goes here.
+            if updated:
+                domain.save() # Major exception handling logic goes here.
         except ValidationError, e:
             domain_form = DomainUpdateForm(instance=domain)
             messages.error( request, str(e) )

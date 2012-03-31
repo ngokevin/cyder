@@ -47,6 +47,9 @@ class SRV(models.Model, ObjectUrlMixin):
         self.full_clean()
         super(SRV, self).save(*args, **kwargs)
 
+    def clean(self):
+        super(SRV, self).check_for_delegation()
+
     def __str__(self):
         return "%s %s %s %s %s %s %s" % (self.fqdn, 'IN', 'SRV', \
                                     self.priority,self.weight, self.port, self.target)

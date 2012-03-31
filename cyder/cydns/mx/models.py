@@ -39,6 +39,8 @@ class MX(CommonRecord):
 
     def clean(self, *args, **kwargs):
         super(MX, self).clean(*args, **kwargs)
+        super(MX, self).check_for_delegation()
+
         _check_TLD_condition(self)
         self._validate_no_cname()
 

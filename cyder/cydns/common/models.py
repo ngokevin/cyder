@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.models import ObjectUrlMixin
 from cyder.cydns.cydns import _validate_label, _validate_name
@@ -56,3 +56,14 @@ class CommonRecord(models.Model, ObjectUrlMixin):
                 self.fqdn = "%s.%s" % (self.label, self.domain.name)
         except ObjectDoesNotExist:
             return
+
+    def check_for_delegation(self):
+        """
+        If an object's domain is delegated it should not be able to be changed.
+        Delegated domains cannot have objects created in them.
+        """
+        if not self.domain.delegated:
+            return
+        if not self.pk: # We don't exist yet.
+            raise ValidationError("No objects can be created in the %s domain. It is delegated." % (self.domain.name))
+
