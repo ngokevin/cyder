@@ -12,6 +12,10 @@ class TXT(CommonRecord):
                     ('Record Type', 'TXT'),
                     ('Text', self.txt_data)
                 )
+    def clean(self):
+        super(TXT, self).clean()
+        super(TXT, self).check_for_delegation()
+
 
     class Meta:
         db_table = 'txt'

@@ -34,6 +34,7 @@ class CNAME(CommonRecord):
 
     def clean(self, *args, **kwargs):
         super(CNAME, self).clean(*args, **kwargs)
+        super(CNAME, self).check_for_delegation()
         """The RFC for DNS requires that a CName never be at the same level as an SOA, A, or MX
         record. Bind enforces this restriction. When creating a Cname, the UI needs to make sure
         that there are no records of those types that will clash. Likewise, when creating an SOA, A

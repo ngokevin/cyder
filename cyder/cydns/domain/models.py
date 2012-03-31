@@ -31,6 +31,7 @@ class Domain(models.Model, ObjectUrlMixin):
                         validators=[_validate_domain_name])
     master_domain   = models.ForeignKey("self", null=True, default=None, blank=True)
     soa             = models.ForeignKey(SOA, null=True, default=None, blank=True)
+    delegated       = models.BooleanField(default=False, null=False, blank=True)
 
     class Meta:
         db_table = 'domain'

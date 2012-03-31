@@ -35,6 +35,7 @@ class AddressRecord( Ip, CommonRecord ):
 
     def clean( self ):
         super(AddressRecord, self).clean()
+        super(AddressRecord, self).check_for_delegation()
         self.clean_ip(update_reverse_domain=False) # Function from Ip class.
         _check_TLD_condition( self )
 

@@ -3,13 +3,19 @@
 {% from "tables.html" import render_table %}
 
 <h3>Domain {{ domain.name }}</h3>
-<a href='{{ domain.get_edit_url() }}'>Edit SOA</a>
+<a href='{{ domain.get_edit_url() }}'>Edit</a>
 <a href='{{ domain.get_delete_url() }}'>Delete</a>
 <br/>
 {% if domain.soa %}
 SOA: <a href='{{ domain.soa.get_absolute_url() }}'>{{ domain.soa.primary }}</a>
 {% endif %}
 <br/>
+
+{% if domain.delegated %}
+This domain is delegated.
+{% endif %}
+<br/>
+
 {% if domain.master_domain %}
 Master Domain: <a href='{{ domain.master_domain.get_absolute_url() }}'>{{ domain.master_domain.name }}</a>
 {% endif %}
