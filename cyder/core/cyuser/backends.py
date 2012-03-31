@@ -9,7 +9,7 @@ def has_perm(self, request, perm, obj):
     Check if user has permission to act on given object,
     with the action noted in perm, based on the current container
     whether the object is in that container, and whether user
-    has sufficient level.
+    has admin over container.
     """
     # super-admin
     if request.user.is_superuser:
@@ -60,21 +60,21 @@ def has_perm(self, request, perm, obj):
     if not obj_in_ctnr:
         return False
 
-    # check user's level to see if user has perm to do action
-    ctnr_level = CtnrUser.objects.get(ctnr=ctnr, user=request.user).level
-    global_level = CtnrUser.objects.get(ctnr=1, user=request.user).level or -1
+    # check if user has admin over ctnr
+    ctnr_is_admin = CtnrUser.objects.get(ctnr=ctnr, user=request.user).is_admin
+    global_is_admin = CtnrUser.objects.get(ctnr=1, user=request.user).admin or 0
 
-    # global ctnr level overrides if higher
-    level = ctnr_level
-    if global_level > ctnr_level:
-        level = global_level
+    # if admin over global ctnr, admin over all ctnr
+    is_admin = False
+    if global_is_admin or ctnr_is_admin:
+        is_admin = True
 
     # cntr admin
-    if level == 1:
+    if is_admin:
         return True
 
     # user
-    elif perm == 'view' and level == 0:
+    elif perm == 'view':
         return True
 
     return False
