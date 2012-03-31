@@ -4,7 +4,7 @@ from cyder.core.ctnr.models import Ctnr, CtnrUser
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.reverse_domain.models import ReverseDomain
 
-ctnr = Ctnr.objects.get_or_create(id=1)[0]
+ctnr = Ctnr.objects.get(id=1)
 
 domains = Domain.objects.filter(id__lte=3)
 for domain in domains:

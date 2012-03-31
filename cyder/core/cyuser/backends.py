@@ -61,8 +61,8 @@ def has_perm(self, request, perm, obj):
         return False
 
     # check user's level to see if user has perm to do action
-    ctnr_level = CtnrUser.objects.get(ctnr=ctnr, user=request.user)
-    global_level = CtnrUser.objects.get(ctnr=0, user=request.user) or -1
+    ctnr_level = CtnrUser.objects.get(ctnr=ctnr, user=request.user).level
+    global_level = CtnrUser.objects.get(ctnr=1, user=request.user).level or -1
 
     # global ctnr level overrides if higher
     level = ctnr_level

@@ -20,7 +20,7 @@ class DevAuthenticationMiddleware(object):
             else:
                 request.session['ctnr'] = Ctnr.objects.get(id=default_ctnr.id)
         else:
-            # from cyder.cydns.domain.models import Domain
-            # domain = Domain.objects.get(id=1)
-            # print request.user.get_profile().has_perm(request, 'create', domain)
+            from cyder.cydns.domain.models import Domain
+            domain = Domain.objects.get(id=1)
+            print request.user.get_profile().has_perm(request, 'create', domain)
             return None
