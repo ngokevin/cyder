@@ -7,3 +7,11 @@ class AuthenticationMiddleware(object):
             pass
         else:
             return redirect('/login')
+
+        if not 'ctnr' in request.session:
+            # set session ctnr on login to user's default ctnr
+            default_ctnr = request.user.get_profile().default_ctnr
+            if not default_ctnr:
+                request.session['ctnr'] = Ctnr.objects.get(id=1)
+            else:
+                request.session['ctnr'] = Ctnr.objects.get(id=default_ctnr.id)

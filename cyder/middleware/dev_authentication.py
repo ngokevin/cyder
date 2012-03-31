@@ -7,11 +7,9 @@ class DevAuthenticationMiddleware(object):
 
     def process_request(self, request):
 
-        # login as development user
+        # automatically 'log in' development user
         if request.user.is_anonymous():
-            request.user = authenticate(username='development', password='development')
-            if request.user:
-                login(request, request.user)
+            request.user = User.objects.get(username='development')
 
             # set session ctnr on login to user's default ctnr
             default_ctnr = request.user.get_profile().default_ctnr
@@ -19,8 +17,8 @@ class DevAuthenticationMiddleware(object):
                 request.session['ctnr'] = Ctnr.objects.get(id=1)
             else:
                 request.session['ctnr'] = Ctnr.objects.get(id=default_ctnr.id)
-        else:
-            from cyder.cydns.domain.models import Domain
-            domain = Domain.objects.get(id=1)
-            print request.user.get_profile().has_perm(request, 'create', domain)
-            return None
+
+        from cyder.cydns.domain.models import Domain
+        domain = Domain.objects.get(id=1)
+        print request.user.get_profile().has_perm(request, 'create', domain)
+        return None
