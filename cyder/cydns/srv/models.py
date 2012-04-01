@@ -48,7 +48,7 @@ class SRV(models.Model, ObjectUrlMixin):
         super(SRV, self).save(*args, **kwargs)
 
     def clean(self):
-        super(SRV, self).check_for_delegation()
+        self.check_for_delegation()
 
     def __str__(self):
         return "%s %s %s %s %s %s %s" % (self.fqdn, 'IN', 'SRV', \
@@ -66,3 +66,12 @@ class SRV(models.Model, ObjectUrlMixin):
         except ObjectDoesNotExist:
             return
 
+    def check_for_delegation(self):
+        """
+        If an object's domain is delegated it should not be able to be changed.
+        Delegated domains cannot have objects created in them.
+        """
+        if not self.domain.delegated:
+            return
+        if not self.pk: # We don't exist yet.
+            raise ValidationError("No objects can be created in the %s domain. It is delegated." % (self.domain.name))
