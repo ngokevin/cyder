@@ -80,6 +80,7 @@ class DomainTests(TestCase):
         b_m.soa = s
         self.assertRaises(ValidationError, b_m.save)
 
+        n_f_m = Domain.objects.get(pk=n_f_m.pk) #Refresh object
         n_f_m.soa = s
         n_f_m.save()
 
@@ -178,6 +179,15 @@ class DomainTests(TestCase):
         # Make sure deleting a domain doesn't leave stuff hanging.
         # TODO A records, Mx, TXT... all of the records!!
 
+    def test_delegation_add_domain(self):
+        name = "boom1"
+        dom = Domain( name = name, delegated=True )
+        dom.save()
+
+        name = "boom.boom1"
+        dom = Domain( name = name, delegated=False )
+        self.assertRaises(ValidationError, dom.save)
+
     def test_delegation(self):
         name = "boom"
         dom = Domain( name = name, delegated=True )
@@ -218,8 +228,5 @@ class DomainTests(TestCase):
 
         # Editing should be allowed.
         arec = AddressRecord.objects.get(pk=arec.pk)
-        arec.label = "ns2"
+        arec.ip_str = "129.193.88.2"
         arec.save()
-        ns = Nameserver.objects.get(pk=ns.pk)
-        ns.server = "ns2."+dom.name
-        ns.save()

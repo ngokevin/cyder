@@ -502,3 +502,10 @@ class ReverseDomainTests(TestCase):
         except ValidationError, e:
             pass
         self.assertEqual(ValidationError, type(e))
+
+    def test_delegation_add_domain(self):
+        dom = ReverseDomain( name = '3', delegated=True )
+        dom.save()
+
+        dom = ReverseDomain( name = '3.4', delegated=False )
+        self.assertRaises(ValidationError, dom.save)

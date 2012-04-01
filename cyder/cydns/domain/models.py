@@ -5,6 +5,7 @@ from django import forms
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.cydns import _validate_domain_name, _name_type_check
 from cyder.cydns.models import ObjectUrlMixin
+from cyder.cydns.validation import do_zone_validation # All sorts of fun magic in this function
 
 import pdb
 
@@ -46,80 +47,15 @@ class Domain(models.Model, ObjectUrlMixin):
 
     def clean(self):
         self.master_domain = _name_to_master_domain(self.name)
-        self._validate_zone_soa()
-        self._check_for_soa_partition()
+        do_zone_validation('forward', self)
 
     def __str__(self):
         return "%s" % (self.name)
     def __repr__(self):
         return "<Domain '%s'>" % (self.name)
 
-
-    def _validate_zone_soa(self):
-        """
-        Make sure the SOA assigned to this domain is the correct SOA for this domain. Also make sure
-        that the SOA is not used in a different zone.
-        """
-        if not self.soa:
-            return
-        reverse_zone = self.soa.reversedomain_set.all()
-        if reverse_zone:
-            raise ValidationError("This SOA is used for the reverse zone %s." % (reverse_zone[0]))
-
-        if not self.soa.domain_set.all():
-            return # No zone uses this soa.
-
-        if self.master_domain and self.master_domain.soa != self.soa:
-            # Someone uses this soa, make sure the domain is part of that zone (i.e. has a parent in
-            # the zone or is the root domain of the zone).
-            if self.find_root_domain() == self:
-                return
-            raise ValidationError("This SOA is used for a different zone.")
-
-    def find_root_domain(self):
-        """
-        It is nessicary to know which domain is at the top of a zone. This function returns
-        that domain.
-        """
-        domains = self.soa.domain_set.all()
-        if not domains:
-            return None
-        root_domain = domains[0]
-        while True:
-            if root_domain is None:
-                raise Exception
-            elif not root_domain.master_domain:
-                break
-            elif root_domain.master_domain.soa != root_domain.soa:
-                break
-            else:
-                root_domain = root_domain.master_domain
-
-        return root_domain
-
-    def _check_for_soa_partition(self):
-        """
-        This function determines if changing your soa causes sub domains to become their own zones
-        and if those zones share a common SOA (not allowed).
-
-        :raises: ValidationError
-        """
-        child_domains = self.domain_set.all()
-        for i_domain in child_domains:
-            if i_domain.soa == self.soa:
-                continue # Valid child.
-            for j_domain in child_domains:
-                # Make sure the child domain does not share an SOA with one of it's siblings.
-                if i_domain == j_domain:
-                    continue
-                if i_domain.soa == j_domain.soa:
-                    raise ValidationError("Changing the SOA for the %s domain would cause the child\
-                        domains %s and %s to become two zones that share the same SOA. Change %s or\
-                        %s's SOA before changing this SOA" % (self.name, i_domain.name,\
-                        j_domain.name, i_domain.name, j_domain.name))
-
     def _check_for_children(self):
-        if self.domain_set.all():
+        if self.domain_set.all().exists():
             raise ValidationError("Before deleting this domain, please remove it's children.")
         pass
 

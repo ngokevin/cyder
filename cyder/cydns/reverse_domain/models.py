@@ -4,6 +4,7 @@ from django.forms import ValidationError
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.cydns import _validate_reverse_name
 from cyder.cydns.models import ObjectUrlMixin
+from cyder.cydns.validation import do_zone_validation # All sorts of fun magic in this function
 
 import ipaddr
 import pdb
@@ -42,6 +43,7 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
     soa                     = models.ForeignKey(SOA, null=True, blank=True)
     ip_type                 = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, default='4',\
                                 validators=[_validate_ip_type])
+    delegated       = models.BooleanField(default=False, null=False, blank=True)
 
     def __init__(self, *args, **kwargs):
         super(ReverseDomain, self).__init__(*args, **kwargs)
@@ -64,84 +66,15 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
     def clean(self):
         _validate_reverse_name(self.name, self.ip_type)
         self.name = self.name.lower()
-        master_reverse_domain = _name_to_master_reverse_domain(self.name,\
+        self.master_reverse_domain = _name_to_master_reverse_domain(self.name,\
                                                                  ip_type=self.ip_type)
-        self._validate_zone_soa()
-        self._check_for_soa_partition()
-        self.master_reverse_domain = master_reverse_domain
+        do_zone_validation('reverse', self)
 
     def __str__(self):
         return "%s" % (self.name)
 
     def __repr__(self):
         return "<%s>" % (str(self))
-
-    def _validate_zone_soa(self):
-        """
-        Make sure the SOA assigned to this domain is the correct SOA for this domain. Also make sure
-        that the SOA is not used in a different zone.
-        """
-        if not self.soa:
-            return
-
-        zone = self.soa.domain_set.all()
-        if zone:
-            raise ValidationError("This SOA is used for the forward zone %s." % (zone[0]))
-
-        if self.soa.domain_set.all():
-            raise ValidationError("This SOA is used for reverse zone.")
-
-        if not self.soa.reversedomain_set.all():
-            return # No zone uses this soa.
-
-        if self.master_reverse_domain and self.master_reverse_domain.soa != self.soa:
-            # Someone uses this soa, make sure the domain is part of that zone (i.e. has a parent in
-            # the zone.
-            if self.find_root_domain() == self:
-                return
-            raise ValidationError("This SOA is used for a different zone.")
-
-    def find_root_domain(self):
-        """
-        It is nessicary to know which domain is at the top of a zone. This function returns
-        that domain.
-        """
-        reverse_domains = self.soa.reversedomain_set.all()
-        if not reverse_domains:
-            return None
-        root_reverse_domain = reverse_domains[0]
-        while True:
-            if root_reverse_domain is None:
-                raise Exception
-            elif not root_reverse_domain.master_reverse_domain:
-                break
-            elif root_reverse_domain.master_reverse_domain.soa != root_reverse_domain.soa:
-                break
-            else:
-                root_reverse_domain = root_reverse_domain.master_reverse_domain
-
-        return root_reverse_domain
-
-    def _check_for_soa_partition(self):
-        """
-        This function determines if changing your soa causes sub reverse_domains to become their own zones
-        and if those zones share a common SOA (not allowed).
-
-        :raises: ValidationError
-        """
-        child_reverse_domains = self.reversedomain_set.all()
-        for i_reverse_domain in child_reverse_domains:
-            if i_reverse_domain.soa == self.soa:
-                continue # Valid child.
-            for j_reverse_domain in child_reverse_domains:
-                # Make sure the child reverse_domain does not share an SOA with one of it's siblings.
-                if i_reverse_domain == j_reverse_domain:
-                    continue
-                if i_reverse_domain.soa == j_reverse_domain.soa:
-                    raise ValidationError("Changing the SOA for the %s reverse domain would cause the child\
-                        reverse domains %s and %s to become two zones that share the same SOA. Change %s or\
-                        %s's SOA before changing this SOA" % (self.name, i_reverse_domain.name,\
-                        j_reverse_domain.name, i_reverse_domain.name, j_reverse_domain.name))
 
     def _reassign_reverse_ips_delete(self):
         """ This function serves as a pretty subtle workaround.
@@ -159,6 +92,7 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
             ptr.save(**{'update_reverse_domain':False})
 
     def _check_for_children(self):
+        # TODO, merge forward and reverse "_check_for_children"
         children = ReverseDomain.objects.filter(master_reverse_domain = self)
         if children:
             error = ""
