@@ -14,6 +14,8 @@ DEFAULT_REFRESH = 180 # 3 min
 
 class SOA(models.Model, ObjectUrlMixin):
     """
+    "An SOA record is required in each *db.DOMAIN* and *db.ADDR* file." -- O'Reilly DNS and BIND
+
     The structure of an SOA via `RFC 1033 <http://tools.ietf.org/html/rfc1033>`_::
 
         <name>  [<ttl>]  [<class>]  SOA  <origin>  <person>  (
@@ -72,7 +74,7 @@ class SOA(models.Model, ObjectUrlMixin):
         super(SOA, self).save(*args, **kwargs)
 
     def __str__(self):
-        return "%s %s" % ('SOA', str(self.primary))
+        return "%s" % (str(self.comment))
 
     def __repr__(self):
         return "<'%s'>" % (str(self))
