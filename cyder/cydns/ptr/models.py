@@ -7,7 +7,12 @@ from cyder.cydns.validation import validate_name
 from cyder.cydns.models import ObjectUrlMixin
 
 class PTR( Ip, ObjectUrlMixin ):
-    """A PTR is used to map an IP to a domain name."""
+    """
+    A PTR is used to map an IP to a domain name.
+
+    >>> PTR( name = fqdn, ip_str = ip_str, ip_type=ip_type )
+
+    """
     id              = models.AutoField(primary_key=True)
     name            = models.CharField(max_length=255, validators=[validate_name])
     domain          = models.ForeignKey(Domain, null=True, blank=True)
@@ -30,6 +35,25 @@ class PTR( Ip, ObjectUrlMixin ):
             self.clean_ip()
         self.full_clean()
         super(PTR, self).save(*args, **kwargs)
+
+    def validate_no_cname(self):
+        """
+        Considering existing CNAMES must be done when editing and creating new :class:`PTR` objects.
+
+            "PTR records must point back to a valid A record, not a alias defined by a CNAME."
+
+            -- `RFC 1912 <http://tools.ietf.org/html/rfc1912>`__
+
+        An example of something that is not allowed::
+
+            FOO.BAR.COM     CNAME       BEE.BAR.COM
+
+            BEE.BAR.COM     A           128.193.1.1
+
+            1.1.193.128     PTR         FOO.BAR.COM <-- PTR's shouldn't point to CNAMES
+        """
+    pass
+    #TODO, impliment this function and call it in clean()
 
     def clean(self):
         self.domain = _name_to_domain(self.name)

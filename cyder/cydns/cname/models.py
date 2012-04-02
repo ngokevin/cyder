@@ -7,7 +7,11 @@ from cyder.cydns.validation import validate_name
 
 class CNAME(CommonRecord):
     """
-    CNAMES can't point to an MX record. CNAMES are aliases::
+    CNAMES can't point to an any other records. Said another way, CNAMES can't be at the samle level
+    as any other record. This means that when you are creating a CNAME every other record type must
+    be checked to make sure that the name about to be taken by the CNAME isn't taken by another
+    record. Likewise, all other records must check that no CNAME exists with the same name before
+    being created.
 
         CNAME( label = label, domain = domain, data = data )
 
@@ -40,27 +44,65 @@ class CNAME(CommonRecord):
         that there are no records of those types that will clash. Likewise, when creating an SOA, A
         or MX, the UI needs to verify that there are no MX records at that level. """
         # TODO ^
-        self._check_SOA_condition()
+        self.check_SOA_condition()
         self.data_domain = _name_to_domain(self.data)
-        self._validate_no_mx()
+        self.validate_no_mx()
 
     def __str__(self):
         return "%s CNAME %s" % (self.fqdn, self.data)
 
-    def _check_SOA_condition(self):
+    def check_SOA_condition(self):
+        """
+        We need to check if the domain is the root domain in a zone.  If the domain is the root
+        domain, it will have an soa, but the master domain will have no soa (or it will have a a
+        different soa).
+        """
         domain = Domain.objects.filter(name = self.fqdn)
         if not domain:
             return
-        # We need to check if the domain is the root domain in a zone.
-        # The domain will have an soa, but the master domain will have no soa (or a different one)
 
         if domain[0].soa and domain[0].soa != domain[0].master_domain.soa:
             raise ValidationError("You cannot create a CNAME that points to a domain at the\
                                             root of a zone.")
         return
 
-    def _validate_no_mx(self):
-        """MX records should not point to CNAMES."""
+    def existing_node_check(self):
+        """
+        Make sure no other nodes exist at the level of this CNAME.
+
+            "If a CNAME RR is present at a node, no other data should be present; this ensures that the data for
+            a canonical name and its aliases cannot be different."
+
+            -- `RFC 1034 <http://tools.ietf.org/html/rfc1034>`_
+
+        For example, this would be bad::
+
+            FOO.BAR.COM     CNAME       BEE.BAR.COM
+
+            BEE.BAR.COM     A           128.193.1.1
+
+            FOO.BAR.COM     TXT         "v=spf1 include:foo.com -all"
+
+        If you queried the ``FOO.BAR.COM`` name, the class of the record that would be returned would be ambiguous.
+
+
+
+        .. note::
+            The following records classes are checked.
+                * :class:`AddressRecord` (A and AAAA)
+                * :class:`SRV`
+                * :class:`TXT`
+                * :class:`SOA`
+                * :class:`MX`
+                * :class:`PTR`
+        """
+        # "If a CNAME RR is present at a node, no other data should be present; this ensures that the
+        # data for a canonical name and its aliases cannot be different."
+
+    def validate_no_mx(self):
+        """
+        MX records should not point to CNAMES.
+        """
         # TODO, cite an RFC.
         from cyder.cydns.mx.models import MX
         if MX.objects.filter(server = self.fqdn):
