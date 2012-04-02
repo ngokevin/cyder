@@ -179,9 +179,11 @@ def find_root_domain(domain_type, soa):
 
     """
     if domain_type == 'forward':
-        return soa.domain_set.all().order_by('name')[:1] # LIMIT 1
+        ret = soa.domain_set.all().order_by('name')[:1] # LIMIT 1
     else: # domain_type == 'reverse':
-        return soa.reversedomain_set.all().order_by('name')[:1] # LIMIT 1
+        ret = soa.reversedomain_set.all().order_by('name')[:1] # LIMIT 1
+    if ret:
+        return ret[0]
 
 ###################################################################
 #        Functions that validate labels and names                 #

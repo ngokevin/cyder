@@ -49,7 +49,7 @@ env = Environment(loader=PackageLoader('cyder.cybind', 'templates'))
 soa_template = env.get_template("soa.jinja2")
 domain_template = env.get_template("domain.jinja2")
 reverse_domain_template = env.get_template("reverse_domain.jinja2")
-BUILD_PATH = "/home/uberj/cyder/cyder/cybind/build"
+BUILD_PATH = "/nfs/milo/u1/uberj/cyder_env/cyder/cyder/cybind/build"
 DEFAULT_TTL = 999
 # DEBUG OPTION
 DEBUG = True
