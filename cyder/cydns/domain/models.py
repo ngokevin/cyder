@@ -47,7 +47,7 @@ class Domain(models.Model, ObjectUrlMixin):
 
     def clean(self):
         self.master_domain = _name_to_master_domain(self.name)
-        do_zone_validation('forward', self)
+        do_zone_validation(self)
 
     def __str__(self):
         return "%s" % (self.name)

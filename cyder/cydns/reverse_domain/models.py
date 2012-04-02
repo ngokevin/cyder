@@ -68,7 +68,7 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
         self.name = self.name.lower()
         self.master_reverse_domain = _name_to_master_reverse_domain(self.name,\
                                                                  ip_type=self.ip_type)
-        do_zone_validation('reverse', self)
+        do_zone_validation(self)
 
     def __str__(self):
         return "%s" % (self.name)
@@ -77,13 +77,17 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
         return "<%s>" % (str(self))
 
     def _reassign_reverse_ips_delete(self):
-        """ This function serves as a pretty subtle workaround.
+        """
+        This function serves as a pretty subtle workaround.
+
             * An Ip is not allowed to have a reverse_domain of None.
+
             * When you save an Ip it is automatically assigned the most appropriate
               reverse_domain
-            Passing the update_reverse_domain as False will by pass the Ip's class attempt
-            to find an appropriate reverse_domain. This way you can reassign the reverse_domain
-            of an Ip, save it, and then delete the old reverse_domain.
+
+        Passing the update_reverse_domain as False will by pass the Ip's class attempt
+        to find an appropriate reverse_domain. This way you can reassign the reverse_domain
+        of an Ip, save it, and then delete the old reverse_domain.
         """
         # TODO is there a better way of doing this?
         ptrs = self.ptr_set.iterator()
