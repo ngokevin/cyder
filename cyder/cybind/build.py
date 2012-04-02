@@ -43,18 +43,13 @@ from cyder.cydns.soa.models import SOA
 from cyder.cybind.generators.bind_domain_generator import render_domain
 from cyder.cybind.generators.bind_soa_generator import render_soa
 from cyder.cybind.generators.bind_reverse_domain_generator import render_reverse_domain
-from jinja2 import Environment, PackageLoader
 
 import pdb
 
-env = Environment(loader=PackageLoader('cyder.cybind', 'templates'))
-
-soa_template = env.get_template("soa.jinja2")
-domain_template = env.get_template("domain.jinja2")
-reverse_domain_template = env.get_template("reverse_domain.jinja2")
 BUILD_PATH = "/nfs/milo/u1/uberj/cyder_env/cyder/cyder/cybind/build"
 DEFAULT_TTL = 999
-# DEBUG OPTION
+
+# DEBUG OPTIONS
 DEBUG = True
 DEBUG_BUILD_STRING = '' # A string to store build output in.
 
