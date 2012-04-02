@@ -14,6 +14,9 @@ from cyder.cydns.validation import validate_srv_name
 # Common record has a validator that would raise an exception when validating it's label.
 # TODO, verify this.
 class SRV(models.Model, ObjectUrlMixin):
+    """
+    >>> SRV(domain, label, target, port, priority, weight)
+    """
     domain          = models.ForeignKey(Domain, null=False)
     label           = models.CharField(max_length=100, blank=True, null=True,\
                         validators=[validate_srv_label])
