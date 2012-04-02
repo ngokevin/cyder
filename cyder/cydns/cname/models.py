@@ -9,7 +9,7 @@ class CNAME(CommonRecord):
     """
     CNAMES can't point to an MX record. CNAMES are aliases::
 
-        CNAME( label = label, domain = domain, data = data )
+    >>> CNAME( label = label, domain = domain, data = data )
 
     """
     # TODO cite an RFC
