@@ -9,19 +9,63 @@ The functions in this file give the name ``domain`` to both ``reverse_domain``s 
 ``domains``s.
 
 """
-def _check_for_master_delegation(domain, master_domain):
+
+def do_zone_validation(domain):
     """
-    No subdomains can be created in a domain that is delegated.
+    Preform validation on domain. This function calls the following functions::
+
+        check_for_soa_partition
+        check_for_master_delegation
+        validate_zone_soa
+
+    .. note::
+        The type of the domain that is passed is determined dynamically::
+
+            domain_type = "forward" if type(domain) is Domain else "reverse"
+
     :param domain: The domain/reverse_domain being validated.
-    :domain type: Domain or ReverseDomain
-    :param master_domain: The master domain/reverse_domain of the domain/reverse_domain being validated.
-    :master_domain type: Domain or ReverseDomain
+    :type domain: :ref:`domain` or :ref:`reverse_domain`
 
     The following code is an example of how to call this function during *domain* introspection.
-    >>> _check_for_master_delegation(self, self.master_domain)
+
+    >>> do_zone_validation(self, self.master_domain)
 
     The following code is an example of how to call this function during *reverse_domain* introspection.
-    >>> _check_for_master_delegation(self, self.master_reverse_domain)
+
+    >>> do_zone_validation(self, self.master_reverse_domain)
+
+    """
+    from cyder.cydns.domain.models import Domain
+    domain_type = "forward" if type(domain) is Domain else "reverse"
+
+    if domain_type == 'forward':
+        check_for_master_delegation(domain, domain.master_domain)
+        validate_zone_soa(domain_type, domain, domain.master_domain)
+        check_for_soa_partition(domain, domain.domain_set.all())
+    else: # domain_type == 'reverse':
+        check_for_master_delegation(domain, domain.master_reverse_domain)
+        validate_zone_soa(domain_type, domain, domain.master_reverse_domain)
+        check_for_soa_partition(domain, domain.reversedomain_set.all())
+
+
+def check_for_master_delegation(domain, master_domain):
+    """
+    No subdomains can be created under a domain that is delegated. This function checks whether a domain
+    is violating that condition.
+
+    :param domain: The domain/reverse_domain being validated.
+    :type domain: :ref:`domain` or :ref:`reverse_domain`
+
+    :param master_domain: The master domain/reverse_domain of the domain/reverse_domain being validated.
+    :type master_domain: :ref:`domain` or :ref:`reverse_domain`
+
+    The following code is an example of how to call this function during *domain* introspection.
+
+    >>> check_for_master_delegation(self, self.master_domain)
+
+    The following code is an example of how to call this function during *reverse_domain* introspection.
+
+    >>> check_for_master_delegation(self, self.master_reverse_domain)
 
     """
     if not master_domain:
@@ -32,23 +76,28 @@ def _check_for_master_delegation(domain, master_domain):
         raise ValidationError("No subdomains can be created in the %s domain. It is delegated."\
                 % (master_domain.name))
 
-def _validate_zone_soa(domain_type, domain, master_domain):
+def validate_zone_soa(domain_type, domain, master_domain):
     """
     Make sure the SOA assigned to this domain is the correct SOA for this domain. Also make sure
     that the SOA is not used in a different zone.
 
     :param domain_type: The type of domain. Either 'reverse' or 'forward'.
-    :domain type: str
+    :type domain_type: str
+
     :param domain: The domain/reverse_domain being validated.
-    :domain type: Domain or ReverseDomain
+    :type domain: :ref:`domain` or :ref:`reverse_domain`
+
     :param master_domain: The master domain/reverse_domain of the domain/reverse_domain being validated.
-    :master_domain type: Domain or ReverseDomain
+    :type master_domain: :ref:`domain` or :ref:`reverse_domain`
 
     The following code is an example of how to call this function during *domain* introspection.
-    >>> _validate_zone_soa('forward', self, self.master_domain)
+
+    >>> validate_zone_soa('forward', self, self.master_domain)
 
     The following code is an example of how to call this function during *reverse_domain* introspection.
-    >>> _validate_zone_soa('reverse', self, self.master_reverse_domain)
+
+    >>> validate_zone_soa('reverse', self, self.master_reverse_domain)
+
     """
     if not domain:
         raise Exception("You called this function wrong")
@@ -82,22 +131,27 @@ def _validate_zone_soa(domain_type, domain, master_domain):
             return
         raise ValidationError("This SOA is used for a different zone.")
 
-def _check_for_soa_partition(domain, child_domains):
+def check_for_soa_partition(domain, child_domains):
     """
     This function determines if changing your soa causes sub domains to become their own zones
     and if those zones share a common SOA (not allowed).
 
     :param domain: The domain/reverse_domain being validated.
-    :domain type: Domain or ReverseDomain
-    :param child_domains: A Queryset containing child objects of the Domain/ReverseDomain object.
-    :domain type: Domain or ReverseDomain
+    :type domain: :ref:`domain` or :ref:`reverse_domain`
+
+    :param child_domains: A Queryset containing child objects of the :ref:`domain`/:ref:`reverse_domain` object.
+    :type child_domains: :ref:`domain` or :ref:`reverse_domain`
+
     :raises: ValidationError
 
     The following code is an example of how to call this function during *domain* introspection.
-    >>> _check_for_soa_partition(self, self.domain_set.all())
+
+    >>> check_for_soa_partition(self, self.domain_set.all())
 
     The following code is an example of how to call this function during *reverse_domain* introspection.
-    >>> _check_for_soa_partition(self, self.reversedomain_set.all())
+
+    >>> check_for_soa_partition(self, self.reversedomain_set.all())
+
     """
     for i_domain in child_domains:
         if i_domain.soa == domain.soa:
@@ -118,50 +172,22 @@ def find_root_domain(domain_type, soa):
     that domain.
 
     :param domain_type: The type of domain. Either 'reverse' or 'forward'.
-    :domain type: str
-    :param domains: All domains in a zone (domains that share an soa)
-    :domains type:
+    :type domain_type: str
+
+    :param soa: A zone's :ref:`soa` object.
+    :type soa: :ref:`soa`
 
     The following code is an example of how to call this function using a Domain as ``domain``.
+
     >>> find_root_domain('forward', domain.soa)
 
     The following code is an example of how to call this function using a ReverseDomain as ``domain``.
+
     >>> find_root_domain('reverse', reverse_domain.soa)
+
     """
     if domain_type == 'forward':
         return soa.domain_set.all().order_by('name')[:1] # LIMIT 1
     else: # domain_type == 'reverse':
         return soa.reversedomain_set.all().order_by('name')[:1] # LIMIT 1
-
-def do_zone_validation(domain_type, domain):
-    """
-    Preform validation on domain. Calls the following functions::
-
-        _check_for_soa_partition
-        _check_for_master_delegation
-        _validate_zone_soa
-
-    :param domain_type: The type of domain. Either 'reverse' or 'forward'.
-    :domain type: str
-    :param domain: The domain/reverse_domain to start looking at.
-    :domain type: Domain or ReverseDomain
-
-    The following code is an example of how to call this function during *domain* introspection.
-    >>> do_zone_validation(self, self.master_domain)
-
-    The following code is an example of how to call this function during *reverse_domain* introspection.
-    >>> do_zone_validation(self, self.master_reverse_domain)
-    """
-    #domain_type = "#TODO" # TODO, do some domain introspection to determine it's type.
-                          # ``domain_type`` is used in error messages.
-
-    if domain_type == 'forward':
-        _check_for_master_delegation(domain, domain.master_domain)
-        _validate_zone_soa(domain_type, domain, domain.master_domain)
-        _check_for_soa_partition(domain, domain.domain_set.all())
-    else: # domain_type == 'reverse':
-        _check_for_master_delegation(domain, domain.master_reverse_domain)
-        _validate_zone_soa(domain_type, domain, domain.master_reverse_domain)
-        _check_for_soa_partition(domain, domain.reversedomain_set.all())
-
 
