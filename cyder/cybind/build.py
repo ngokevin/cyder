@@ -40,6 +40,7 @@ iteself::
 
 """
 from cyder.cydns.soa.models import SOA
+from cyder.cydns.validation import find_root_domain
 from cyder.cybind.generators.bind_domain_generator import render_domain
 from cyder.cybind.generators.bind_soa_generator import render_soa
 from cyder.cybind.generators.bind_reverse_domain_generator import render_reverse_domain
@@ -54,25 +55,6 @@ DEBUG = True
 DEBUG_BUILD_STRING = '' # A string to store build output in.
 
 
-def find_reverse_root_domain(reverse_domains):
-    """
-    It is nessicary to know which reverse domain is at the top of a zone. This function returns
-    that domain.
-    """
-    if not reverse_domains:
-        return None
-    root_reverse_domain = reverse_domains[0]
-    while True:
-        if root_reverse_domain is None:
-            raise Exception
-        elif not root_reverse_domain.master_reverse_domain:
-            break
-        elif root_reverse_domain.master_reverse_domain.soa != root_reverse_domain.soa:
-            break
-        else:
-            root_reverse_domain = root_reverse_domain.master_reverse_domain
-
-    return root_reverse_domain
 
 def gen_reverse_domain(reverse_domain):
     """
@@ -81,7 +63,7 @@ def gen_reverse_domain(reverse_domain):
     data = render_reverse_domain(
                             default_ttl=DEFAULT_TTL,
                             nameserver_set = reverse_domain.reversenameserver_set.all(),\
-                            ptr_set = reverse_domain.ptr_set.all().order_by('ip_upper', 'ip_lower')
+                            ptr_set = reverse_domain.ptr_set.all().order_by('ip_upper', 'ip_lower', 'name')
                             )
     file_name = reverse_domain.name
     return (file_name, data)
@@ -92,7 +74,7 @@ def gen_reverse_soa(soa):
     """
     # Find the first domain with the soa. This is the root of the zone.
     reverse_domains = soa.reversedomain_set.all()
-    root_reverse_domain = find_reverse_root_domain(reverse_domains)
+    root_reverse_domain = find_root_domain('reverse', soa)
     if not root_reverse_domain:
         return
 
@@ -125,27 +107,6 @@ def build_reverse_zone_files():
 
 
 #### Forward Build Functions ####
-def find_forward_root_domain(domains):
-    """
-    It is nessicary to know which domain is at the top of a zone. This function returns
-    that domain.
-    """
-    if not domains:
-        return None
-    root_domain = domains[0]
-    while True:
-        if root_domain is None:
-            raise Exception
-        elif not root_domain.master_domain:
-            break
-        elif root_domain.master_domain.soa != root_domain.soa:
-            break
-        else:
-            root_domain = root_domain.master_domain
-
-    return root_domain
-
-
 def gen_domain(domain):
     """
     Get all objects in a domain and render them in their respected domain file.
@@ -154,7 +115,8 @@ def gen_domain(domain):
                             default_ttl=DEFAULT_TTL,
                             nameserver_set = domain.nameserver_set.all().order_by('server'),
                             mx_set = domain.mx_set.all().order_by('server'),
-                            addressrecord_set = domain.addressrecord_set.all().order_by('ip_type', 'label'),
+                            addressrecord_set = domain.addressrecord_set.all().order_by('ip_type',\
+                                                                    'label', 'ip_upper', 'ip_lower'),
                             cname_set = domain.cname_set.all().order_by('label'),
                             srv_set = domain.srv_set.all().order_by('label'),
                             txt_set = domain.txt_set.all().order_by('label'),
@@ -169,7 +131,7 @@ def gen_forward_soa(soa):
     """
     # Find the first domain with the soa. This is the root of the zone.
     domains = soa.domain_set.all().order_by('name')
-    root_domain = find_forward_root_domain(domains)
+    root_domain = find_root_domain('forward', soa)
     if not root_domain:
         return
 

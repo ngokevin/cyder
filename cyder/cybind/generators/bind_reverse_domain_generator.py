@@ -13,7 +13,7 @@ extra_just = 3
 
 def render_ptr(ptr_set):
     BUILD_STR = ''
-    template = Template("{ip:$ip_just}{rclass:$class_just}{rtype:$type_just}{name:$name_just}.\n")
+    template = Template("{ip:$ip_just} {rclass:$class_just} {rtype:$type_just} {name:$name_just}.\n")
     template = template.substitute(ip_just=ip_just, class_just=class_just,\
                         type_just=type_just, name_just=name_just)
     for ptr in ptr_set:

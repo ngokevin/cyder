@@ -10,7 +10,7 @@ extra_just = 3
 
 def render_mx(mx_set):
     BUILD_STR = ''
-    template = Template("{label:$label_just}{rclass:$class_just}{rtype:$type_just}{prio:$prio_just}{server:$data_just}.\n")
+    template = Template("{label:$label_just} {rclass:$class_just} {rtype:$type_just} {prio:$prio_just} {server:$data_just}.\n")
     template = template.substitute(label_just=label_just, class_just=class_just,\
                         type_just=type_just, prio_just=prio_just, data_just=data_just)
     print template
@@ -24,7 +24,7 @@ def render_mx(mx_set):
 
 def render_ns(nameserver_set):
     BUILD_STR = ''
-    template = Template("{label:$label_just}{rclass:$class_just}{rtype:$type_just}{server:$data_just}.\n")
+    template = Template("{label:$label_just}  {rclass:$class_just} {rtype:$type_just} {server:$data_just}.\n")
     template = template.substitute(label_just=label_just, class_just=class_just,\
                         type_just=type_just, data_just=data_just)
     for ns in nameserver_set:
@@ -33,7 +33,7 @@ def render_ns(nameserver_set):
 
 def render_address_record(addressrecord_set):
     BUILD_STR = ''
-    template = Template("{label:$label_just}{rclass:$class_just}{rtype:$type_just}{address:$data_just}\n")
+    template = Template("{label:$label_just} {rclass:$class_just} {rtype:$type_just} {address:$data_just}\n")
     template = template.substitute(label_just=label_just, class_just=class_just,\
                         type_just=type_just, data_just=data_just)
     for rec in addressrecord_set:
@@ -48,7 +48,7 @@ def render_address_record(addressrecord_set):
 def render_cname(cname_set):
     BUILD_STR = ''
 
-    template = Template("{label:$label_just}{rclass:$class_just}{rtype:$type_just}{data:$data_just}.\n")
+    template = Template("{label:$label_just} {rclass:$class_just} {rtype:$type_just} {data:$data_just}.\n")
     template = template.substitute(label_just=label_just, class_just=class_just,\
                         type_just=type_just, data_just=data_just)
     for cname in cname_set:
@@ -58,7 +58,7 @@ def render_cname(cname_set):
 
 def render_srv(srv_set):
     BUILD_STR = ''
-    template = Template("{label:$label_just}{rclass:$class_just}{rtype:$type_just}{prio:$prio_just}{weight:$extra_just}{port:$extra_just}{target:$extra_just}.\n")
+    template = Template("{label:$label_just} {rclass:$class_just} {rtype:$type_just} {prio:$prio_just} {weight:$extra_just} {port:$extra_just} {target:$extra_just}.\n")
     template = template.substitute(label_just=label_just, class_just=class_just,\
                         type_just=type_just, prio_just=prio_just, extra_just=extra_just)
     for srv in srv_set:
@@ -68,7 +68,7 @@ def render_srv(srv_set):
 def render_txt(txt_set):
     BUILD_STR = ''
 
-    template = Template("{label:$label_just}{rclass:$class_just}{rtype:$type_just}\"{data:$data_just}\"\n")
+    template = Template("{label:$label_just} {rclass:$class_just} {rtype:$type_just} \"{data:$data_just}\"\n")
     template = template.substitute(label_just=label_just, class_just=class_just,\
                         type_just=type_just, data_just=data_just)
     for txt in txt_set:
