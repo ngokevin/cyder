@@ -123,6 +123,6 @@ class GenericViewTests(object):
 def random_label():
     """Utility function to generate a random *valid* label."""
     label = ''
-    for i in range(random.randint(10,57)):
+    for i in range(random.randint(5,30)):
         label += string.letters[random.randint(0,len(string.letters)-1)]
     return label
