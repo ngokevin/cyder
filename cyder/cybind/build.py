@@ -40,6 +40,9 @@ iteself::
 
 """
 from cyder.cydns.soa.models import SOA
+from cyder.cybind.generators.bind_domain_generator import render_domain
+from cyder.cybind.generators.bind_soa_generator import render_soa
+from cyder.cybind.generators.bind_reverse_domain_generator import render_reverse_domain
 from jinja2 import Environment, PackageLoader
 
 import pdb
@@ -80,9 +83,10 @@ def gen_reverse_domain(reverse_domain):
     """
     Get all objects in a reverse_domain and render them in their respected domain file.
     """
-    data = reverse_domain_template.render(
+    data = render_reverse_domain(
+                            default_ttl=DEFAULT_TTL,
                             nameserver_set = reverse_domain.reversenameserver_set.all(),\
-                            ptr_set = reverse_domain.ptr_set.all()
+                            ptr_set = reverse_domain.ptr_set.all().order_by('ip_upper', 'ip_lower')
                             )
     file_name = reverse_domain.name
     return (file_name, data)
@@ -97,7 +101,7 @@ def gen_reverse_soa(soa):
     if not root_reverse_domain:
         return
 
-    data = soa_template.render(
+    data = render_soa(
                                 soa=soa, root_domain=root_reverse_domain,\
                                 domains=reverse_domains, bind_path=BUILD_PATH,\
                               )
@@ -151,15 +155,15 @@ def gen_domain(domain):
     """
     Get all objects in a domain and render them in their respected domain file.
     """
-    data = domain_template.render(
-                            default_ttl=DEFAULT_TTL,\
-                            nameserver_set = domain.nameserver_set.all(),\
-                            mx_set = domain.mx_set.all(),\
-                            addressrecord_set = domain.addressrecord_set.all(),\
-                            cname_set = domain.cname_set.all(),\
-                            srv_set = domain.srv_set.all(),\
-                            txt_set = domain.txt_set.all(),\
-                            )
+    data = render_domain(
+                            default_ttl=DEFAULT_TTL,
+                            nameserver_set = domain.nameserver_set.all().order_by('server'),
+                            mx_set = domain.mx_set.all().order_by('server'),
+                            addressrecord_set = domain.addressrecord_set.all().order_by('ip_type', 'label'),
+                            cname_set = domain.cname_set.all().order_by('label'),
+                            srv_set = domain.srv_set.all().order_by('label'),
+                            txt_set = domain.txt_set.all().order_by('label'),
+                        )
     file_name = domain.name
     return (file_name, data)
 
@@ -169,15 +173,15 @@ def gen_forward_soa(soa):
     Generate the SOA file along with all of it's $INCLUDE statements.
     """
     # Find the first domain with the soa. This is the root of the zone.
-    domains = soa.domain_set.all()
+    domains = soa.domain_set.all().order_by('name')
     root_domain = find_forward_root_domain(domains)
     if not root_domain:
         return
 
-    data = soa_template.render(
-                                soa=soa, root_domain=root_domain,\
-                                domains=domains, bind_path=BUILD_PATH,\
-                              )
+    data = render_soa(
+                        soa=soa, root_domain=root_domain,\
+                        domains=domains, bind_path=BUILD_PATH,\
+                     )
     file_name = "%s.soa" % (root_domain.name)
     return (file_name, data)
 
