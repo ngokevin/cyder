@@ -2,7 +2,7 @@ from django.db import models
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.models import ObjectUrlMixin
-from cyder.cydns.cydns import _validate_label, _validate_name
+from cyder.cydns.validation import validate_label, validate_name
 import pdb
 
 class CommonRecord(models.Model, ObjectUrlMixin):
@@ -38,9 +38,9 @@ class CommonRecord(models.Model, ObjectUrlMixin):
 
     domain          = models.ForeignKey(Domain, null=False)
     label           = models.CharField(max_length=100, blank=True, null=True,\
-                        validators=[_validate_label])
+                        validators=[validate_label])
     fqdn            = models.CharField(max_length=255, blank=True, null=True,\
-                        validators=[_validate_name])# fqdn = label + domain.name <--- see set_fqdn
+                        validators=[validate_name])# fqdn = label + domain.name <--- see set_fqdn
 
     class Meta:
         abstract = True

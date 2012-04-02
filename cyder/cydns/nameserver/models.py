@@ -4,13 +4,13 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.address_record.models import AddressRecord
-from cyder.cydns.cydns import _validate_label, _validate_name
+from cyder.cydns.validation import validate_label, validate_name
 from cyder.cydns.models import ObjectUrlMixin
 import pdb
 
 class BaseNameserver(models.Model, ObjectUrlMixin):
     id              = models.AutoField(primary_key=True)
-    server          = models.CharField(max_length=255, validators=[_validate_name])
+    server          = models.CharField(max_length=255, validators=[validate_name])
 
     class Meta:
         abstract = True
@@ -122,7 +122,7 @@ class Nameserver(BaseNameserver):
         if possible_label == self.server:
             return False
         try:
-            _validate_label(possible_label)
+            validate_label(possible_label)
         except ValidationError:
             # It's not a valid label
             return False
@@ -137,7 +137,7 @@ def _needs_glue(ns):
     #       ns1.foo.com --> ns1
     possible_label = ns.server.replace("."+ns.domain.name, "")
     try:
-        _validate_label(possible_label)
+        validate_label(possible_label)
     except ValidationError:
         # It's not a valid label
         return False

@@ -55,6 +55,7 @@ many core concepts from Maintain.
    :maxdepth: 2
 
    coding_standard
+   validation
    ip
    domain
    reverse_domain
@@ -244,7 +245,7 @@ Adding Reverse Domains
 ``````````````````````
 Adding IPv4 reverse domains is easy to do by hand. It is not easy to do add IPv6 reverse domains by
 hand. IPv6 reverse domain names are very long and it is tedious to add them one by one. There is a
-function, ``bootstap_ipv6_reverse_domain`` in the :ref:`reverse_domain` module, that can aid in the construction of IPv6 reverse domains.
+function, :func:`bootstap_ipv6_reverse_domain`, that can aid in the construction of IPv6 reverse domains.
 
 Reason For Reverse Domains
 ``````````````````````````

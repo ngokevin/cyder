@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from cyder.cydns.cydns import _validate_label, _validate_name
+from cyder.cydns.validation import validate_label, validate_name
 from cyder.cydns.domain.models import Domain, _check_TLD_condition
 from cyder.cydns.ip.models import Ip
 from cyder.cydns.common.models import CommonRecord

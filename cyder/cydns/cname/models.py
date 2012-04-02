@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 
 from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.common.models import CommonRecord
-from cyder.cydns.cydns import _validate_name
+from cyder.cydns.validation import validate_name
 
 class CNAME(CommonRecord):
     """
@@ -14,7 +14,7 @@ class CNAME(CommonRecord):
     """
     # TODO cite an RFC
     id              = models.AutoField(primary_key=True)
-    data            = models.CharField(max_length=100, validators=[_validate_name])
+    data            = models.CharField(max_length=100, validators=[validate_name])
     data_domain     = models.ForeignKey(Domain, null=True, related_name = 'data_domains', blank=True)
 
     def details(self):

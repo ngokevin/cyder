@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 from cyder.cydns.reverse_domain.models import ReverseDomain, ip_to_reverse_domain
+from cyder.cydns.validation import validate_ip_type
 
 import ipaddr
 
@@ -67,7 +68,7 @@ class Ip( models.Model ):
         an IP (i.e. when we are deleting a reverse_domain).
         """
         # TODO, it's a fucking hack. Car babies.
-        self._validate_ip_type()
+        validate_ip_type(self.ip_type)
         self._validate_ip_str()
         if self.ip_type == '4':
             try:
@@ -96,10 +97,6 @@ class Ip( models.Model ):
             self.ip_lower
         if self.ip_type == '6':
             return (self.ip_upper*(2**64))+self.ip_lower
-
-    def _validate_ip_type( self ):
-        if self.ip_type not in ('4', '6'):
-            raise ValidationError("Error: Plase provide the type of IP")
 
     def _validate_ip_str( self ):
         if type(self.ip_str) not in (str, unicode):

@@ -5,20 +5,14 @@ from cyder.cydns.domain.models import _check_TLD_condition
 from cyder.cydns.common.models import CommonRecord
 from cyder.cydns.cname.models import CNAME
 
-from cyder.cydns.cydns import  _validate_ttl, _validate_name
-
-def _validate_mx_priority(priority):
-    """Validate the priority of a MX record."""
-    if priority > 65535 or priority < 0:
-        raise ValidationError("Error: MX priority must be within the 0 to 65535\
-            range. See RFC 1035")
+from cyder.cydns.validation import  validate_ttl, validate_name, validate_mx_priority
 
 class MX(CommonRecord):
     id              = models.AutoField(primary_key=True)
     # The mail server this record should point to.
-    server          = models.CharField(max_length=100, validators=[_validate_name])
-    priority        = models.PositiveIntegerField(null=False, validators=[_validate_mx_priority])
-    ttl             = models.PositiveIntegerField(null=False, validators=[_validate_ttl])
+    server          = models.CharField(max_length=100, validators=[validate_name])
+    priority        = models.PositiveIntegerField(null=False, validators=[validate_mx_priority])
+    ttl             = models.PositiveIntegerField(null=False, validators=[validate_ttl])
 
     def details(self):
         return  (

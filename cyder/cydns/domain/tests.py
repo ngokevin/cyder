@@ -21,7 +21,7 @@ from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.nameserver.models import Nameserver
 from cyder.cydns.cname.models import CNAME
 
-from cyder.cydns.cydns import ValidationError
+from cyder.cydns.validation import ValidationError
 
 import ipaddr
 import pdb

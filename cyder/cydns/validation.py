@@ -1,14 +1,6 @@
 from django.core.exceptions import ValidationError
+import string
 import pdb
-"""
-Both Reverse Domains and Forward Domains have similar functions that need to be called to validate
-state in the DB.  Unfortunatly naming convention stops extremely generic code to be written. These
-functions are not extremely generic; these functions are sort of generic.
-
-The functions in this file give the name ``domain`` to both ``reverse_domain``s and forward
-``domains``s.
-
-"""
 
 def do_zone_validation(domain):
     """
@@ -24,7 +16,7 @@ def do_zone_validation(domain):
             domain_type = "forward" if type(domain) is Domain else "reverse"
 
     :param domain: The domain/reverse_domain being validated.
-    :type domain: :ref:`domain` or :ref:`reverse_domain`
+    :type domain: :class:`Domain` or :class:`ReverseDomain`
 
     The following code is an example of how to call this function during *domain* introspection.
 
@@ -54,10 +46,10 @@ def check_for_master_delegation(domain, master_domain):
     is violating that condition.
 
     :param domain: The domain/reverse_domain being validated.
-    :type domain: :ref:`domain` or :ref:`reverse_domain`
+    :type domain: :class:`Domain` or :class:`ReverseDomain`
 
     :param master_domain: The master domain/reverse_domain of the domain/reverse_domain being validated.
-    :type master_domain: :ref:`domain` or :ref:`reverse_domain`
+    :type master_domain: :class:`Domain` or :class:`ReverseDomain`
 
     The following code is an example of how to call this function during *domain* introspection.
 
@@ -85,10 +77,10 @@ def validate_zone_soa(domain_type, domain, master_domain):
     :type domain_type: str
 
     :param domain: The domain/reverse_domain being validated.
-    :type domain: :ref:`domain` or :ref:`reverse_domain`
+    :type domain: :class:`Domain` or :class:`ReverseDomain`
 
     :param master_domain: The master domain/reverse_domain of the domain/reverse_domain being validated.
-    :type master_domain: :ref:`domain` or :ref:`reverse_domain`
+    :type master_domain: :class:`Domain` or :class:`ReverseDomain`
 
     The following code is an example of how to call this function during *domain* introspection.
 
@@ -137,10 +129,10 @@ def check_for_soa_partition(domain, child_domains):
     and if those zones share a common SOA (not allowed).
 
     :param domain: The domain/reverse_domain being validated.
-    :type domain: :ref:`domain` or :ref:`reverse_domain`
+    :type domain: :class:`Domain` or :class:`ReverseDomain`
 
-    :param child_domains: A Queryset containing child objects of the :ref:`domain`/:ref:`reverse_domain` object.
-    :type child_domains: :ref:`domain` or :ref:`reverse_domain`
+    :param child_domains: A Queryset containing child objects of the :class:`Domain`/:class:`ReverseDomain` object.
+    :type child_domains: :class:`Domain` or :class:`ReverseDomain`
 
     :raises: ValidationError
 
@@ -174,8 +166,8 @@ def find_root_domain(domain_type, soa):
     :param domain_type: The type of domain. Either 'reverse' or 'forward'.
     :type domain_type: str
 
-    :param soa: A zone's :ref:`soa` object.
-    :type soa: :ref:`soa`
+    :param soa: A zone's :class:`SOA` object.
+    :type soa: :class:`SOA`
 
     The following code is an example of how to call this function using a Domain as ``domain``.
 
@@ -190,4 +182,229 @@ def find_root_domain(domain_type, soa):
         return soa.domain_set.all().order_by('name')[:1] # LIMIT 1
     else: # domain_type == 'reverse':
         return soa.reversedomain_set.all().order_by('name')[:1] # LIMIT 1
+
+###################################################################
+#        Functions that validate labels and names                 #
+###################################################################
+"""
+CyAddressValueError
+    This exception is thrown when an attempt is made to create/update a record with an invlaid IP.
+
+InvalidRecordNameError
+    This exception is thrown when an attempt is made to create/update a record with an invlaid name.
+
+RecordExistsError
+    This exception is thrown when an attempt is made to create a record that already exists.
+    All records that can support the unique_together constraint do so. These models will raise
+    an IntegretyError. Some models, ones that have to span foreign keys to check for uniqueness,
+    need to still raise ValidationError. RecordExistsError will be raised in these cases.
+
+An AddressRecord is an example of a model that raises this Exception.
+"""
+
+def validate_label(label, valid_chars=None):
+    """
+    Validate a label.
+
+        :param label: The label to be tested.
+        :type label: str
+
+        "Allowable characters in a label for a host name are only ASCII letters, digits, and the '-' character."
+
+        "Labels may not be all numbers, but may have a leading digit"
+
+        "Labels must end and begin only with a letter or digit"
+
+        -- `RFC <http://tools.ietf.org/html/rfc1912>`__
+
+        "[T]he following characters are recommended for use in a host name: "A-Z", "a-z", "0-9", dash and underscore"
+
+        -- `RFC <http://tools.ietf.org/html/rfc1033>`__
+
+    """
+    _name_type_check(label)
+
+    if not valid_chars:
+        #"Allowable characters in a label for a host name are only ASCII letters, digits, and the `-' character."
+        #"[T]he following characters are recommended for use in a host name: "A-Z", "a-z", "0-9", dash and underscore"
+        valid_chars = string.ascii_letters+"0123456789"+"-"
+    # Labels may not be all numbers, but may have a leading digit
+    # TODO
+    # Labels must end and begin only with a letter or digit
+    # TODO
+
+    for char in label:
+        if char == '.':
+            raise ValidationError("Error: Ivalid name %s . Please do not span multiple domains when creating A records." % (label))
+        if valid_chars.find(char) < 0:
+            raise ValidationError("Error: Ivalid name %s . Character '%s' is invalid." % (label, char))
+    return
+
+def validate_domain_name(name):
+    """Domain names are different. They are allowed to have '_' in them.
+
+        :param name: The domain name to be tested.
+        :type name: str
+    """
+    _name_type_check(name)
+
+    for label in name.split('.'):
+        if not label:
+            raise ValidationError("Error: Ivalid name %s . Empty label." % (label))
+        valid_chars = string.ascii_letters+"0123456789"+"-_"
+        validate_label(label, valid_chars=valid_chars)
+
+def validate_name(fqdn):
+    """Run test on a name to make sure that the new name is constructed with valid syntax.
+
+        :param fqdn: The fqdn to be tested.
+        :type fqdn: str
+
+
+        "DNS domain names consist of "labels" separated by single dots." `RFC <http://tools.ietf.org/html/rfc1912>`__
+
+
+        .. note::
+            DNS name hostname grammar::
+
+                <domain> ::= <subdomain> | " "
+
+                <subdomain> ::= <label> | <subdomain> "." <label>
+
+                <label> ::= <letter> [ [ <ldh-str> ] <let-dig> ]
+
+                <ldh-str> ::= <let-dig-hyp> | <let-dig-hyp> <ldh-str>
+
+                <let-dig-hyp> ::= <let-dig> | "-"
+
+                <let-dig> ::= <letter> | <digit>
+
+                <letter> ::= any one of the 52 alphabetic characters A through Z in
+                upper case and a through z in lower case
+
+                <digit> ::= any one of the ten digits 0 through 9
+
+            --`RFC 1034 <http://www.ietf.org/rfc/rfc1034.txt>`__
+    """
+    # TODO, make sure the grammar is followed.
+    _name_type_check(fqdn)
+
+    for label in fqdn.split('.'):
+        if not label:
+            raise ValidationError("Error: Ivalid name %s . Empty label." % (label))
+        validate_label(label)
+
+
+def validate_reverse_name(reverse_name, ip_type):
+    """
+    Validate a reverse name to make sure that the name is constructed with valid syntax.
+
+        :param reverse_name: The reverse name to be tested.
+        :type reverse_name: str
+    """
+    _name_type_check(reverse_name)
+
+    valid_ipv6 = "0123456789AaBbCcDdEeFf"
+
+    if ip_type == '4' and len(reverse_name.split('.')) > 4:
+        raise ValidationError("Error: IPv4 reverse domains should be a maximum of 4 octets")
+    if ip_type == '6' and len(reverse_name.split('.')) > 32:
+        raise ValidationError("Error: IPv6 reverse domains should be a maximum of 32 nibbles")
+
+    for nibble in reverse_name.split('.'):
+        if ip_type == '6':
+            if valid_ipv6.find(nibble) < 0:
+                raise ValidationError("Error: Ivalid Ipv6 name %s . Character '%s' is invalid." %\
+                                                                                (reverse_name, nibble))
+        else:
+            if not(int(nibble) <= 255 and int(nibble) >= 0):
+                raise ValidationError("Error: Ivalid Ipv4 name %s . Character '%s' is invalid." %\
+                                                                                (reverse_name, nibble))
+
+def validate_ttl(ttl):
+    """
+        "It is hereby specified that a TTL value is an unsigned number, with a
+        minimum value of 0, and a maximum value of 2147483647."
+        -- `RFC <http://www.ietf.org/rfc/rfc2181.txt>`__
+
+        :param  ttl: The TTL to be validated.
+        :type   ttl: int
+        :raises: ValidationError
+    """
+    if ttl < 0 or ttl > 2147483647: # See RFC 2181
+        raise ValidationError("Error: TTLs must be within the 0 to 2147483647 range.")
+
+# Works for labels too.
+def _name_type_check(name):
+    if type(name) not in (str, unicode):
+        raise ValidationError("Error: A name must be of type str.")
+
+###################################################################
+#               Functions that Validate SRV fields                #
+###################################################################
+
+def validate_srv_port(port):
+    """
+    Port must be within the 0 to 65535 range.
+    """
+    if port > 65535 or port < 0:
+        raise ValidationError("Error: SRV port must be within the 0 to 65535 range. See RFC 1035")
+
+#TODO, is this a duplicate of MX ttl?
+def validate_srv_priority(priority):
+    """
+    Priority must be within the 0 to 65535 range.
+    """
+    if priority > 65535 or priority < 0:
+        raise ValidationError("Error: SRV priority must be within the 0 to 65535 range. See RFC 1035")
+
+def validate_srv_weight(weight):
+    """
+    Weight must be within the 0 to 65535 range.
+    """
+    if weight > 65535 or weight < 0:
+        raise ValidationError("Error: SRV weight must be within the 0 to 65535 range. See RFC 1035")
+
+def validate_srv_label(srv_label):
+    """
+    This function is the same as :func:`validate_label` expect :class:`SRV` records can have a ``_`` preceding its label.
+    """
+    if srv_label and srv_label[0] != '_':
+        raise ValidationError("Error: SRV label must start with '_'")
+    validate_label(srv_label[1:]) # Get rid of '_'
+
+def validate_srv_name(srv_name):
+    """
+    This function is the same as :func:`validate_name` expect :class:`SRV` records can have a ``_`` preceding is name.
+    """
+    if srv_name and srv_name[0] != '_':
+        raise ValidationError("Error: SRV label must start with '_'")
+    if not srv_name:
+        raise ValidationError("Error: SRV label must not be None")
+    mod_srv_name = srv_name[1:] # Get rid of '_'
+    validate_name(mod_srv_name)
+
+###################################################################
+#               Functions that Validate MX fields                 #
+###################################################################
+
+def validate_mx_priority(priority):
+    """
+    Priority must be within the 0 to 65535 range.
+    """
+    # This is pretty much the same as validate_srv_priority. It just has a different error messege.
+    if priority > 65535 or priority < 0:
+        raise ValidationError("Error: MX priority must be within the 0 to 65535\
+            range. See RFC 1035")
+
+###################################################################
+#               Functions Validate ip_type fields                 #
+###################################################################
+
+def validate_ip_type(ip_type):
+    """
+    An ``ip_type`` field must be either '4' or '6'.
+    """
+    if ip_type not in ('4', '6'):
+        raise ValidationError("Error: Plase provide a valid ip type.")
 

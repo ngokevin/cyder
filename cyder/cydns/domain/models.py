@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django import forms
 
 from cyder.cydns.soa.models import SOA
-from cyder.cydns.cydns import _validate_domain_name, _name_type_check
+from cyder.cydns.validation import validate_domain_name, _name_type_check
 from cyder.cydns.models import ObjectUrlMixin
 from cyder.cydns.validation import do_zone_validation # All sorts of fun magic in this function
 
@@ -29,7 +29,7 @@ class Domain(models.Model, ObjectUrlMixin):
 
     id              = models.AutoField(primary_key=True)
     name            = models.CharField(max_length=100, unique=True,\
-                        validators=[_validate_domain_name])
+                        validators=[validate_domain_name])
     master_domain   = models.ForeignKey("self", null=True, default=None, blank=True)
     soa             = models.ForeignKey(SOA, null=True, default=None, blank=True)
     delegated       = models.BooleanField(default=False, null=False, blank=True)

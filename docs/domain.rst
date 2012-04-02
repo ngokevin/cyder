@@ -1,7 +1,7 @@
 .. _domain:
 
-Domains
-=======
+Domain
+======
 
 Delegating a subdomain
 ----------------------

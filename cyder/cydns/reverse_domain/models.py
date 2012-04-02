@@ -2,17 +2,12 @@ from django.db import models
 from django.forms import ValidationError
 
 from cyder.cydns.soa.models import SOA
-from cyder.cydns.cydns import _validate_reverse_name
+from cyder.cydns.validation import validate_reverse_name
 from cyder.cydns.models import ObjectUrlMixin
-from cyder.cydns.validation import do_zone_validation # All sorts of fun magic in this function
+from cyder.cydns.validation import validate_ip_type, do_zone_validation # All sorts of fun magic in this function
 
 import ipaddr
 import pdb
-
-
-def _validate_ip_type(ip_type):
-    if ip_type not in ('4', '6'):
-        raise ValidationError("Error: Plase provide the type of Address Record")
 
 class ReverseDomain(models.Model, ObjectUrlMixin):
     """
@@ -42,7 +37,7 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
     master_reverse_domain   = models.ForeignKey("self", null=True, blank=True)
     soa                     = models.ForeignKey(SOA, null=True, blank=True)
     ip_type                 = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, default='4',\
-                                validators=[_validate_ip_type])
+                                validators=[validate_ip_type])
     delegated       = models.BooleanField(default=False, null=False, blank=True)
 
     def __init__(self, *args, **kwargs):
@@ -64,7 +59,7 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
         _reassign_reverse_ips(self, self.master_reverse_domain, self.ip_type)
 
     def clean(self):
-        _validate_reverse_name(self.name, self.ip_type)
+        validate_reverse_name(self.name, self.ip_type)
         self.name = self.name.lower()
         self.master_reverse_domain = _name_to_master_reverse_domain(self.name,\
                                                                  ip_type=self.ip_type)
@@ -112,9 +107,9 @@ def ip_to_reverse_domain(ip, ip_type):
 
     :param ip: The ip to which we are using to search for a reverse domain.
     :type ip: str
-    :param ip_type: The type of Ip address ip is. It should be either an IPv4 or IPv6 address.
+    :param ip_type: The type of Ip address. It should be either an IPv4 or IPv6 address.
     :type ip_type: str -- '4' or '6'
-    :returns: reverse_domain -- ReverseDomain object
+    :returns: reverse_domain -- :class:`ReverseDomain` object
     :raises: ValidationError
     """
     if ip_type == '6':
@@ -191,7 +186,7 @@ def boot_strap_add_ipv6_reverse_domain(ip, soa=None):
     :type ip: str
     :raises: ReverseDomainNotFoundError
     """
-    _validate_reverse_name(ip, '6')
+    validate_reverse_name(ip, '6')
 
     for i in range(1,len(ip)+1,2):
         cur_reverse_domain = ip[:i]

@@ -2,13 +2,12 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.common.models import CommonRecord
-from cyder.cydns.cydns import _validate_name
-from cyder.cydns.cydns import _validate_label
+from cyder.cydns.validation import validate_name
 from cyder.cydns.models import ObjectUrlMixin
 
-from cyder.cydns.srv.validators import _validate_srv_label, _validate_srv_port
-from cyder.cydns.srv.validators import _validate_srv_priority, _validate_srv_weight
-from cyder.cydns.srv.validators import _validate_srv_name
+from cyder.cydns.validation import validate_srv_label, validate_srv_port
+from cyder.cydns.validation import validate_srv_priority, validate_srv_weight
+from cyder.cydns.validation import validate_srv_name
 
 # Rhetorical Question: Why is SRV not a common record?
 # SRV records have a '_' in their label. Most domain names do not allow this.
@@ -17,14 +16,14 @@ from cyder.cydns.srv.validators import _validate_srv_name
 class SRV(models.Model, ObjectUrlMixin):
     domain          = models.ForeignKey(Domain, null=False)
     label           = models.CharField(max_length=100, blank=True, null=True,\
-                        validators=[_validate_srv_label])
+                        validators=[validate_srv_label])
     fqdn            = models.CharField(max_length=255, blank=True, null=True,\
-                        validators=[_validate_srv_name])# fqdn = label + domain.name <--- see set_fqdn
+                        validators=[validate_srv_name])# fqdn = label + domain.name <--- see set_fqdn
     id              = models.AutoField(primary_key=True)
-    target          = models.CharField(max_length=100, validators=[_validate_name])
-    port            = models.PositiveIntegerField(null=False, validators=[_validate_srv_port])
-    priority        = models.PositiveIntegerField(null=False, validators=[_validate_srv_priority])
-    weight          = models.PositiveIntegerField(null=False, validators=[_validate_srv_weight])
+    target          = models.CharField(max_length=100, validators=[validate_name])
+    port            = models.PositiveIntegerField(null=False, validators=[validate_srv_port])
+    priority        = models.PositiveIntegerField(null=False, validators=[validate_srv_priority])
+    weight          = models.PositiveIntegerField(null=False, validators=[validate_srv_weight])
 
     def details(self):
         return  (

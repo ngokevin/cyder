@@ -3,13 +3,13 @@ from django.core.exceptions import ValidationError
 
 from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.ip.models import Ip
-from cyder.cydns.cydns import _validate_name
+from cyder.cydns.validation import validate_name
 from cyder.cydns.models import ObjectUrlMixin
 
 class PTR( Ip, ObjectUrlMixin ):
     """A PTR is used to map an IP to a domain name."""
     id              = models.AutoField(primary_key=True)
-    name            = models.CharField(max_length=255, validators=[_validate_name])
+    name            = models.CharField(max_length=255, validators=[validate_name])
     domain          = models.ForeignKey(Domain, null=True, blank=True)
 
     def details(self):

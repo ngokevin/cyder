@@ -1,6 +1,6 @@
 from django.db import models
 
-from cyder.cydns.cydns import _validate_name
+from cyder.cydns.validation import validate_name
 from cyder.cydns.models import ObjectUrlMixin
 
 import time
@@ -32,8 +32,8 @@ class SOA(models.Model, ObjectUrlMixin):
     """
 
     id              = models.AutoField(primary_key=True)
-    primary         = models.CharField(max_length=100, validators=[_validate_name])
-    contact         = models.CharField(max_length=100, validators=[_validate_name])
+    primary         = models.CharField(max_length=100, validators=[validate_name])
+    contact         = models.CharField(max_length=100, validators=[validate_name])
     serial          = models.PositiveIntegerField(null=False)
     # Indicates when the zone data is no longer authoritative. Used by slave.
     expire          = models.PositiveIntegerField(null=False, default = DEFAULT_EXPIRE)
