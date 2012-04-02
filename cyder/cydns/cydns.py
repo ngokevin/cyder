@@ -114,8 +114,8 @@ def _validate_name(fqdn):
 def _validate_reverse_name(reverse_name, ip_type):
     """Run test on a name to make sure that the new name is constructed with valid syntax.
 
-        :param fqdn: The fqdn to be tested.
-        :type fqdn: str
+        :param reverse_name: The fqdn to be tested.
+        :type reverse_name: str
     """
     _name_type_check(reverse_name)
 
@@ -126,15 +126,15 @@ def _validate_reverse_name(reverse_name, ip_type):
     if ip_type == '6' and len(reverse_name.split('.')) > 32:
         raise ValidationError("Error: IPv6 reverse domains should be a maximum of 32 nibbles")
 
-    for chunk in reverse_name.split('.'):
+    for nibble in reverse_name.split('.'):
         if ip_type == '6':
-            if valid_ipv6.find(chunk) < 0:
+            if valid_ipv6.find(nibble) < 0:
                 raise ValidationError("Error: Ivalid Ipv6 name %s . Character '%s' is invalid." %\
-                                                                                (reverse_name, chunk))
+                                                                                (reverse_name, nibble))
         else:
-            if not(int(chunk) <= 255 and int(chunk) >= 0):
+            if not(int(nibble) <= 255 and int(nibble) >= 0):
                 raise ValidationError("Error: Ivalid Ipv4 name %s . Character '%s' is invalid." %\
-                                                                                (reverse_name, chunk))
+                                                                                (reverse_name, nibble))
 
 def _validate_ttl(ttl):
     if ttl < 0 or ttl > 2147483647: # See RFC 2181
