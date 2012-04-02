@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 
 from cyder.cydns.validation import validate_label, validate_name
 from cyder.cydns.domain.models import Domain, _check_TLD_condition
+from cyder.cydns.cname.models import CNAME
 from cyder.cydns.ip.models import Ip
 from cyder.cydns.common.models import CommonRecord
 
@@ -45,6 +46,19 @@ class AddressRecord( Ip, CommonRecord ):
     def save(self, *args, **kwargs):
         self.full_clean()
         super(AddressRecord, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """
+        Address Records that are glue records or that are pointed to by a CNAME should not be
+        removed from the database.
+        """
+        if self.nameserver_set.exists():
+            raise ValidationError("Cannot delete this %s record. It is a glue record." %\
+                    (self.record_type()))
+        if CNAME.objects.filter(data=self.fqdn):
+            raise ValidationError("A CNAME points to this %s record. Change the CNAME before\
+                    deleting this record." % (self.record_type()))
+        super(AddressRecord, self).delete(*args, **kwargs)
 
     def _check_glue_status(self):
         """
