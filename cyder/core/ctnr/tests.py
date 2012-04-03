@@ -14,6 +14,7 @@ from django.test.client import Client
 
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 from cyder.cydns.domain.models import Domain
+from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.middleware.authentication import AuthenticationMiddleware
 from cyder.middleware.dev_authentication import DevAuthenticationMiddleware
 
@@ -54,6 +55,29 @@ class CtnrPermissionsTest(TestCase):
 
         self.assertTrue('ctnr' in request.session)
 
+    def test_ctnr_domain_user(self):
+        """
+        Test being in ctnr /w domain /wo admin gives only read perm to domain
+        Precondition: domain in ctnr, user does not have admin to ctnr
+        Postcondition: user has only read access to that domain
+        """
+        request = HttpRequest()
+        request.user = self.test_user
+        request.session = {'ctnr': self.ctnr}
+
+        # create domain, add domain to ctnr
+        domain = Domain(id=None, name='foo')
+        domain.save()
+
+        self.ctnr.domains.add(domain)
+        self.ctnr.save()
+
+        has_perm = self.test_user.get_profile().has_perm(request, domain, write=False)
+        self.assertTrue(has_perm, 'user should have read access')
+
+        has_perm = self.test_user.get_profile().has_perm(request, domain, write=True)
+        self.assertFalse(has_perm, 'user should not have write access')
+
     def test_ctnr_domain_admin(self):
         """
         Test being in ctnr /w domain /w admin gives full perm to that domain
@@ -67,12 +91,34 @@ class CtnrPermissionsTest(TestCase):
         # create domain, add domain to ctnr
         domain = Domain(id=None, name='foo')
         domain.save()
-
         self.ctnr_admin.domains.add(domain)
         self.ctnr_admin.save()
 
+        has_perm = self.test_user.get_profile().has_perm(request, domain, write=False)
+        self.assertTrue(has_perm, 'user should have read access')
+
         has_perm = self.test_user.get_profile().has_perm(request, domain, write=True)
-        self.assertTrue(has_perm)
+        self.assertTrue(has_perm, 'user should have write access')
 
+    def test_ctnr_reverse_domain_user(self):
+        """
+        Test being in ctnr /w rdomain /wo admin gives only read perm to rdomain
+        Precondition: rdomain in ctnr, user does not have admin to ctnr
+        Postcondition: user has only read access to that rdomain
+        """
+        request = HttpRequest()
+        request.user = self.test_user
+        request.session = {'ctnr': self.ctnr}
 
+        # create reverse domain, add reverse domain to ctnr
+        rdomain = ReverseDomain(id=None, name='128')
+        rdomain.save()
 
+        self.ctnr.reverse_domains.add(rdomain)
+        self.ctnr.save()
+
+        has_perm = self.test_user.get_profile().has_perm(request, rdomain, write=False)
+        self.assertTrue(has_perm, 'user should have read access')
+
+        has_perm = self.test_user.get_profile().has_perm(request, rdomain, write=True)
+        self.assertFalse(has_perm, 'user should not have write access')
