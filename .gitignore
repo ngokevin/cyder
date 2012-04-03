@@ -24,3 +24,4 @@ cyder/maintain2cyder/build_dir/
 cyder/maintain2cyder/sync_prod_to_test.py
 docs/_build/
 cyder/cybind/build/*
+docs/_gh-pages
