@@ -1,8 +1,14 @@
 # Create your views here.
 
-from django.shortcuts import render_to_response, render, get_object_or_404, redirect
+from django.shortcuts import render
+from django.shortcuts import render_to_response
+from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
 from django.contrib import messages
-from django.views.generic import DetailView, ListView, CreateView, UpdateView
+from django.views.generic import UpdateView
+from django.views.generic import DetailView
+from django.views.generic import ListView
+from django.views.generic import CreateView
 from django.forms import ValidationError
 
 
@@ -23,12 +29,15 @@ from cyder.cydns.ptr.models import PTR
 import pdb
 from operator import itemgetter
 
+
 class DomainView(object):
-    queryset            = Domain.objects.all()
-    form_class          = DomainForm
+    queryset = Domain.objects.all()
+    form_class = DomainForm
+
 
 class DomainDeleteView(DomainView, CommonDeleteView):
     """ """
+
 
 class DomainListView(DomainView, CommonListView):
     """ """
@@ -37,7 +46,7 @@ class DomainListView(DomainView, CommonListView):
 
 class DomainDetailView(DomainView, DetailView):
     context_object_name = "domain"
-    template_name       = "domain_detail.html"
+    template_name = "domain_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
@@ -47,28 +56,28 @@ class DomainDetailView(DomainView, DetailView):
         # TODO
         # This process can be generalized. It's not very high priority.
         address_objects = domain.addressrecord_set.all()
-        adr_headers, adr_matrix, adr_urls = tablefy( address_objects )
+        adr_headers, adr_matrix, adr_urls = tablefy(address_objects)
 
         mx_objects = domain.mx_set.all()
-        mx_headers, mx_matrix, mx_urls = tablefy( mx_objects )
+        mx_headers, mx_matrix, mx_urls = tablefy(mx_objects)
 
         srv_objects = domain.srv_set.all()
-        srv_headers, srv_matrix, srv_urls = tablefy( srv_objects )
+        srv_headers, srv_matrix, srv_urls = tablefy(srv_objects)
 
         txt_objects = domain.txt_set.all()
-        txt_headers, txt_matrix, txt_urls = tablefy( txt_objects )
+        txt_headers, txt_matrix, txt_urls = tablefy(txt_objects)
 
         cname_objects = domain.cname_set.all()
-        cname_headers, cname_matrix, cname_urls = tablefy( cname_objects )
+        cname_headers, cname_matrix, cname_urls = tablefy(cname_objects)
 
         ptr_objects = domain.ptr_set.all()
-        ptr_headers, ptr_matrix, ptr_urls = tablefy( ptr_objects )
+        ptr_headers, ptr_matrix, ptr_urls = tablefy(ptr_objects)
 
         ns_objects = domain.nameserver_set.all()
-        ns_headers, ns_matrix, ns_urls = tablefy( ns_objects )
+        ns_headers, ns_matrix, ns_urls = tablefy(ns_objects)
 
         # Join the two dicts
-        context = dict( {
+        context = dict({
                     # NS
                     "ns_headers": ns_headers,
                     "ns_matrix": ns_matrix,
@@ -97,54 +106,57 @@ class DomainDetailView(DomainView, DetailView):
                     "ptr_headers": ptr_headers,
                     "ptr_matrix": ptr_matrix,
                     "ptr_urls": ptr_urls
-                        }.items() + context.items() )
+                       }.items() + context.items())
         return context
+
 
 class DomainView(object):
     model = Domain
     queryset = Domain.objects.all()
 
+
 class DomainCreateView(DomainView, CreateView):
     model_form = DomainForm
     template_name = "domain_form.html"
 
-    def post( self, request, *args, **kwargs ):
+    def post(self, request, *args, **kwargs):
         domain_form = DomainForm(request.POST)
         # Try to create the domain. Catch all exceptions.
         try:
             domain = domain_form.save(commit=False)
         except ValueError, e:
-            return render( request, "domain_form.html", { 'form': domain_form } )
+            return render(request, "domain_form.html", {'form': domain_form})
 
         if domain_form.cleaned_data['inherit_soa'] and domain.master_domain:
             domain.soa = domain.master_domain.soa
         try:
             domain.save()
         except ValidationError, e:
-            return render( request, "domain_form.html", { 'form': domain_form } )
+            return render(request, "domain_form.html", {'form': domain_form})
         # Success. Redirect.
-        messages.success(request, '%s was successfully created.' % (domain.name))
-        return redirect( domain )
+        messages.success(request, '{0} was successfully created.'
+                                    .format(domain.name))
+        return redirect(domain)
 
-    def get( self, request, *args, **kwargs ):
+    def get(self, request, *args, **kwargs):
         domain_form = DomainForm()
-        return render( request, "domain_form.html", { 'form': domain_form } )
+        return render(request, "domain_form.html", {'form': domain_form})
 
 
-class DomainUpdateView( DomainView, UpdateView ):
+class DomainUpdateView(DomainView, UpdateView):
     form_class = DomainUpdateForm
     template_name = "domain_update.html"
     context_object_name = "domain"
 
-    def post( self, request, *args, **kwargs ):
-        domain = get_object_or_404( Domain, pk = kwargs.get('pk',0) )
+    def post(self, request, *args, **kwargs):
+        domain = get_object_or_404(Domain, pk=kwargs.get('pk', 0))
         try:
             domain_form = DomainUpdateForm(request.POST)
             new_soa_pk = domain_form.data.get('soa', None)
             delegation_status = domain_form.data.get('delegated', False)
 
             if new_soa_pk:
-                new_soa = get_object_or_404(SOA, pk = new_soa_pk )
+                new_soa = get_object_or_404(SOA, pk=new_soa_pk)
             else:
                 new_soa = None
 
@@ -162,12 +174,13 @@ class DomainUpdateView( DomainView, UpdateView ):
                 updated = True
 
             if updated:
-                domain.save() # Major exception handling logic goes here.
+                domain.save()  # Major exception handling logic goes here.
         except ValidationError, e:
             domain_form = DomainUpdateForm(instance=domain)
-            messages.error( request, str(e) )
-            return render( request, "domain_update.html", { "form": domain_form } )
+            messages.error(request, str(e))
+            return render(request, "domain_update.html", {"form": domain_form})
 
-        messages.success(request, '%s was successfully updated.' % (domain.name))
+        messages.success(request, '{0} was successfully updated.'\
+                            .format(domain.name))
 
-        return redirect( domain )
+        return redirect(domain)

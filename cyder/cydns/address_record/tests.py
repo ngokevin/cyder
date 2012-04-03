@@ -10,7 +10,7 @@ from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 
 from cyder.cydns.reverse_domain.models import ReverseDomain
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
+from cyder.cydns.reverse_domain.models import boot_strap_ipv6_reverse_domain
 
 from cyder.cydns.ip.models import ipv6_to_longs
 
@@ -25,7 +25,7 @@ import pdb
 class AddressRecordTests(TestCase):
     def setUp(self):
         self.osu_block = "633:105:F000:"
-        boot_strap_add_ipv6_reverse_domain("0.6.3")
+        boot_strap_ipv6_reverse_domain("0.6.3")
         try:
             self.e = Domain( name='edu' )
             self.e.save()
@@ -186,7 +186,7 @@ class AddressRecordTests(TestCase):
         self.do_update_A_record( rec1, "whoooasfdasdflasdfjoop3", None)
 
     def test_update_AAAA_record(self):
-        boot_strap_add_ipv6_reverse_domain("8.6.2.0")
+        boot_strap_ipv6_reverse_domain("8.6.2.0")
         osu_block = "8620:105:F000:"
         rec0 = AddressRecord( label='', domain=self.z_o_e ,  ip_str=osu_block+":1", ip_type='6')
         rec1 = AddressRecord( label='foo', domain=self.z_o_e ,ip_str=osu_block+":1", ip_type='6')
@@ -222,7 +222,7 @@ class AddressRecordTests(TestCase):
 
     def test_update_invalid_ip_AAAA_record(self):
         osu_block = "7620:105:F000:"
-        boot_strap_add_ipv6_reverse_domain("7.6.2.0")
+        boot_strap_ipv6_reverse_domain("7.6.2.0")
         rec0 = AddressRecord( label='foo', domain=self.z_o_e , ip_str=osu_block+":1", ip_type='6')
 
         self.assertRaises( ValidationError,self.do_update_AAAA_record,**{ 'record':rec0, 'new_name':None, 'new_ip':71134})
@@ -280,7 +280,7 @@ class AddressRecordTests(TestCase):
 
     def test_remove_AAAA_address_records(self):
         osu_block = "4620:105:F000:"
-        boot_strap_add_ipv6_reverse_domain("4.6.2.0")
+        boot_strap_ipv6_reverse_domain("4.6.2.0")
         self.do_remove_AAAA_record("", self.o_e, osu_block+":1" )
         self.do_remove_AAAA_record("please", self.o_e, osu_block+":2" )
         self.do_remove_AAAA_record("visit", self.o_e, osu_block+":4" )
@@ -349,7 +349,7 @@ class AddressRecordTests(TestCase):
 
     def test_add_AAAA_address_records(self):
         osu_block = "2620:105:F000:"
-        boot_strap_add_ipv6_reverse_domain("2.6.2.0")
+        boot_strap_ipv6_reverse_domain("2.6.2.0")
         data = {'label': '','domain': self.f_o_e ,'ip': osu_block+":4"}
         self.do_add_record6( data )
         data = {'label': '','domain': self.o_e ,'ip': osu_block+":1"}
@@ -424,7 +424,7 @@ class AddressRecordTests(TestCase):
 
     def test_add_AAAA_records_exist(self):
         osu_block = "9620:105:F000:"
-        boot_strap_add_ipv6_reverse_domain("9.6.2.0")
+        boot_strap_ipv6_reverse_domain("9.6.2.0")
 
         data = {'label': 'new','domain': self.f_o_e ,'ip':osu_block+":2"}
         self.do_add_record6(data)
@@ -470,7 +470,7 @@ class AddressRecordTests(TestCase):
 
     def test_add_AAAA_invalid_address_records(self):
         osu_block = "3620:105:F000:"
-        boot_strap_add_ipv6_reverse_domain("3.6.2.0")
+        boot_strap_ipv6_reverse_domain("3.6.2.0")
 
         data = {'label': 'foo.nas','domain': self.o_e ,'ip': osu_block+":1"}
         self.assertRaises(ValidationError ,self.do_add_record6, data)

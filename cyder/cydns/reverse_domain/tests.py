@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 
 from cyder.cydns.reverse_domain.models import ReverseDomain
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain, nibblize
+from cyder.cydns.reverse_domain.models import boot_strap_ipv6_reverse_domain, nibblize
 from cyder.cydns.ptr.models import PTR
 from cyder.cydns.tests.view_tests import random_label
 
@@ -228,7 +228,7 @@ class ReverseDomainTests(TestCase):
     def test_boot_strap_add_ipv6_domain(self):
         osu_block = "2.6.2.1.1.0.5.F.0.0.0"
         test_dname = osu_block+".d.e.a.d.b.e.e.f"
-        boot_strap_add_ipv6_reverse_domain(test_dname)
+        boot_strap_ipv6_reverse_domain(test_dname)
         try:
             ReverseDomain(name='2.6.2.1.1.0.5.f.0.0.0', ip_type='6').save()
         except ValidationError, e:
@@ -260,11 +260,11 @@ class ReverseDomainTests(TestCase):
         self.assertEqual(ValidationError, type(e))
         e = None
         # These should pass
-        boot_strap_add_ipv6_reverse_domain('7.6.2.4')
-        boot_strap_add_ipv6_reverse_domain('6.6.2.5.1')
+        boot_strap_ipv6_reverse_domain('7.6.2.4')
+        boot_strap_ipv6_reverse_domain('6.6.2.5.1')
         # These are pretty unrealistic since they prodtrude into the host part of the address.
-        boot_strap_add_ipv6_reverse_domain('4.6.2.2.1.0.5.3.f.0.0.0.1.2.3.4.1.2.3.4.1.2.3.4.1.2.3.4.1.2.3.4')
-        boot_strap_add_ipv6_reverse_domain('5.6.2.3.1.0.5.3.f.0.0.0.1.2.3.4.1.2.3.4.1.2.3.4')
+        boot_strap_ipv6_reverse_domain('4.6.2.2.1.0.5.3.f.0.0.0.1.2.3.4.1.2.3.4.1.2.3.4.1.2.3.4.1.2.3.4')
+        boot_strap_ipv6_reverse_domain('5.6.2.3.1.0.5.3.f.0.0.0.1.2.3.4.1.2.3.4.1.2.3.4')
 
     def test_add_reverse_domainless_ips(self):
         try:
@@ -280,7 +280,7 @@ class ReverseDomainTests(TestCase):
             pass
         self.assertEqual(ValidationError, type(e))
         e = None
-        rd0 = boot_strap_add_ipv6_reverse_domain("2.0.0.1")
+        rd0 = boot_strap_ipv6_reverse_domain("2.0.0.1")
         try:
             ReverseDomain(name = '2.0.0.1', ip_type='6').save()
         except ValidationError, e:
@@ -317,7 +317,7 @@ class ReverseDomainTests(TestCase):
 
     def test_add_remove_reverse_ipv6_domains(self):
         osu_block = "2620:105:F000"
-        rd0 = boot_strap_add_ipv6_reverse_domain("2.6.2.0.0.1.0.5.f.0.0.0")
+        rd0 = boot_strap_ipv6_reverse_domain("2.6.2.0.0.1.0.5.f.0.0.0")
 
         ip1 = self.add_ptr_ipv6(osu_block+":8000::1")
         self.assertEqual(ip1.reverse_domain, rd0)

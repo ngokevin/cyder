@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 
 from cyder.cydns.reverse_domain.models import  ReverseDomain
-from cyder.cydns.reverse_domain.models import  boot_strap_add_ipv6_reverse_domain
+from cyder.cydns.reverse_domain.models import  boot_strap_ipv6_reverse_domain
 from cyder.cydns.domain.models import Domain
 
 from cyder.cydns.ptr.models import PTR
@@ -22,7 +22,7 @@ class PTRTests(TestCase):
     def setUp(self):
         self._128 = ReverseDomain( name = '128', ip_type='4')
         self._128.save()
-        boot_strap_add_ipv6_reverse_domain("8.6.2.0")
+        boot_strap_ipv6_reverse_domain("8.6.2.0")
         self.osu_block = "8620:105:F000:"
         self.o = Domain( name = "edu" )
         self.o.save()
@@ -322,7 +322,7 @@ class PTRTests(TestCase):
     """
     def test_reasign_domain( self ):
         _127 = add_reverse_ipv4_domain('127')
-        boot_strap_add_ipv6_reverse_domain("9.6.2.0")
+        boot_strap_ipv6_reverse_domain("9.6.2.0")
         osu_block = "9620:105:F000:"
         edu = add_domain("com")
         o_edu = add_domain("oregonstate.com")

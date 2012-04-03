@@ -6,19 +6,24 @@ from cyder.cydns.common.views import CommonCreateView, CommonUpdateView
 
 import pdb
 
+
 class AddressRecordView(object):
     model = AddressRecord
     form_class = AddressRecordForm
     queryset = AddressRecord.objects.all()
 
+
 class AddressRecordDeleteView(AddressRecordView, CommonDeleteView):
     """ """
+
 
 class AddressRecordDetailView(AddressRecordView, CommonDetailView):
     """ """
 
+
 class AddressRecordCreateView(AddressRecordView, CommonCreateView):
     """ """
+
 
 class AddressRecordUpdateView(AddressRecordView, CommonUpdateView):
     """ """

@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 
 from cyder.cydns.reverse_domain.models import ReverseDomain
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
+from cyder.cydns.reverse_domain.models import boot_strap_ipv6_reverse_domain
 
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
 

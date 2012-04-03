@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 
 import ipaddr
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain, ReverseDomain
+from cyder.cydns.reverse_domain.models import boot_strap_ipv6_reverse_domain, ReverseDomain
 import pdb
 
 class SimpleTest(TestCase):
@@ -49,7 +49,7 @@ class SimpleTest(TestCase):
         self.assertEqual(ip.ip_lower, int(v_ip))
 
     def test_ipv6_str(self):
-        rd = boot_strap_add_ipv6_reverse_domain('1.2.3.4')
+        rd = boot_strap_ipv6_reverse_domain('1.2.3.4')
 
         ip_str = '1234:1234:1243:1243:1243::'
         new_ip = Ip( ip_str = ip_str, ip_type='6' )
@@ -69,7 +69,7 @@ class SimpleTest(TestCase):
 
     def test_large_ipv6(self):
         try:
-            rd = boot_strap_add_ipv6_reverse_domain('f')
+            rd = boot_strap_ipv6_reverse_domain('f')
             rd.save()
         except ValidationError, e:
             pass
@@ -93,7 +93,7 @@ class SimpleTest(TestCase):
         ip.clean_ip()
         ip.__int__()
         ip.__repr__()
-        rd = boot_strap_add_ipv6_reverse_domain('e')
+        rd = boot_strap_ipv6_reverse_domain('e')
         ip_str = 'efff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'
         ip = Ip(ip_str = ip_str, ip_type = '6')
         ip.clean_ip()

@@ -3,15 +3,11 @@
 Coding Ideas (Standards)
 ========================
 
-No trailing white space anywhere.
 
-Parentheses should have no spaces next to them::
+Follow pep8::
 
-    def good_function(self):
-        pass
-
-    def bad_function( self ):
-        pass
+    pip install pep8
+    pep8 <all of the files!!>
 
 Model code should have 100% statement coverage.
 
