@@ -19,7 +19,7 @@ class AuthenticationTest(TestCase):
     def setUp(self):
         self.dev_middleware = DevAuthenticationMiddleware()
 
-    def test_session_has_ctnr_dev(self):
+    def test_dev_middleware_login(self):
         """
         Test development middleware logs on development user
         Precondition: anonymous
@@ -32,3 +32,16 @@ class AuthenticationTest(TestCase):
         self.dev_middleware.process_request(request)
 
         self.assertTrue(str(request.user) is not 'AnonymousUser')
+
+    def test_user_profile_create(self):
+        """
+        Test that user profile is created on user creation
+        Precondition: new user created
+        Postcondition: user profile created
+        """
+        user = User(username='user_profile_test', password='user_profile_test')
+        user.save()
+        try:
+            self.assertTrue(user.get_profile())
+        except:
+            self.fail("DoesNotExist: user profile was not created on user creation")
