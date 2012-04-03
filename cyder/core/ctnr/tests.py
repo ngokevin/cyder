@@ -15,7 +15,8 @@ from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.mx.models import MX
-from cyder.cydns.nameserver.models import Nameserver
+from cyder.cydns.nameserver.models import Nameserver, ReverseNameserver
+from cyder.cydns.ptr.models import PTR
 from cyder.cydns.txt.models import TXT
 from cyder.cydns.srv.models import SRV
 from cyder.cydns.reverse_domain.models import ReverseDomain
@@ -214,6 +215,10 @@ class CtnrPermissionsTest(TestCase):
         self.ctnr_admin.save()
 
         rdomain_records = []
+        rdomain_records.append(PTR(reverse_domain=rdomain))
+        rdomain_records.append(ReverseNameserver(reverse_domain=rdomain))
+
+        print ReverseNameserver(reverse_domain=rdomain)._meta.app_label
 
         for record in rdomain_records:
             # checks where user is not admin

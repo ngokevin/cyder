@@ -17,16 +17,16 @@ def has_perm(self, request, obj, write=False):
     # check if obj falls under the cntr
     ctnr = request.session['ctnr']
 
-    obj_type = obj._meta.app_label
+    obj_type = obj.__class__.__name__
     obj_in_ctnr = False
 
-    domain_records = ['cname', 'mx', 'txt', 'srv', 'address_record',
-        'nameserver']
+    domain_records = ['CNAME', 'MX', 'TXT', 'SRV', 'AddressRecord',
+        'Nameserver']
 
-    reverse_domain_records = ['ptr', 'reversenameserver']
+    reverse_domain_records = ['PTR', 'ReverseNameserver']
 
     # domains
-    if obj_type == 'domain':
+    if obj_type == 'Domain':
         domains = ctnr.domains.all()
         if obj in domains:
             obj_in_ctnr = True
@@ -38,14 +38,14 @@ def has_perm(self, request, obj, write=False):
             obj_in_ctnr = True
 
     # soa
-    elif obj_type == 'soa':
+    elif obj_type == 'SOA':
         domains = ctnr.domains.all()
         soas = [domain.soa for domain in domains]
         if obj in soas:
             obj_in_ctnr = True
 
     # reverse domains
-    elif obj_type == 'reverse_domain':
+    elif obj_type == 'ReverseDomain':
         reverse_domains = ctnr.reverse_domains.all()
         if obj in reverse_domains:
             obj_in_ctnr = True
