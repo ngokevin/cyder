@@ -90,9 +90,7 @@ class CNAME(CommonRecord):
                 * :class:`AddressRecord` (A and AAAA)
                 * :class:`SRV`
                 * :class:`TXT`
-                * :class:`SOA`
                 * :class:`MX`
-                * :class:`PTR`
         """
         qset = fqdn_exists(self.fqdn, cn=False, dn=False)
         if qset:
