@@ -230,3 +230,35 @@ class DomainTests(TestCase):
         arec = AddressRecord.objects.get(pk=arec.pk)
         arec.ip_str = "129.193.88.2"
         arec.save()
+
+    def test_existing_record_new_domain(self):
+        name = "bo"
+        dom = Domain.objects.get_or_create( name = name, delegated=False )
+        b_dom.save()
+
+        name = "to.bo"
+        dom = Domain.objects.get_or_create( name = name, delegated=False )
+        t_dom.save()
+
+        arec1 = AddressRecord(label="no", domain=t_dom, ip_str="128.193.99.9", ip_type='4')
+        arec1.save()
+
+        name = "no.to.bo"
+        n_dom = Domain( name = name, delegated=False )
+        self.assertRaises(ValidationError, dom.save)
+
+    def test_existing_cname_new_domain(self):
+        name = "bo"
+        dom = Domain.objects.get_or_create( name = name, delegated=False )
+        b_dom.save()
+
+        name = "to.bo"
+        dom = Domain.objects.get_or_create( name = name, delegated=False )
+        t_dom.save()
+
+        ns1 = Nameserver(domain=dom, server="no."+t_dom.name)
+        ns1.save()
+
+        name = "no.to.bo"
+        n_dom = Domain( name = name, delegated=False )
+        self.assertRaises(ValidationError, dom.save)
