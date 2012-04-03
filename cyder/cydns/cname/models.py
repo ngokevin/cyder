@@ -4,16 +4,16 @@ from django.core.exceptions import ValidationError
 from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.common.models import CommonRecord
 from cyder.cydns.validation import validate_name
+from cyder.searchcydns.utils import fqdn_exists
 
 class CNAME(CommonRecord):
-    """
-    CNAMES can't point to an any other records. Said another way, CNAMES can't be at the samle level
-    as any other record. This means that when you are creating a CNAME every other record type must
-    be checked to make sure that the name about to be taken by the CNAME isn't taken by another
+    """CNAMES can't point to an any other records. Said another way, CNAMES can't be at the samle
+    level as any other record. This means that when you are creating a CNAME every other record type
+    must be checked to make sure that the name about to be taken by the CNAME isn't taken by another
     record. Likewise, all other records must check that no CNAME exists with the same name before
     being created.
 
-    >>> CNAME( label = label, domain = domain, data = data )
+    >>> CNAME(label = label, domain = domain, data = data)
 
     """
     # TODO cite an RFC
@@ -46,14 +46,13 @@ class CNAME(CommonRecord):
         # TODO ^
         self.check_SOA_condition()
         self.data_domain = _name_to_domain(self.data)
-        self.validate_no_mx()
+        self.existing_node_check()
 
     def __str__(self):
         return "%s CNAME %s" % (self.fqdn, self.data)
 
     def check_SOA_condition(self):
-        """
-        We need to check if the domain is the root domain in a zone.  If the domain is the root
+        """We need to check if the domain is the root domain in a zone.  If the domain is the root
         domain, it will have an soa, but the master domain will have no soa (or it will have a a
         different soa).
         """
@@ -67,8 +66,7 @@ class CNAME(CommonRecord):
         return
 
     def existing_node_check(self):
-        """
-        Make sure no other nodes exist at the level of this CNAME.
+        """Make sure no other nodes exist at the level of this CNAME.
 
             "If a CNAME RR is present at a node, no other data should be present; this ensures that the data for
             a canonical name and its aliases cannot be different."
@@ -96,14 +94,8 @@ class CNAME(CommonRecord):
                 * :class:`MX`
                 * :class:`PTR`
         """
-        # "If a CNAME RR is present at a node, no other data should be present; this ensures that the
-        # data for a canonical name and its aliases cannot be different."
+        qset = fqdn_exists(self.fqdn, cn=False, dn=False)
+        if qset:
+            objects = qset.all()
+            raise ValidationError("Objects with this name already exist: %s" % (objects))
 
-    def validate_no_mx(self):
-        """
-        MX records should not point to CNAMES.
-        """
-        # TODO, cite an RFC.
-        from cyder.cydns.mx.models import MX
-        if MX.objects.filter(server = self.fqdn):
-            raise ValidationError("MX records should not point to CNAMES.")

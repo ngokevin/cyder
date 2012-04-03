@@ -49,12 +49,12 @@ class TXTTests(TestCase):
         txt1 = self.do_generic_add( data )
 
         label = "df"
-        data = ""
+        data = "aasdf"
         data = { 'label':label, 'txt_data':data ,'domain':self.o_e }
         txt1 = self.do_generic_add( data )
 
         label = "12314"
-        data = ""
+        data = "dd"
         data = { 'label':label, 'txt_data':data ,'domain':self.o }
         txt1 = self.do_generic_add( data )
 

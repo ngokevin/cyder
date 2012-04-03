@@ -37,9 +37,9 @@ class MX(CommonRecord):
     def clean(self, *args, **kwargs):
         super(MX, self).clean(*args, **kwargs)
         super(MX, self).check_for_delegation()
-
+        super(MX, self).check_for_cname()
+        self.no_point_to_cname()
         _check_TLD_condition(self)
-        self._validate_no_cname()
 
     def __str__(self):
         return "%s %s %s %s %s %s" % (self.fqdn, self.ttl, 'IN', 'MX',\
@@ -47,7 +47,7 @@ class MX(CommonRecord):
     def __repr__(self):
         return "<MX '%s'>" % (str(self))
 
-    def _validate_no_cname(self):
+    def no_point_to_cname(self):
         """MX records should not point to CNAMES."""
         # TODO, cite an RFC.
         if CNAME.objects.filter( fqdn = self.server ):

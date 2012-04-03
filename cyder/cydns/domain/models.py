@@ -5,6 +5,7 @@ from cyder.cydns.soa.models import SOA
 from cyder.cydns.validation import validate_domain_name, _name_type_check
 from cyder.cydns.models import ObjectUrlMixin
 from cyder.cydns.validation import do_zone_validation # All sorts of fun magic in this function
+from cyder.searchcydns.utils import fqdn_exists
 
 import pdb
 
@@ -48,7 +49,6 @@ class Domain(models.Model, ObjectUrlMixin):
         self.master_domain = _name_to_master_domain(self.name)
         do_zone_validation(self)
         if self.pk is None:
-            from cyder.searchcydns.utils import fqdn_exists
             # The object doesn't exist in the db yet. Make sure we don't conflict with existing objects.
             qset = fqdn_exists(self.name)
             if qset:

@@ -7,8 +7,7 @@ from cyder.cydns.validation import validate_name
 from cyder.cydns.models import ObjectUrlMixin
 
 class PTR( Ip, ObjectUrlMixin ):
-    """
-    A PTR is used to map an IP to a domain name.
+    """A PTR is used to map an IP to a domain name.
 
     >>> PTR(ip_str=ip_str, name=fqdn, ip_type=ip_type)
 
@@ -37,8 +36,8 @@ class PTR( Ip, ObjectUrlMixin ):
         super(PTR, self).save(*args, **kwargs)
 
     def validate_no_cname(self):
-        """
-        Considering existing CNAMES must be done when editing and creating new :class:`PTR` objects.
+        """Considering existing CNAMES must be done when editing and creating new :class:`PTR`
+        objects.
 
             "PTR records must point back to a valid A record, not a alias defined by a CNAME."
 

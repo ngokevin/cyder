@@ -1,10 +1,4 @@
-from cyder.cydns.domain.models import Domain
-from cyder.cydns.reverse_domain.models import ReverseDomain
-from cyder.cydns.mx.models import MX
-from cyder.cydns.srv.models import SRV
-from cyder.cydns.txt.models import TXT
-from cyder.cydns.cname.models import CNAME
-from cyder.cydns.address_record.models import AddressRecord
+import cyder
 
 def fqdn_search(fqdn):
     """Find any records that have a name that is the provided fqdn. This name would show up on the
@@ -15,26 +9,37 @@ def fqdn_search(fqdn):
     :return: A Queryset containing all the objects that matched during the search are returned.
     """
 
-def fqdn_exists(fqdn):
+def fqdn_exists(fqdn, **kwargs):
     """Return a Queryset or False depending on whether an object exists with the fqdn.
 
     :param fqdn: The name to search for.
     :type   fqdn: str
     :return: True or False
     """
-    for qset in _build_queries(fqdn):
+    for qset in _build_queries(fqdn, **kwargs):
         if qset.exists():
             return qset
     return False
 
-def _build_queries(fqdn):
-    dn = Domain.objects.filter(name=fqdn)
-    rn = ReverseDomain.objects.filter(name=fqdn)
-    mx = MX.objects.filter(fqdn=fqdn)
-    sr = SRV.objects.filter(fqdn=fqdn)
-    tx = TXT.objects.filter(fqdn=fqdn)
-    cn = CNAME.objects.filter(fqdn=fqdn)
-    ar = AddressRecord.objects.filter(fqdn=fqdn)
-    return (dn, rn, mx, sr, tx, cn, ar)
+def _build_queries(fqdn, dn=True, rn=True, mx=True, sr=True, tx=True,\
+                    cn=True, ar=True):
+    # We import this way to make it easier to import this file without getting cyclic imports.
+    qsets = []
+    if dn:
+        qsets.append(cyder.cydns.domain.models.Domain.objects.filter(name=fqdn))
+    if rn:
+        qsets.append(cyder.cydns.reverse_domain.models.ReverseDomain.objects.filter(name=fqdn))
+    if mx:
+        qsets.append(cyder.cydns.mx.models.MX.objects.filter(fqdn=fqdn))
+    if sr:
+        qsets.append(cyder.cydns.srv.models.SRV.objects.filter(fqdn=fqdn))
+    if tx:
+        qsets.append(cyder.cydns.txt.models.TXT.objects.filter(fqdn=fqdn))
+    if cn:
+        qsets.append(cyder.cydns.cname.models.CNAME.objects.filter(fqdn=fqdn))
+    if ar:
+        qsets.append(cyder.cydns.address_record.models.AddressRecord.objects.filter(fqdn=fqdn))
+
+    return qsets
 
 

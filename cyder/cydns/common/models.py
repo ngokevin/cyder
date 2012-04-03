@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+import cyder
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.models import ObjectUrlMixin
 from cyder.cydns.validation import validate_label, validate_name
@@ -56,6 +57,17 @@ class CommonRecord(models.Model, ObjectUrlMixin):
                 self.fqdn = "%s.%s" % (self.label, self.domain.name)
         except ObjectDoesNotExist:
             return
+
+    def check_for_cname(self):
+        """"If a CNAME RR is preent at a node, no other data should be present; this ensures that
+        the data for a canonical name and its aliases cannot be different."
+
+        -- `RFC 1034 <http://tools.ietf.org/html/rfc1034>`_
+
+        Call this function in models that can't overlap with an existing CNAME.
+        """
+        if cyder.cydns.cname.models.CNAME.objects.filter(fqdn=self.fqdn).exists():
+            raise ValidationError("A CNAME with this name already exists.")
 
     def check_for_delegation(self):
         """

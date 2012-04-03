@@ -16,9 +16,15 @@ class TXT(CommonRecord):
                     ('Record Type', 'TXT'),
                     ('Text', self.txt_data)
                 )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(TXT, self).save(*args, **kwargs)
+
     def clean(self):
         super(TXT, self).clean()
         super(TXT, self).check_for_delegation()
+        super(TXT, self).check_for_cname()
 
 
     class Meta:

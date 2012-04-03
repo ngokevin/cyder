@@ -11,10 +11,9 @@ import pdb
 
 # This is the A and AAAA record class
 class AddressRecord( Ip, CommonRecord ):
-    """
-    AddressRecord is the class that generates A and AAAA records::
+    """AddressRecord is the class that generates A and AAAA records::
 
-        AddressRecord(label=label, domain=domain_object, ip_str=ip_str, ip_type=ip_type)
+    >>> AddressRecord(label=label, domain=domain_object, ip_str=ip_str, ip_type=ip_type)
 
     """
     id              = models.AutoField(primary_key=True)
@@ -40,6 +39,7 @@ class AddressRecord( Ip, CommonRecord ):
         self._check_glue_status()
         super(AddressRecord, self).clean()
         super(AddressRecord, self).check_for_delegation()
+        super(AddressRecord, self).check_for_cname()
         self.clean_ip(update_reverse_domain=False) # Function from Ip class.
         _check_TLD_condition( self )
 
