@@ -108,16 +108,6 @@ LOGGING = dict(loggers=dict(playdoh = {'level': logging.DEBUG}))
 AUTH_PROFILE_MODULE = 'cyder.core.cyuser.UserProfile'
 
 
-"""
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'cyder_db',
-        'TEST_NAME':'cyder_db_test',
-        },
-}
-"""
-
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
