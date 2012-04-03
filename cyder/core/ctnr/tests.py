@@ -28,10 +28,7 @@ class CtnrPermissionsTest(TestCase):
         # development user exists as fixture, has admin to all ctnrs
         self.dev_user = User.objects.get(username='development')
 
-        # create container where user has no admin
-        self.ctnr = Ctnr(id=None)
-        self.ctnr.save()
-        self.ctnr_user = CtnrUser(id=None, ctnr=self.ctnr, user=self.test_user, is_admin=0)
+        # create container where user has no admin self.ctnr = Ctnr(id=None) self.ctnr.save() self.ctnr_user = CtnrUser(id=None, ctnr=self.ctnr, user=self.test_user, is_admin=0)
         self.ctnr_user.save()
 
         # create container where user has admin
@@ -39,6 +36,12 @@ class CtnrPermissionsTest(TestCase):
         self.ctnr_admin.save()
         self.ctnr_user_admin = CtnrUser(id=None, ctnr=self.ctnr_admin, user=self.test_user, is_admin=1)
         self.ctnr_user_admin.save()
+
+        # create container that is meant to stay empty
+        self.ctnr_empty = Ctnr(id=None)
+        self.ctnr_empty.save()
+        self.ctnr_user_empty = CtnrUser(id=None, ctnr=self.ctnr_empty, user=self.test_user, is_admin=1)
+        self.ctnr_user_empty.save()
 
     def test_session_has_ctnr_dev(self):
         """
@@ -55,11 +58,11 @@ class CtnrPermissionsTest(TestCase):
 
         self.assertTrue('ctnr' in request.session)
 
-    def test_ctnr_domain_user(self):
+    def test_ctnr_domain(self):
         """
-        Test being in ctnr /w domain /wo admin gives only read perm to domain
-        Precondition: domain in ctnr, user does not have admin to ctnr
-        Postcondition: user has only read access to that domain
+        Test being in ctnr /w domain gives appropriate perms
+        Precondition: domain in ctnr
+        Postcondition: has full perm to domain if admin, read only if not
         """
         request = HttpRequest()
         request.user = self.test_user
@@ -72,39 +75,34 @@ class CtnrPermissionsTest(TestCase):
         self.ctnr.domains.add(domain)
         self.ctnr.save()
 
-        has_perm = self.test_user.get_profile().has_perm(request, domain, write=False)
-        self.assertTrue(has_perm, 'user should have read access')
-
-        has_perm = self.test_user.get_profile().has_perm(request, domain, write=True)
-        self.assertFalse(has_perm, 'user should not have write access')
-
-    def test_ctnr_domain_admin(self):
-        """
-        Test being in ctnr /w domain /w admin gives full perm to that domain
-        Precondition: domain in ctnr, user has admin to ctnr
-        Postcondition: user has full access to that domain
-        """
-        request = HttpRequest()
-        request.user = self.test_user
-        request.session = {'ctnr': self.ctnr_admin}
-
-        # create domain, add domain to ctnr
-        domain = Domain(id=None, name='foo')
-        domain.save()
         self.ctnr_admin.domains.add(domain)
         self.ctnr_admin.save()
 
+        # checks where user is not admin
         has_perm = self.test_user.get_profile().has_perm(request, domain, write=False)
         self.assertTrue(has_perm, 'user should have read access')
+        has_perm = self.test_user.get_profile().has_perm(request, domain, write=True)
+        self.assertFalse(has_perm, 'user should not have write access')
 
+        # checks where user is admin
+        request.session = {'ctnr': self.ctnr_admin}
+        has_perm = self.test_user.get_profile().has_perm(request, domain, write=False)
+        self.assertTrue(has_perm, 'user should have read access')
         has_perm = self.test_user.get_profile().has_perm(request, domain, write=True)
         self.assertTrue(has_perm, 'user should have write access')
 
-    def test_ctnr_reverse_domain_user(self):
+        # checks where obj not in ctnr
+        request.session = {'ctnr': self.ctnr_empty}
+        has_perm = self.test_user.get_profile().has_perm(request, domain, write=False)
+        self.assertFalse(has_perm, 'user should not have read access')
+        has_perm = self.test_user.get_profile().has_perm(request, domain, write=True)
+        self.assertFalse(has_perm, 'user should not have write access')
+
+    def test_ctnr_reverse_domain(self):
         """
-        Test being in ctnr /w rdomain /wo admin gives only read perm to rdomain
-        Precondition: rdomain in ctnr, user does not have admin to ctnr
-        Postcondition: user has only read access to that rdomain
+        Test being in ctnr /w rdomain gives appropriate perms
+        Precondition: rdomain in ctnr
+        Postcondition: full perm if admin, read only if not
         """
         request = HttpRequest()
         request.user = self.test_user
@@ -117,8 +115,32 @@ class CtnrPermissionsTest(TestCase):
         self.ctnr.reverse_domains.add(rdomain)
         self.ctnr.save()
 
+        self.ctnr_admin.reverse_domains.add(rdomain)
+        self.ctnr_admin.save()
+
+        # checks where user is not admin
         has_perm = self.test_user.get_profile().has_perm(request, rdomain, write=False)
         self.assertTrue(has_perm, 'user should have read access')
-
         has_perm = self.test_user.get_profile().has_perm(request, rdomain, write=True)
         self.assertFalse(has_perm, 'user should not have write access')
+
+        # checks where user is admin
+        request.session = {'ctnr': self.ctnr_admin}
+        has_perm = self.test_user.get_profile().has_perm(request, rdomain, write=False)
+        self.assertTrue(has_perm, 'user should have read access')
+        has_perm = self.test_user.get_profile().has_perm(request, rdomain, write=True)
+        self.assertTrue(has_perm, 'user should have write access')
+
+        # checks where obj not in ctnr
+        request.session = {'ctnr': self.ctnr_empty}
+        has_perm = self.test_user.get_profile().has_perm(request, rdomain, write=False)
+        self.assertFalse(has_perm, 'user should not have read access')
+        has_perm = self.test_user.get_profile().has_perm(request, rdomain, write=True)
+        self.assertFalse(has_perm, 'user should not have write access')
+
+    def test_ctnr_domain_records(self):
+        """
+        Test being in ctnr /w common domain records gives appropriate perms
+        common domain records: cname, mx, txt, srv
+        """
+        common_objs = []

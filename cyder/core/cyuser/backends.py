@@ -60,11 +60,16 @@ def has_perm(self, request, obj, write=False):
         return False
 
     # check if user has admin over ctnr
-    ctnr_is_admin = CtnrUser.objects.get(ctnr=ctnr, user=request.user).is_admin
     try:
         global_is_admin = CtnrUser.objects.get(ctnr=1, user=request.user).is_admin
     except CtnrUser.DoesNotExist:
         global_is_admin = False
+
+    try:
+        ctnr_is_admin = CtnrUser.objects.get(ctnr=ctnr, user=request.user).is_admin
+    except CtnrUser.DoesNotExist:
+        if not global_is_admin:
+            return False
 
     # if admin over global ctnr, admin over all ctnr
     is_admin = False
