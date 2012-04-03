@@ -7,6 +7,7 @@ cyder/build/
 cyder/doc_build/
 cyder/make.bat
 cyder/Makefile
+cyder/settings/local.py
 cyder/settings/local*
 local.py
 cyder/settings/
