@@ -3,8 +3,7 @@ from django.contrib.auth.models import User
 
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 
-
-def has_perm(self, request, perm, obj):
+def has_perm(self, request, obj, write=False):
     """
     Check if user has permission to act on given object,
     with the action noted in perm, based on the current container
@@ -62,7 +61,10 @@ def has_perm(self, request, perm, obj):
 
     # check if user has admin over ctnr
     ctnr_is_admin = CtnrUser.objects.get(ctnr=ctnr, user=request.user).is_admin
-    global_is_admin = CtnrUser.objects.get(ctnr=1, user=request.user).admin or 0
+    try:
+        global_is_admin = CtnrUser.objects.get(ctnr=1, user=request.user).is_admin
+    except CtnrUser.DoesNotExist:
+        global_is_admin = False
 
     # if admin over global ctnr, admin over all ctnr
     is_admin = False
@@ -74,7 +76,7 @@ def has_perm(self, request, perm, obj):
         return True
 
     # user
-    elif perm == 'view':
+    elif not is_admin and not write:
         return True
 
     return False
