@@ -4,8 +4,6 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
-import pdb
-
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User, AnonymousUser
 from django.http import HttpRequest
@@ -13,9 +11,11 @@ from django.test import TestCase
 from django.test.client import Client
 
 from cyder.core.ctnr.models import Ctnr, CtnrUser
+from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.mx.models import MX
+from cyder.cydns.nameserver.models import Nameserver
 from cyder.cydns.txt.models import TXT
 from cyder.cydns.srv.models import SRV
 from cyder.cydns.reverse_domain.models import ReverseDomain
@@ -158,14 +158,66 @@ class CtnrPermissionsTest(TestCase):
         domain = Domain(id=None, name='foo')
         domain.save()
 
+        self.ctnr.domains.add(domain)
+        self.ctnr.save()
+
+        self.ctnr_admin.domains.add(domain)
+        self.ctnr_admin.save()
+
         domain_records = []
+        domain_records.append(AddressRecord(domain=domain))
         domain_records.append(CNAME(domain=domain))
         domain_records.append(MX(domain=domain))
-        domain_records.append(TXT(domain=domain))
+        domain_records.append(Nameserver(domain=domain))
         domain_records.append(SRV(domain=domain))
+        domain_records.append(TXT(domain=domain))
 
         for record in domain_records:
             # checks where user is not admin
+            request.session = {'ctnr': self.ctnr}
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=False)
+            self.assertTrue(has_perm, 'user should have read access')
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=True)
+            self.assertFalse(has_perm, 'user should not have write access')
+
+            # checks where user is admin
+            request.session = {'ctnr': self.ctnr_admin}
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=False)
+            self.assertTrue(has_perm, 'user should have read access')
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=True)
+            self.assertTrue(has_perm, 'user should have write access')
+
+            # checks where obj not in ctnr
+            request.session = {'ctnr': self.ctnr_empty}
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=False)
+            self.assertFalse(has_perm, 'user should not have read access')
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=True)
+            self.assertFalse(has_perm, 'user should not have write access')
+
+    def test_ctnr_rdomain_records(self):
+        """
+        Test being in ctnr /w common domain records gives appropriate perms
+        common domain records: cname, mx, txt, srv
+        """
+        request = HttpRequest()
+        request.user = self.test_user
+        request.session = {'ctnr': self.ctnr}
+
+        # create domain, add domain to ctnr
+        rdomain = ReverseDomain(id=None, name='128')
+        rdomain.save()
+
+        self.ctnr.reverse_domains.add(rdomain)
+        self.ctnr.save()
+
+        self.ctnr_admin.reverse_domains.add(rdomain)
+        self.ctnr_admin.save()
+
+        rdomain_records = []
+
+        for record in rdomain_records:
+            # checks where user is not admin
+            request.session = {'ctnr': self.ctnr}
             has_perm = self.test_user.get_profile().has_perm(request, record, write=False)
             self.assertTrue(has_perm, 'user should have read access')
             has_perm = self.test_user.get_profile().has_perm(request, record, write=True)

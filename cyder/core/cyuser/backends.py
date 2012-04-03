@@ -21,9 +21,9 @@ def has_perm(self, request, obj, write=False):
     obj_in_ctnr = False
 
     domain_records = ['cname', 'mx', 'txt', 'srv', 'address_record',
-        'name_server']
+        'nameserver']
 
-    reverse_domain_records = ['ptr', 'reverse_nameserver']
+    reverse_domain_records = ['ptr', 'reversenameserver']
 
     # domains
     if obj_type == 'domain':
