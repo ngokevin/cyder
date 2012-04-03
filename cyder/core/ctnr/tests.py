@@ -13,7 +13,11 @@ from django.test import TestCase
 from django.test.client import Client
 
 from cyder.core.ctnr.models import Ctnr, CtnrUser
+from cyder.cydns.cname.models import CNAME
 from cyder.cydns.domain.models import Domain
+from cyder.cydns.mx.models import MX
+from cyder.cydns.txt.models import TXT
+from cyder.cydns.srv.models import SRV
 from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.middleware.authentication import AuthenticationMiddleware
 from cyder.middleware.dev_authentication import DevAuthenticationMiddleware
@@ -28,7 +32,10 @@ class CtnrPermissionsTest(TestCase):
         # development user exists as fixture, has admin to all ctnrs
         self.dev_user = User.objects.get(username='development')
 
-        # create container where user has no admin self.ctnr = Ctnr(id=None) self.ctnr.save() self.ctnr_user = CtnrUser(id=None, ctnr=self.ctnr, user=self.test_user, is_admin=0)
+        # create container where user has no admin
+        self.ctnr = Ctnr(id=None)
+        self.ctnr.save()
+        self.ctnr_user = CtnrUser(id=None, ctnr=self.ctnr, user=self.test_user, is_admin=0)
         self.ctnr_user.save()
 
         # create container where user has admin
@@ -143,4 +150,37 @@ class CtnrPermissionsTest(TestCase):
         Test being in ctnr /w common domain records gives appropriate perms
         common domain records: cname, mx, txt, srv
         """
-        common_objs = []
+        request = HttpRequest()
+        request.user = self.test_user
+        request.session = {'ctnr': self.ctnr}
+
+        # create domain, add domain to ctnr
+        domain = Domain(id=None, name='foo')
+        domain.save()
+
+        domain_records = []
+        domain_records.append(CNAME(domain=domain))
+        domain_records.append(MX(domain=domain))
+        domain_records.append(TXT(domain=domain))
+        domain_records.append(SRV(domain=domain))
+
+        for record in domain_records:
+            # checks where user is not admin
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=False)
+            self.assertTrue(has_perm, 'user should have read access')
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=True)
+            self.assertFalse(has_perm, 'user should not have write access')
+
+            # checks where user is admin
+            request.session = {'ctnr': self.ctnr_admin}
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=False)
+            self.assertTrue(has_perm, 'user should have read access')
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=True)
+            self.assertTrue(has_perm, 'user should have write access')
+
+            # checks where obj not in ctnr
+            request.session = {'ctnr': self.ctnr_empty}
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=False)
+            self.assertFalse(has_perm, 'user should not have read access')
+            has_perm = self.test_user.get_profile().has_perm(request, record, write=True)
+            self.assertFalse(has_perm, 'user should not have write access')
