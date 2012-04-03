@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 import cyder
-from cyder.cydns.domain.models import Domain
+from cyder.cydns.domain.models import Domain, _check_TLD_condition
 from cyder.cydns.models import ObjectUrlMixin
 from cyder.cydns.validation import validate_label, validate_name
 import pdb
@@ -48,6 +48,7 @@ class CommonRecord(models.Model, ObjectUrlMixin):
 
     def clean( self ):
         self.set_fqdn()
+        self.check_TLD_condition()
 
     def set_fqdn(self):
         try:
@@ -79,3 +80,5 @@ class CommonRecord(models.Model, ObjectUrlMixin):
         if not self.pk: # We don't exist yet.
             raise ValidationError("No objects can be created in the %s domain. It is delegated." % (self.domain.name))
 
+    def check_TLD_condition(self):
+        _check_TLD_condition(self)

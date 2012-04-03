@@ -2,7 +2,6 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 from cyder.cydns.validation import validate_label, validate_name
-from cyder.cydns.domain.models import Domain, _check_TLD_condition
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.ip.models import Ip
 from cyder.cydns.common.models import CommonRecord
@@ -41,7 +40,6 @@ class AddressRecord( Ip, CommonRecord ):
         super(AddressRecord, self).check_for_delegation()
         super(AddressRecord, self).check_for_cname()
         self.clean_ip(update_reverse_domain=False) # Function from Ip class.
-        _check_TLD_condition( self )
 
     def save(self, *args, **kwargs):
         self.full_clean()

@@ -1,7 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from cyder.cydns.domain.models import _check_TLD_condition
 from cyder.cydns.common.models import CommonRecord
 from cyder.cydns.cname.models import CNAME
 
@@ -39,7 +38,6 @@ class MX(CommonRecord):
         super(MX, self).check_for_delegation()
         super(MX, self).check_for_cname()
         self.no_point_to_cname()
-        _check_TLD_condition(self)
 
     def __str__(self):
         return "%s %s %s %s %s %s" % (self.fqdn, self.ttl, 'IN', 'MX',\
