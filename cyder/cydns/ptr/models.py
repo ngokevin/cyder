@@ -10,7 +10,7 @@ class PTR( Ip, ObjectUrlMixin ):
     """
     A PTR is used to map an IP to a domain name.
 
-    >>> PTR( name = fqdn, ip_str = ip_str, ip_type=ip_type )
+    >>> PTR(ip_str=ip_str, name=fqdn, ip_type=ip_type)
 
     """
     id              = models.AutoField(primary_key=True)

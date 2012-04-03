@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from django import forms
 
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.validation import validate_domain_name, _name_type_check
@@ -48,6 +47,14 @@ class Domain(models.Model, ObjectUrlMixin):
     def clean(self):
         self.master_domain = _name_to_master_domain(self.name)
         do_zone_validation(self)
+        if self.pk is None:
+            from cyder.searchcydns.utils import fqdn_exists
+            # The object doesn't exist in the db yet. Make sure we don't conflict with existing objects.
+            qset = fqdn_exists(self.name)
+            if qset:
+                objects = qset.all()
+                raise ValidationError("Objects with this name already exist: %s" % (objects))
+
 
     def __str__(self):
         return "%s" % (self.name)

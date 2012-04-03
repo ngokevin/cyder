@@ -233,32 +233,28 @@ class DomainTests(TestCase):
 
     def test_existing_record_new_domain(self):
         name = "bo"
-        dom = Domain.objects.get_or_create( name = name, delegated=False )
-        b_dom.save()
+        b_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
 
         name = "to.bo"
-        dom = Domain.objects.get_or_create( name = name, delegated=False )
-        t_dom.save()
+        t_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
 
         arec1 = AddressRecord(label="no", domain=t_dom, ip_str="128.193.99.9", ip_type='4')
         arec1.save()
 
         name = "no.to.bo"
         n_dom = Domain( name = name, delegated=False )
-        self.assertRaises(ValidationError, dom.save)
+        self.assertRaises(ValidationError, n_dom.save)
 
     def test_existing_cname_new_domain(self):
         name = "bo"
-        dom = Domain.objects.get_or_create( name = name, delegated=False )
-        b_dom.save()
+        b_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
 
         name = "to.bo"
-        dom = Domain.objects.get_or_create( name = name, delegated=False )
-        t_dom.save()
+        t_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
 
-        ns1 = Nameserver(domain=dom, server="no."+t_dom.name)
-        ns1.save()
+        cn = CNAME(domain=t_dom, label="no", data="asdf")
+        cn.save()
 
         name = "no.to.bo"
         n_dom = Domain( name = name, delegated=False )
-        self.assertRaises(ValidationError, dom.save)
+        self.assertRaises(ValidationError, n_dom.save)
