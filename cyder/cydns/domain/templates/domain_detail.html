@@ -11,23 +11,24 @@ SOA: <a href='{{ domain.soa.get_absolute_url() }}'>{{ domain.soa.primary }}</a>
 {% endif %}
 <br/>
 
-{% if domain.delegated %}
-This domain is delegated.
-{% endif %}
-<br/>
 
 {% if domain.master_domain %}
 Master Domain: <a href='{{ domain.master_domain.get_absolute_url() }}'>{{ domain.master_domain.name }}</a>
 {% endif %}
 <br/>
 <h4>Domain Tools</h4>
-<a href='/cyder/cydns/nameserver/{{ domain.pk }}/create'>Create NS</a>
+{% if domain.delegated %}
+This domain is delegated.
+<br/>
+{% else %}
 <a href='/cyder/cydns/cname/{{ domain.pk }}/create'>Create CNAME</a>
 <a href='/cyder/cydns/mx/{{ domain.pk }}/create'>Create MX</a>
 <a href='/cyder/cydns/srv/{{ domain.pk }}/create'>Create SRV</a>
 <a href='/cyder/cydns/txt/{{ domain.pk }}/create'>Create TXT</a>
 <a href='/cyder/cydns/address_record/{{ domain.pk }}/create'>Create A (AAAA)</a>
 <a href='/cyder/cydns/ptr/create'>Create PTR</a>
+{% endif %}
+<a href='/cyder/cydns/nameserver/{{ domain.pk }}/create'>Create NS</a>
 <br />
 
 {% if ns_matrix %}

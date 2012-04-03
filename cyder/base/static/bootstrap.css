@@ -1,0 +1,1228 @@
+/**
+ * Bootstrap.css v0.9
+ * Copyright (C) 2011 Jiri Pudil
+ * <http://www.jiripudil.cz/bootstrap-css>
+ * bootstrap.css - full Bootstrap.css
+ */
+
+
+/* CSS reset, based on work of Eric Meyer <http://www.meyerweb.com/eric> */
+html {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	height: 100%;
+	overflow-y: scroll;
+	/* remove iOS text size adjust without disabling user zoom, based on tip by Roger Johansson <http://www.456bereastreet.com/archive/201012/controlling_text_size_in_safari_for_ios_without_disabling_user_zoom> */
+	-webkit-text-size-adjust: 100%; 
+  }
+
+body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, code, del, ins, dfn, em, img, q, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, dialog, figure, footer, header, hgroup, nav, section {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-family: inherit;
+  vertical-align: baseline;
+  }
+
+body {
+  min-height: 100%;
+  }
+
+article, aside, dialog, figure, footer, header, hgroup, nav, section {
+  display: block;
+  }
+
+a img {
+  border: none;
+  }
+
+/* remove quote-marks */
+blockquote:before, blockquote:after, q:before, q:after {
+  content: '';
+  }
+
+blockquote, q {
+  quotes: "" "";
+  }
+
+/* hide content but still keep it visible for screen-readers */
+.skip {
+  display: block;
+  position: absolute;
+	left: -9999px;	
+	visibility: hidden;
+  }
+
+/* append &raquo; to "Read more" and alike links */
+a.more:after {
+  content: ' »';
+  }
+
+/* micro clearfix, based on Nicolas Gallagher's New Micro Clearfix Hack <http://nicolasgallagher.com/micro-clearfix-hack> */
+.clearfix:before, .clearfix:after, .cf:before, .cf:after, .grid:before, .grid:after {
+  content: "";
+  display: table;
+  }
+
+.clearfix:after, .cf:after, .grid:after {
+  clear: both;
+  }
+
+.clearfix, .cf, .grid {
+  zoom: 1;
+  }
+
+/* regular clearing */
+.clear {
+  clear: both;
+  }
+
+/* floating */
+.float-left {
+  float: left;
+  margin: 0 1.5em 1.5em 0;
+  }
+
+.float-right {
+  float: right;
+  margin: 0 0 1.5em 1.5em;
+  }
+
+/* infoboxes, flash notices and grey-boxing */
+.box {
+  font-size: 1em;
+  line-height: 1.5em;
+  padding: 1.5em;
+  margin-bottom: 3em;
+  }
+
+.message {
+  font-size: 1em;
+  line-height: 1.5em;
+  padding: 1.3em 1.5em 1.5em 1.5em;
+  border-width: .2em;
+  border-style: solid;
+  margin-bottom: 3em;
+  -webkit-border-radius: .75em;
+  -moz-border-radius: .75em;
+  border-radius: .75em;
+  }
+
+.success {
+  background: #efd;
+  border-color: #bf6;
+  color: #6b3;
+  }
+
+.success a, .success a:hover { color: #6b3; }
+
+.error {
+  background: #fed;
+  border-color: #f63;
+  color: #c00;
+  }
+
+.error a, .error a:hover { color: #c00; }
+
+.warning {
+  background: #ffc;
+  border-color: #fc6;
+  color: #c90;
+  }
+
+.warning a, .warning a:hover { color: #c90; }
+
+.notice, .info {
+  background: #def;
+  border-color: #9cf;
+  color: #369;
+  }
+
+.notice a, .notice a:hover, .info a, .info a:hover { color: #369; }
+
+.label {
+  padding: .25em;
+  color: #fff;
+  -moz-border-radius: .33em;
+  -webkit-border-radius: .33em;
+  border-radius: .33em;
+  }
+
+.label.success {
+  background: #6b3;
+  }
+
+.label.error {
+  background: #c00;
+  }
+
+.label.warning {
+  background: #c90;
+  }
+
+.label.notice, .label.info {
+  background: #369;
+  }
+
+.b0 { background: #000; color: #fff; }
+.b1 { background: #111; color: #fff; }
+.b2 { background: #222; color: #fff; }
+.b3 { background: #333; color: #fff; }
+.b4 { background: #444; color: #fff; }
+.b5 { background: #555; color: #fff; }
+.b6 { background: #666; color: #fff; }
+.b7 { background: #777; color: #fff; }
+.b8 { background: #888; color: #fff; }
+.b9 { background: #999; color: #fff; }
+.ba { background: #aaa; }
+.bb { background: #bbb; }
+.bc { background: #ccc; }
+.bd { background: #ddd; }
+.be { background: #eee; }
+.bf { background: #fff; }
+
+/* CSS3 rounded corners */
+.corners {
+  -moz-border-radius: 6px;
+  -webkit-border-radius: 6px;
+  border-radius: 6px;
+  }
+
+/*
+ * Apply .debug to HTML tag to enable some fancy debug things
+ * Green is okay; Orange is something you should check; Red is bad
+ * Inspired by diagnostics styles from Inuit.css <http://www.inuitcss.org>
+ */
+
+/* inline styles should be avoided where possible */
+.debug [style] { outline: 3px solid #fc0; }
+
+/* images should have alternative text */
+.debug img { outline: 3px solid #f00; }
+.debug img[alt] { outline: 3px solid #0f0; }
+.debug img[alt=""] { outline: 3px solid #f00; }
+
+/* link titles might be useful */
+.debug a { outline: 3px solid #fc0; }
+.debug a[title] { outline-color: #0f0; }
+.debug a[title=""] { outline-color: #fc0; }
+
+/* you could leave that hash there, couldn't you? */
+.debug a[href="#"] { outline-color: #f00; }
+
+/* now they have some behaviour */
+.debug a[target], .debug a[onclick], .debug a[href*=javascript] { outline-color: #fc0; }
+
+/* element with an empty class or id? oh, c'mon */
+.debug [class=""], .debug [id=""] { outline: 3px solid #fc0; }
+
+/* font & typography reset */
+html {
+  font-size: 100.01%;
+  }
+
+body {
+  font-size: 87.5%; /* default font size = 14px */
+  color: #222;
+  background: #fff;
+  font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
+  }
+
+html>body {
+  font-size: 14px;
+  }
+
+/* alignment */
+.left {
+  text-align: left;
+  }
+
+.center {
+  text-align: center;
+  }
+
+.right {
+  text-align: right;
+  }
+
+.justify {
+  text-align: justify;
+  }
+
+.indent {
+  padding-left: 40px;
+  }
+
+/* headings */
+h1, h2, h3, h4, h5, h6 {
+  color: #111;
+  font-weight: normal;
+  }
+
+h1, .h1 {
+  font-size: 3em;
+  line-height: 1em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+  }
+
+h2, .h2 {
+  font-size: 2.5em;
+  line-height: 1.2em;
+  margin-bottom: 0.6em;
+  }
+
+h3, .h3 {
+  font-size: 2em;
+  line-height: 1.5em;
+  margin-bottom: 0.75em;
+  }
+
+h4, .h4 {
+  font-size: 1.5em;
+  line-height: 2em;
+  margin-bottom: 1em;
+  }
+
+h5, .h5 {
+  font-size: 1.2em;
+  line-height: 1.25em;
+  margin-bottom: 1.25em;
+  font-weight: bold;
+  }
+
+h6, .h6 {
+  font-size: 1.2em;
+  line-height: 1.25em;
+  margin-bottom: 1.25em;
+  font-weight: bold;
+  font-variant: small-caps;
+  }
+
+.subheading {
+  font-size: 0.67em;
+  line-height: 0;
+  font-weight: normal;
+  color: #999;
+  }
+
+h1 img, h2 img, h3 img, h4 img, h5 img, h6 img {
+  margin: 0;
+  }
+
+/* text elements */
+p {
+  font-size: 1em;
+  line-height: 1.5em;
+  margin: 0 0 1.5em 0;
+  }
+
+p.perex {
+  font-size: 1.2em;
+  line-height: 1.25em;
+  margin-bottom: 1.25em;
+  }
+
+p.lede:first-line {
+  font-size: 1.2em;
+  line-height: 1.25em;
+  font-variant: small-caps;
+  }
+
+p img.left {
+  float: left !important;
+  margin: 1.5em 1.5em 1.5em 0;
+  padding: 0;
+  }
+
+p img.right {
+  float: right !important;
+  margin: 1.5em 0 1.5em 1.5em;
+  padding: 0;
+  }
+
+a {
+  color: #369;
+  text-decoration: underline;
+  }
+
+a:focus, a:hover {
+  color: #69c;
+  }
+
+hr {
+  margin: 0 0 1.5em 0;
+  }
+
+hr.space {
+  background-color: #fff;
+  }
+
+blockquote {
+  font-style: italic;
+  font-size: 1em;
+  line-height: 1.5em;
+  margin: 1.5em 0 1.5em 1.2em;
+  border-left: 0.3em solid #ccc;
+  padding-left: 1.5em;
+  }
+
+blockquote p:last-of-type {
+  margin: 0;
+  }
+
+blockquote footer {
+  color: #666;
+  font-style: normal;
+  font-weight: normal;
+  text-align: right;
+  }
+
+blockquote footer:before {
+  content: "~ ";
+  }
+
+dd blockquote {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  }
+
+.pullout {
+  width: 200px;
+  float: right;
+  font-weight: bold;
+  font-size: 1em;
+  line-height: 1.5em;
+  margin: 0 0 1.5em 1.5em;
+  }
+
+.pullout :last-child {
+  margin: 0;
+  }
+
+figure, .figure {
+  padding: 1.5em;
+  margin: 0 0 1.5em 0;
+  }
+
+figure.border, .figure.border {
+  border-top: 0.1em solid #666;
+  border-bottom: 0.1em solid #666;
+  padding-top: 1.4em;
+  }
+
+figure figcaption, .figure .caption {
+  font-size: 1em;
+  line-height: 1.5em;
+  margin: 1.5em 0 0 0;
+  color: #666;
+  }
+
+/* standard typography, used with SPANs where semantic markup (strong, em) is not desired */
+.b, .strong, strong, dfn {
+  font-weight: bold;
+  }
+
+.i, .em, em, dfn {
+  font-style: italic;
+  }
+
+.u {
+  text-decoration: underline;
+  }
+
+.s, s, strike {
+  text-decoration: line-through;
+  }
+
+.small {
+  font-size: 0.8em;
+  line-height: 0;
+  }
+
+div.small, p.small {
+  line-height: 1.875em;
+  }
+
+.big {
+  font-size: 1.2em;
+  line-height: 0;
+  }
+
+div.big, p.big {
+  line-height: 1.25em;
+  }
+
+.quiet {
+  color: #666;
+  }
+
+.sub {
+  vertical-align: sub;
+  }
+
+.sup {
+  vertical-align: super;
+  }
+
+sub, sup, .sub, .sup {
+  font-size: 0.8em;
+  line-height: 0;
+  }
+
+/* misc elements */
+mark, .mark, .highlight {
+  color: #960;
+  background: #ff9;
+  }
+
+ins, .ins, .added {
+  color: green;
+  background: #cf9;
+  text-decoration: underline;
+  }
+
+del, .del, .removed {
+  color: red;
+  background: #fc9;
+  text-decoration: line-through;
+  }
+
+/* appropriate cursor and basic border for abbr, acronym, dfn elements */
+abbr[title], acronym[title] dfn[title] {
+  cursor: help;
+  border-bottom: 1px dotted #777;
+  }
+
+address {
+  margin: 0 0 1.5em;
+  font-style: italic;
+  }
+
+pre {
+  white-space: pre;
+  }
+
+pre, code {
+  font: normal 1em/1.5em 'Lucida Console','Courier New',monospace;
+  }
+
+/* lists */
+ul, ol {
+  margin: 0 0 1.5em 0;
+  padding-left: 1.5em; 
+  }
+
+ul.standout, ol.standout {
+  padding-left: 0;
+  }
+
+li ul, li * li ul, li ol, li * li ol {
+  margin: 0;
+  }
+
+/* styling nested lists */
+ul {
+  list-style-type: disc;
+  }
+
+li ul {
+  list-style-type: circle;
+  }
+
+li * li ul {
+  list-style-type: square;
+  }
+
+ol, .numbered {
+  list-style-type: decimal;
+  }
+
+li ol {
+  list-style-type: lower-alpha;
+  }
+
+li * li ol {
+  list-style-type: lower-roman;
+  }
+
+ul li, ol li {
+  font-size: 1em;
+  line-height: 1.5em;
+  }
+
+dl {
+  margin: 0 0 1.5em 0;
+  }
+
+dl dt {
+  font-size: 1em;
+  line-height: 1.5em;
+  font-weight: bold;
+  letter-spacing: 0.075em;
+  }
+
+dd {
+  font-size: 1em;
+  line-height: 1.5em;
+  margin-left: 1.5em;
+  }
+
+/* tables */
+table {
+  width: 100%;
+  margin-bottom: 1.5em;
+  border-collapse: collapse;
+  }
+
+th, td, caption {
+  font-size: 1em;
+  line-height: 1.5em;
+  padding: 0.75em 0.75em 0.8em 0.75em;
+  }
+
+table caption {
+  background: #36f;
+  color: #fff;
+  }
+
+th {
+  font-weight: bold;
+  }
+
+thead th {
+  background: #ccf;
+  }
+
+tbody tr:nth-child(even) td, tbody tr.even td {
+  background: #eef;
+  }
+
+tbody tr:hover td {
+  background: #ddf;
+  }
+
+th.num, td.num {
+  text-align: right;
+  }
+
+tfoot {
+  font-style: italic;
+  }
+
+caption {
+  background: #eee;
+  }
+
+form.required:after {
+  font-size: 0.8em;
+  line-height: 1.875em;
+  display: block;
+  content: 'Required items are marked with red *';
+  color: #c00;
+  }
+
+fieldset {
+  padding: 1.5em 1.5em 1.45em 1.5em;
+  margin: 0 0 1.5em 0;
+  border: 0.1em solid #ccc;
+  }
+
+legend {
+  font-weight: bold;
+  font-size: 1.2em;
+  line-height: 1.25em;
+  padding: 0 0.5em;
+  }
+
+label {
+  display: block;
+  font-weight: bold;
+  line-height: 1.5em;
+  }
+
+form:not(.singlecol) label {
+  float: left;
+  font-weight: normal;
+  width: 40%;
+  }
+
+label.required:after {
+  font-weight: normal;
+  content: ' *';
+  color: #c00;
+  }
+
+form:not(.singlecol) .input {
+  float: right;
+  width: 60%;
+  }
+
+input:not([type=submit]):not([type=button]):not([type=reset]) {
+  padding: 0.25em;
+  height: 1.5em;
+  margin-bottom: 1.1em;
+  border: 0.1em solid #999;
+  }
+
+input:not([type=submit]):not([type=button]):not([type=reset]):not([type=checkbox]):not([type=radio]) {  
+  width: 180px;
+  }
+
+input[type=file] {
+  border: 0 !important;
+  width: 95% !important;
+  margin-bottom: 1.2em;
+  }
+
+input[type=checkbox], input[type=radio] {
+  cursor: pointer;
+  margin-right: 0.75em;
+  }
+
+.input label {
+  width: 100% !important;
+  font-weight: normal;
+  display: block !important;
+  float: none !important;
+  line-height: 1.4em;
+  cursor: pointer;
+  }
+
+.input label:last-of-type {
+  margin-bottom: 1.5em;
+  }
+
+.input label input {
+  position: relative;
+  top: .33em;
+  }
+
+textarea {
+  padding: 0.25em;
+  width: 240px;
+  height: 6em;
+  margin-bottom: 1.1em;
+  font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
+  border: 0.1em solid #999;
+  }
+
+select {
+  width: 188px;
+  height: 2em;
+  padding: 0.25em;
+  margin-bottom: 1.2em;
+  border: 0.1em solid #999;
+  }
+
+input:focus, textarea:focus {
+  outline: 0;
+  border-color: #666;
+  }
+
+input[required]:focus, textarea[required]:focus {
+  border-color: #f00;
+  }
+
+input[readonly], textarea[readonly] {
+  background: #ddd;
+  color: #444;
+  border-color: #999;
+  cursor: text;
+  }
+
+input[disabled], textarea[disabled] {
+  background: #eee;
+  color: #999;
+  border-color: #999;
+  }
+
+input[required], textarea[required], select[required] {
+  border-color: #c00;
+  }
+
+.hint {
+  color: #999;
+  margin-top: -1em;
+  margin-bottom: 1em;
+  }
+
+.btn {
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1em;
+  margin: 0 0 0.75em 0;
+  padding: 0.5em 0.75em;
+  text-shadow: 0 1px 1px rgba(0,0,0,.3);
+  color: #000;
+  background: #ddd;
+  background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#ddd));
+  background: -moz-linear-gradient(top,  #eee,  #ddd);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#eee', endColorstr='#ddd');
+  border: 0.1em solid #999;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  }
+
+.btn.rounded {
+  -moz-border-radius: 15px;
+  -webkit-border-radius: 15px;
+  border-radius: 15px;
+  }
+
+.btn:hover {
+  color: #000;
+  background: #ccc;
+  background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#ccc));
+  background: -moz-linear-gradient(top,  #eee,  #ccc);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#eee', endColorstr='#ccc');
+  border-color: #666;
+  }
+
+.btn:active {
+  position: relative;
+  top: 1px;
+  background: #eee;
+  background: -webkit-gradient(linear, left top, left bottom, from(#ddd), to(#eee));
+  background: -moz-linear-gradient(top,  #ddd,  #eee);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#ddd', endColorstr='#eee');
+  border-color: #ccc;
+  }
+
+a.btn {
+  text-decoration: none;
+  }
+
+.btn.primary, .btn.active {
+  color: #fff;
+  background: #39f;
+  background: -webkit-gradient(linear, left top, left bottom, from(#6cf), to(#39f));
+  background: -moz-linear-gradient(top,  #6cf,  #39f);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#6cf', endColorstr='#39f');
+  border-color: #06c;
+  font-weight: bold;
+  }
+
+.btn.primary:hover, .btn.active:hover {
+  background: #06f;
+  background: -webkit-gradient(linear, left top, left bottom, from(#39f), to(#06f));
+  background: -moz-linear-gradient(top,  #39f,  #06f);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#39f', endColorstr='#06f');
+  border-color: #03f;
+  }
+
+.btn.primary:active, .btn.active:active {
+  background: #6cf;
+  background: -webkit-gradient(linear, left top, left bottom, from(#39f), to(#6cf));
+  background: -moz-linear-gradient(top,  #39f,  #6cf);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#39f', endColorstr='#6cf');
+  border-color: #039;
+  }
+
+.btn.danger, input[type=reset].btn {
+  color: #fff;
+  background: #f30;
+  background: -webkit-gradient(linear, left top, left bottom, from(#f63), to(#f30));
+  background: -moz-linear-gradient(top,  #f63,  #f30);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#f63', endColorstr='#f30');
+  border-color: #c30;
+  }
+
+.btn.danger:hover, input[type=reset].btn:hover {
+  background: #c30;
+  background: -webkit-gradient(linear, left top, left bottom, from(#f63), to(#f00));
+  background: -moz-linear-gradient(top,  #f63,  #f00);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#f63', endColorstr='#f00');
+  border-color: #c00;
+  }
+
+.btn.danger:active, input[type=reset].btn:active {
+  background: #f63;
+  background: -webkit-gradient(linear, left top, left bottom, from(#f30), to(#f63));
+  background: -moz-linear-gradient(top,  #f30,  #f63);
+  filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#f30', endColorstr='#f63');
+  border-color: #c60;
+  }
+
+.btn-group .btn {
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  border-left-width: 0;
+  }
+
+.btn-group .btn:first-child {
+  -moz-border-radius: 5px 0 0 5px;
+  -webkit-border-radius: 5px 0 0 5px;
+  border-radius: 5px 0 0 5px;
+  border-left-width: 0.1em;
+  }
+
+.btn-group .btn:last-child {
+  -moz-border-radius: 0 5px 5px 0;
+  -webkit-border-radius: 0 5px 5px 0;
+  border-radius: 0 5px 5px 0;
+  }
+
+/* make images and embedded media fluid */
+img, object, embed, video, audio {
+  max-width: 100%;
+  }
+
+/*
+ * Default 1080px grid, fixed for 1080+, fluid for smaller screens
+ */
+
+.wrapper {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1.5em 10px;
+  }
+
+/* Uses negative margin, so that you don't have to indicate last column of the row, inspired by Harry Roberts's technique <http://csswizardry.com/2011/08/building-better-grid-systems> */
+.grid {
+  width: 101.1111111111111111111111111111111%;
+  margin: 0 0 0 -1.6666666666666666666666666666661%;
+  list-style: none;
+  }
+
+.col1, .col2, .col3, .col4, .col5, .col6, .col7, .col8, .col9, .col10, .col11, .col12 {
+  float: left;
+  margin: 0 0 1.5em 2.1111111111111111111111111111111%;
+  min-height: 1px;
+  }
+
+.grid .col1 { width: 6.1111111111111111111111111111111%; }
+.grid .col2 { width: 14.444444444444444444444444444444%; }
+.grid .col3 { width: 22.777777777777777777777777777778%; }
+.grid .col4 { width: 31.111111111111111111111111111111%; }
+.grid .col5 { width: 39.444444444444444444444444444444%; }
+.grid .col6 { width: 47.777777777777777777777777777778%; }
+.grid .col7 { width: 56.111111111111111111111111111111%; }
+.grid .col8 { width: 64.444444444444444444444444444444%; }
+.grid .col9 { width: 72.777777777777777777777777777778%; }
+.grid .col10 { width: 81.111111111111111111111111111111%; }
+.grid .col11 { width: 89.444444444444444444444444444444%; }
+.grid .col12 { width: 97.777777777777777777777777777778%; }
+
+/* use these to indent a column by prepending empty columns to it */
+.offset1 { margin-left: 10.555555555555555555555555555556%; }
+.offset2 { margin-left: 18.888888888888888888888888888889%; }
+.offset3 { margin-left: 27.222222222222222222222222222222%; }
+.offset4 { margin-left: 35.555555555555555555555555555556%; }
+.offset5 { margin-left: 43.888888888888888888888888888889%; }
+.offset6 { margin-left: 52.222222222222222222222222222222%; }
+.offset7 { margin-left: 60.555555555555555555555555555556%; }
+.offset8 { margin-left: 68.888888888888888888888888888889%; }
+.offset9 { margin-left: 77.222222222222222222222222222222%; }
+.offset10 { margin-left: 85.555555555555555555555555555556%; }
+.offset11 { margin-left: 93.888888888888888888888888888889%; }
+
+/* use this to add a slight border to the right of the current - IT CONSUMES ONE COLUMN ON ITS OWN! */
+.border {
+  padding-right: 4.0740740740740740740740740740741%;
+  border-right: 1px solid #ccc;
+  margin-right: 4.1666666666666666666666666666667%;
+  }
+
+/* you can also apply a 12-column grid to a table - doesn't work well yet, though */
+table.grid {
+  width: 100%;
+  margin: 0 0 0 -1.1111111111111111111111111111111%; /* 12px */
+  list-style: none;
+  }
+
+table.grid tr {
+  width: 100%;
+  }
+
+table .col1, table .col2, table .col3, table .col4, table .col5, table .col6, table .col7, table .col8, table .col9, table .col10, table .col11, table .col12 {
+  float: none;
+  margin: 0;
+  min-height: 1px;
+  }
+
+table .col1 { width: 8.33%; }
+table .col2 { width: 16.67%; }
+table .col3 { width: 25%; }
+table .col4 { width: 33.33%; }
+table .col5 { width: 41.67%; }
+table .col6 { width: 50%; }
+table .col7 { width: 58.33%; }
+table .col8 { width: 66.67%; }
+table .col9 { width: 75%; }
+table .col10 { width: 83.33%; }
+table .col11 { width: 91.67%; }
+table .col12 { width: 100%; }
+
+
+/* this pretty long code allows for columns inside columns */
+.col2 .grid, .col3 .grid, .col4 .grid, .col5 .grid, .col6 .grid, .col7 .grid, .col8 .grid, .col9 .grid, .col10 .grid, .col11 .grid, .col12 .grid {
+  width: 101.11111111111111111111111%;
+  margin: 0 0 0 -1.66666666666666666666%;
+  }
+
+.col12 .grid .col12 { width: 97.7777777777777777777777777777777%; }
+.col12 .grid .col11 { width: 89.444444444444444444444444444445%; }
+.col12 .grid .col10 { width: 81.1111111111111111111111111111111%; }
+.col12 .grid .col9 { width: 72.8888888888888888888888888888888%; }
+.col12 .grid .col8 { width: 64.4444444444444444444444444444444%; }
+.col12 .grid .col7 { width: 56.111111111111111111111111111111%; }
+.col12 .grid .col6 { width: 47.8888888888888888888888888888888%; }
+.col12 .grid .col5 { width: 39.444444444444444444444444444445%; }
+.col12 .grid .col4 { width: 31.1111111111111111111111111111111%; }
+.col12 .grid .col3 { width: 22.8888888888888888888888888888888%; }
+.col12 .grid .col2 { width: 14.4444444444444444444444444444444%; }
+.col12 .grid .col1 { width: 6.1111111111111111111111111111113%; }
+
+.col11 .grid .col11 { width: 97.7777777777777777777777777777777%; }
+.col11 .grid .col10 { width: 88.686868686868686868686868686869%; }
+.col11 .grid .col9 { width: 79.59595959595959595959595959596%; }
+.col11 .grid .col8 { width: 70.505050505050505050505050505051%; }
+.col11 .grid .col7 { width: 219.99999999999999999999999999998%; }
+.col11 .grid .col6 { width: 52.323232323232323232323232323233%; }
+.col11 .grid .col5 { width: 43.232323232323232323232323232323%; }
+.col11 .grid .col4 { width: 34.141414141414141414141414141414%; }
+.col11 .grid .col3 { width: 25.050505050505050505050505050505%; }
+.col11 .grid .col2 { width: 15.959595959595959595959595959596%; }
+.col11 .grid .col1 { width: 6.8686868686868686868686868686871%; }
+
+.col10 .grid .col10 { width: 97.7777777777777777777777777777777%; }
+.col10 .grid .col9 { width: 87.8888888888888888888888888888888%; }
+.col10 .grid .col8 { width: 77.8888888888888888888888888888888%; }
+.col10 .grid .col7 { width: 67.8888888888888888888888888888888%; }
+.col10 .grid .col6 { width: 57.8888888888888888888888888888888%; }
+.col10 .grid .col5 { width: 47.8888888888888888888888888888888%; }
+.col10 .grid .col4 { width: 37.8888888888888888888888888888888%; }
+.col10 .grid .col3 { width: 27.8888888888888888888888888888888%; }
+.col10 .grid .col2 { width: 17.8888888888888888888888888888888%; }
+.col10 .grid .col1 { width: 7.8888888888888888888888888888888%; }
+
+.col9 .grid .col9 { width: 97.7777777777777777777777777777777%; }
+.col9 .grid .col8 { width: 86.666666666666666666666666666667%; }
+.col9 .grid .col7 { width: 75.555555555555555555555555555556%; }
+.col9 .grid .col6 { width: 64.4444444444444444444444444444444%; }
+.col9 .grid .col5 { width: 53.333333333333333333333333333334%; }
+.col9 .grid .col4 { width: 42.222222222222222222222222222222%; }
+.col9 .grid .col3 { width: 31.1111111111111111111111111111111%; }
+.col9 .grid .col2 { width: 20%; }
+.col9 .grid .col1 { width: 8.8888888888888888888888888888891%; }
+
+.col8 .grid .col8 { width: 97.7777777777777777777777777777777%; }
+.col8 .grid .col7 { width: 85.277777777777777777777777777778%; }
+.col8 .grid .col6 { width: 72.8888888888888888888888888888888%; }
+.col8 .grid .col5 { width: 60.277777777777777777777777777778%; }
+.col8 .grid .col4 { width: 47.8888888888888888888888888888888%; }
+.col8 .grid .col3 { width: 35.277777777777777777777777777778%; }
+.col8 .grid .col2 { width: 22.8888888888888888888888888888888%; }
+.col8 .grid .col1 { width: 10.277777777777777777777777777778%; }
+
+.col7 .grid .col7 { width: 97.7777777777777777777777777777777%; }
+.col7 .grid .col6 { width: 83.492063492063492063492063492064%; }
+.col7 .grid .col5 { width: 69.206349206349206349206349206349%; }
+.col7 .grid .col4 { width: 54.920634920634920634920634920635%; }
+.col7 .grid .col3 { width: 40.634920634920634920634920634921%; }
+.col7 .grid .col2 { width: 26.349206349206349206349206349207%; }
+.col7 .grid .col1 { width: 12.063492063492063492063492063492%; }
+
+.col6 .grid .col6 { width: 97.7777777777777777777777777777777%; }
+.col6 .grid .col5 { width: 81.1111111111111111111111111111111%; }
+.col6 .grid .col4 { width: 64.4444444444444444444444444444444%; }
+.col6 .grid .col3 { width: 47.8888888888888888888888888888888%; }
+.col6 .grid .col2 { width: 31.1111111111111111111111111111111%; }
+.col6 .grid .col1 { width: 14.4444444444444444444444444444444%; }
+
+.col5 .grid .col5 { width: 97.7777777777777777777777777777777%; }
+.col5 .grid .col4 { width: 77.8888888888888888888888888888888%; }
+.col5 .grid .col3 { width: 57.8888888888888888888888888888888%; }
+.col5 .grid .col2 { width: 37.8888888888888888888888888888888%; }
+.col5 .grid .col1 { width: 17.8888888888888888888888888888888%; }
+
+.col4 .grid .col4 { width: 97.7777777777777777777777777777777%; }
+.col4 .grid .col3 { width: 72.8888888888888888888888888888888%; }
+.col4 .grid .col2 { width: 47.8888888888888888888888888888888%; }
+.col4 .grid .col1 { width: 22.8888888888888888888888888888888%; }
+
+.col3 .grid .col3 { width: 97.7777777777777777777777777777777%; }
+.col3 .grid .col2 { width: 64.4444444444444444444444444444444%; }
+.col3 .grid .col1 { width: 31.1111111111111111111111111111111%; }
+
+.col2 .grid .col2 { width: 97.7777777777777777777777777777777%; }
+.col2 .grid .col1 { width: 47.8888888888888888888888888888888%; }
+
+
+/*
+ * Grid for smaller screens, fluid 6-column layout
+ */
+
+/* Note: you might want to use respond.js <https://github.com/scottjehl/Respond> to enable media queries support in non-compliant browsers (like IE 6-8 of course) */
+@media screen and (max-width: 800px) {
+
+  .wrapper { width: 100%; padding: 1.5em 0; }
+  
+  /* adapt wider columns to 6-col maximum, set narrower columns to "n of 6" width */
+  .grid .col1 { width: 14.444444444444444444444444444445%; }
+  .grid .col2 { width: 31.111111111111111111111111111111%; }
+  .grid .col3 { width: 47.888888888888888888888888888888%; }
+  .grid .col4 { width: 64.444444444444444444444444444445%; }
+  .grid .col5 { width: 81.111111111111111111111111111111%; }
+  .grid .col6, .grid .col7, .grid .col8, .grid .col9, .grid .col10, .grid .col11, .grid .col12 { width: 97.7777777777777777777777777777777%; }
+  
+  /* disable offsetting */
+  .offset1, .offset2, .offset3, .offset4, .offset5, .offset6, .offset7, .offset8, .offset9, .offset10, .offset11 { margin-left: 2.2222222222222222222222222222222%; }
+  
+  /* display bullets at standout lists */
+  ul.standout { padding-left: 1.5em; }
+
+}
+
+/*
+ * Grid for mobile devices, fluid 3-column layout
+ */
+
+/* inherits from above, so change only what's necessary */
+@media screen and (max-width: 479px) {
+
+  .grid .col1 { width: 31.111111111111111111111111111111% !important; }
+  .grid .col2 { width: 64.444444444444444444444444444445% !important; }
+  .grid .col3, .grid .col4, .grid .col5, .grid .col6, .grid .col7, .grid .col8, .grid .col9, .grid .col10, .grid .col11, .grid .col12 { width: 97.7777777777777777777777777777777% !important; }
+
+  /* use this class to hide some content from mobile viewers */
+  .hide-mobile { display: none; }
+  
+  form label {
+    float: none !important;
+    font-weight: bold;
+  }
+  
+  form .input {
+    float: none !important;
+	}
+
+}
+
+
+@media print {
+
+  * {
+    background: none;
+    color: #000;
+    text-shadow: none !important;
+    }
+  
+  body {
+    font-size: 0.75em;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    letter-spacing: 0.1em;
+    font-family: Garamond, "Times New Roman", serif;
+    }
+  
+  h1, h2, h3, h4, h5, h6 { font-family: "Helvetica Neue", Arial, Helvetica, sans-serif; }
+  
+  code {
+    font: 0.8333em Courier, monospace;
+    line-height: 1.8em;
+    }
+  
+  hr { background-color: #ccc; }
+  hr.space { background-color: #fff; visibility: hidden; }
+  
+  img {
+  	max-width: 100%;
+  	height: auto;
+    }
+  
+  a img { border: 0; }
+  
+  a:link, a:visited {
+    background: transparent;
+    text-decoration: underline;
+    color: #333;
+    }
+  
+  a[href^="http://"] { color:#000; }
+  
+  a:link[href^="http://"]:after, a[href^="http://"]:visited:after, a:link[href^="mailto:"]:after, a[href^="mailto:"]:visited:after {
+    content: " (" attr(href) ")";
+    font-size: 0.9em;
+    line-height: 0;
+    }
+  
+  /* change this to your address to append urls of relative links */
+  a[href^="/"]:after{
+  	content:" (http://www.example.com" attr(href) ")";
+  	font-size: 0.9em;
+  	line-height: 0;
+  }
+  
+  /* change this to your address */
+  object:after, embed:after, video:after, audio:after {
+    content: "This area contains an embedded multimedia content. Head to http://yoururlhere.com/ to view it.";
+  	display: block;
+  	font-weight: bold;
+  	line-height: 1.5em;
+  	margin-bottom: 1.5em;
+    }
+  
+  .message {
+    border: 0;
+    }
+  
+  .grid {
+    width: auto;
+    }
+  
+  .grid .col1, .grid .col2, .grid .col3, .grid .col4, .grid .col5, .grid .col6, .grid .col7, .grid .col8, .grid .col9, .grid .col10, .grid .col11, .grid .col12 {
+    width: auto;
+  	float: none;
+  	clear: both;
+    }
+  
+  table {
+    page-break-before:always;
+    margin: 1px;
+    text-align: left;
+    }
+  
+  th {
+    border-bottom: 1px solid #333;
+    background-color: #eee !important;
+    font-weight: bold;
+    }
+  
+  td {
+    border-bottom: 1px solid #999;
+    background-color: #fff !important;
+    }
+  
+  caption {
+    background: #ddd !important;
+    color: #000 !important;
+    font-weight: bold;
+    font-size: 1.167em;
+    line-height: 1.5em;
+    text-align: left;
+    }
+  
+  thead {
+    display: table-header-group;
+    }
+  
+  tr {
+    page-break-inside: avoid;
+    } 
+  
+  /* apply class .noprint to stuff you don't want to appear on print */
+  .noprint {
+    display: none;
+    }
+
+}

@@ -13,7 +13,7 @@ class CNAME(CommonRecord):
     record. Likewise, all other records must check that no CNAME exists with the same name before
     being created.
 
-        CNAME( label = label, domain = domain, data = data )
+    >>> CNAME( label = label, domain = domain, data = data )
 
     """
     # TODO cite an RFC

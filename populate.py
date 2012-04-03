@@ -1,6 +1,9 @@
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.soa.models import SOA
+from cyder.cydns.srv.models import SRV
+from cyder.cydns.mx.models import MX
+from cyder.cydns.txt.models import TXT
 from cyder.cydns.ptr.models import PTR
 from cyder.cydns.nameserver.models import Nameserver
 from cyder.cydns.nameserver.models import ReverseNameserver
@@ -45,10 +48,9 @@ s1,_ = SOA.objects.get_or_create( primary = "ns1.foo.foo", contact="hostmaster.b
 for domain in domains:
     Domain.objects.get_or_create(name=domain)
 
-for domain in [ domain for domain in domains if domain.find('bar.foo') > -1 ]:
-    d, _ = Domain.objects.get_or_create(name=domain)
-    d.soa = s
-    d.save()
+d, _ = Domain.objects.get_or_create(name='bar.foo')
+d.soa = s
+d.save()
 
 for domain in [ domain for domain in domains if domain.find('foo.foo') > -1 ]:
     d, _ = Domain.objects.get_or_create(name=domain)
@@ -71,11 +73,21 @@ for i in range(100):
 # Nameserver
 ns, _ = Nameserver.objects.get_or_create( domain= d, server = random_label()+"."+random_label()+"."+random_label() )
 
+d, _=Domain.objects.get_or_create(name=domains[1]) # bar.foo
 # CNAME
 label = "derp"
 domain = d
 data = "foo.com"
-cn, _ = CNAME.objects.get_or_create( label = label, domain = domain, data = data )
+cn, _ = CNAME.objects.get_or_create(label = label, domain = domain, data = data)
+
+# SRV
+srv, _ = SRV.objects.get_or_create(label = "_tcp", domain=d, target="target.foo.com", port=80, priority=1, weight=1)
+
+# MX
+mx, _ = MX.objects.get_or_create(label = "mail", domain=d, server="relay.oregonstate.edu", priority=1, ttl="1899")
+
+# TXT
+txt, _ = TXT.objects.get_or_create(label="some-text", domain=d, txt_data="v=spf1 include:example.net -all")
 
 # Reverse stuff
 s,_ = SOA.objects.get_or_create( primary = "ns1.bar.foo", contact="hostmaster.bar.foo" , comment="SOA for the 128.193 zone")

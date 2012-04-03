@@ -51,24 +51,35 @@ Maintain's existing DNS scheme *does* `support building bind files
 required due to poor data validation). Cyder is Maintain with a more formal structure. Cyder uses
 many core concepts from Maintain.
 
+Core
+----
+
 .. toctree::
    :maxdepth: 2
 
    coding_standard
-   validation
-   ip
+   registration
+
+DNS
+---
+
+.. toctree::
+   :maxdepth: 2
+
+   cybind
+   soa
    domain
    reverse_domain
+   nameserver
+   mx
+   ip
    common_record
    address_record
    ptr
-   nameserver
    cname
-   mx
-   soa
    srv
    txt
-   cybind
+   validation
 
 DNS
 ===

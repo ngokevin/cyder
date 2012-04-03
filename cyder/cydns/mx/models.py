@@ -8,6 +8,9 @@ from cyder.cydns.cname.models import CNAME
 from cyder.cydns.validation import  validate_ttl, validate_name, validate_mx_priority
 
 class MX(CommonRecord):
+    """
+    >>> MX(label, domain, server, priority, ttl)
+    """
     id              = models.AutoField(primary_key=True)
     # The mail server this record should point to.
     server          = models.CharField(max_length=100, validators=[validate_name])
