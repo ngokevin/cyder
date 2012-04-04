@@ -39,6 +39,8 @@ MINIFY_BUNDLES = {
 # Defines the views served for root URLs.
 ROOT_URLCONF = 'cyder.urls'
 
+APPEND_SLASH = True
+
 INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -118,11 +120,12 @@ DATABASES = {
 }
 
 MIDDLEWARE_CLASSES = (
+    'cyder.middleware.authentication.AuthenticationMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.common.CommonMiddleware',
     #'django_cas.middleware.CASMiddleware',
-    #'cyder.middleware.require_login.RequireLoginMiddleware',
 
 )
 
