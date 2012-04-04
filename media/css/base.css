@@ -1,0 +1,25 @@
+* {
+    /* Browser Reset */
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+header {
+    background: rgb(235,235,235);
+}
+
+nav {
+    text-align: center;
+    background: rgb(244,244,244);
+}
+nav a {
+}
+
+.content {
+    background: rgb(249,249,249);
+}
+
+#footer {
+    background: rgb(235,235,235);
+}
