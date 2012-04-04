@@ -7,8 +7,7 @@ from funfactory.settings_base import *
 
 CAS_SERVER_URL = "https://login.oregonstate.edu/cas/login"
 
-CYDER_BASE_URL = "/cyder"
-CYDNS_BASE_URL = CYDER_BASE_URL + "/cydns"
+CYDNS_BASE_URL = "/cydns"
 
 # os.environ['FORCE_DB']='1'
 
