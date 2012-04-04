@@ -180,7 +180,7 @@ class DomainUpdateView(DomainView, UpdateView):
             messages.error(request, str(e))
             return render(request, "domain_update.html", {"form": domain_form})
 
-        messages.success(request, '{0} was successfully updated.'\
-                            .format(domain.name))
+        messages.success(request, '{0} was successfully updated.'.
+                            format(domain.name))
 
         return redirect(domain)

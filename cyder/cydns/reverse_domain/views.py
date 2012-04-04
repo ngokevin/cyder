@@ -38,7 +38,7 @@ class ReverseDomainDetailView(ReverseDomainView, DetailView):
     template_name = "reverse_domain_detail.html"
 
     def get_context_data(self, **kwargs):
-        context = super(ReverseDomainDetailView, self)\
+        context = super(ReverseDomainDetailView, self)
                         .get_context_data(**kwargs)
 
         reverse_domain = kwargs.get('object', False)
@@ -153,8 +153,8 @@ def bootstrap_ipv6(request):
                             {'bootstrap_form': bootstrap_form})
 
         # Success redirect to the last domain created.
-        messages.success(request, "Success! Bootstrap complete. You are\
-                            now looking at the leaf reverse domain.")
+        messages.success(request, "Success! Bootstrap complete. You are"
+                            "now looking at the leaf reverse domain.")
         return redirect(reverse_domain)
 
     else:

@@ -110,8 +110,8 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
             error = ""
             for child in children:
                 error = error.join(str(child) + ", ")
-            raise ValidationError("Domain {0} has children {1}"\
-                                    .format(self.name, error[:-2]))
+            raise ValidationError("Domain {0} has children {1}".
+                                    format(self.name, error[:-2]))
 
 
 # Handy Reverse Domain functions
@@ -148,8 +148,8 @@ def ip_to_reverse_domain(ip, ip_type):
     if reverse_domain:
         return reverse_domain
     else:
-        raise ValidationError("Error Could not find reverse domain for\
-                                ip '{0}'".format(ip))
+        raise ValidationError("Error Could not find reverse domain for"
+                                "ip '{0}'".format(ip))
 
 def _name_to_master_reverse_domain(name, ip_type="4"):
     """Given an name return the most specific reverse_domain that the ip
@@ -183,9 +183,9 @@ def _name_to_master_reverse_domain(name, ip_type="4"):
                                             ip_type=ip_type)
 
         if not possible_master_reverse_domain:
-            raise ValidationError("Error: Coud not find master domain\
-                                    for {0}. Consider creating it."\
-                                    .format(name))
+            raise ValidationError("Error: Coud not find master domain"
+                                    "for {0}. Consider creating it.".
+                                    format(name))
         else:
             master_reverse_domain = possible_master_reverse_domain[0]
     return master_reverse_domain

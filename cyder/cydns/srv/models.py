@@ -91,9 +91,9 @@ class SRV(models.Model, ObjectUrlMixin):
         if not self.domain.delegated:
             return
         if not self.pk:  # We don't exist yet.
-            raise ValidationError("No objects can be created in the {0}\
-                                    domain. It is delegated."\
-                                    .format(self.domain.name))
+            raise ValidationError("No objects can be created in the {0}"
+                                    "domain. It is delegated.".
+                                    format(self.domain.name))
 
     def check_for_cname(self):
         """"If a CNAME RR is preent at a node, no other data should be

@@ -113,8 +113,8 @@ class Ip(models.Model):
         if isinstance(self.ip_str, str) or isinstance(self.ip_str, unicode):
             return
         else:
-            raise ValidationError("Plase provide the string representation\
-                                    of the IP")
+            raise ValidationError("Plase provide the string representation"
+                                    "of the IP")
 
 
 def ipv6_to_longs(addr):
