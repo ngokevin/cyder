@@ -2,69 +2,78 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html LANG="{{ LANG }}" dir="{{ DIR }}">
 
-    <head>
-        <title>Cyder | {% block title %}Home{% endblock %}</title>
-        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-        <link rel="stylesheet" type="text/css" href="/media/css/sticky_footer.css"/>
-        <link rel="stylesheet" type="text/css" href="/media/css/bootstrap.min.css"/>
+<head>
+    <title>Cyder | {% block title %}Home{% endblock %}</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <link rel="stylesheet" type="text/css" href="/media/css/sticky_footer.css"/>
+    <link rel="stylesheet" type="text/css" href="/media/css/bootstrap.min.css"/>
+</head>
 
-        <a href="/cyder/cydns/domain">Domains</a>
-        <a href="/cyder/cydns/domain/create">Create New Domain</a>
+<body>
+    <div id="wrap" class="container">
+        <header>
+            Logged in as: {{ request.user }}
+        </header>
 
-        <a href="/cyder/cydns/reverse_domain">Reverse Domains</a>
-        <a href="/cyder/cydns/reverse_domain/create">Create New Reverse Domain</a>
-        <a href="/cyder/cydns/reverse_domain/bootstrap6">Bootstrap v6</a>
+        <nav>
+            <a href="/cyder/cydns/domain">Domains</a>
+            <a href="/cyder/cydns/domain/create">Create New Domain</a>
 
-        <a href="/cyder/cydns/address_record/create">Create Address Record</a>
+            <a href="/cyder/cydns/reverse_domain">Reverse Domains</a>
+            <a href="/cyder/cydns/reverse_domain/create">Create New Reverse Domain</a>
+            <a href="/cyder/cydns/reverse_domain/bootstrap6">Bootstrap v6</a>
+
+            <a href="/cyder/cydns/address_record/create">Create Address Record</a>
 
 
-        <a href="/cyder/cydns/mx">MX</a>
-        <a href="/cyder/cydns/mx/create">Create New MX</a>
+            <a href="/cyder/cydns/mx">MX</a>
+            <a href="/cyder/cydns/mx/create">Create New MX</a>
 
-        <a href="/cyder/cydns/soa">SOA</a>
-        <a href="/cyder/cydns/soa/create">Create New SOA</a>
+            <a href="/cyder/cydns/soa">SOA</a>
+            <a href="/cyder/cydns/soa/create">Create New SOA</a>
 
-        <a href="/cyder/cydns/nameserver">NS</a>
-        <a href="/cyder/cydns/nameserver/create">Create New NS</a>
+            <a href="/cyder/cydns/nameserver">NS</a>
+            <a href="/cyder/cydns/nameserver/create">Create New NS</a>
 
-        <a href="/cyder/cydns/reverse_nameserver">Reverse NS</a>
-        <a href="/cyder/cydns/reverse_nameserver/create">Create New Reverse NS</a>
+            <a href="/cyder/cydns/reverse_nameserver">Reverse NS</a>
+            <a href="/cyder/cydns/reverse_nameserver/create">Create New Reverse NS</a>
 
-        <a href="/cyder/cydns/srv">SRV</a>
-        <a href="/cyder/cydns/srv/create">Create New SRV</a>
+            <a href="/cyder/cydns/srv">SRV</a>
+            <a href="/cyder/cydns/srv/create">Create New SRV</a>
 
-        <a href="/cyder/cydns/txt">TXT</a>
-        <a href="/cyder/cydns/txt/create">Create New TXT</a>
+            <a href="/cyder/cydns/txt">TXT</a>
+            <a href="/cyder/cydns/txt/create">Create New TXT</a>
 
-        <a href="/cyder/cydns/cname">CNAME</a>
-        <a href="/cyder/cydns/cname/create">Create New CNAME</a>
+            <a href="/cyder/cydns/cname">CNAME</a>
+            <a href="/cyder/cydns/cname/create">Create New CNAME</a>
 
-        <a href="/cyder/cydns/ptr">PTR</a>
-        <a href="/cyder/cydns/ptr/create">Create New PTR</a>
+            <a href="/cyder/cydns/ptr">PTR</a>
+            <a href="/cyder/cydns/ptr/create">Create New PTR</a>
 
-        <a href="/logout">Logout</a>
+            <a href="/logout">Logout</a>
+        </nav>
 
-        <br />
-        <br />
-    </head>
-    Logged in as: {{ request.user }}
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
-    <div id="content">
-    {% block content %}
-    {% endblock %}
+        <div class="content container">
+            {% block content %}
+            {% endblock %}
+        </div>
+
     </div>
 
-    <div id="footer">
+    <div id="footer" style="text-align:center;">
+        Cyder Footer
     </div>
+
     {% block site_js %}
     {% endblock %}
+
 </body>
 </html>
-
