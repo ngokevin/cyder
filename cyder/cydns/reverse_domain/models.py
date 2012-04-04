@@ -48,7 +48,7 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
     master_reverse_domain = models.ForeignKey("self", null=True, blank=True)
     soa = models.ForeignKey(SOA, null=True, blank=True)
     ip_type = models.CharField(max_length=1, choices=IP_TYPE_CHOICES,
-                                default='4', validators=[validate_ip_type])
+                               default='4', validators=[validate_ip_type])
 
     delegated = models.BooleanField(default=False, null=False, blank=True)
 
@@ -111,7 +111,7 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
             for child in children:
                 error = error.join(str(child) + ", ")
             raise ValidationError("Domain {0} has children {1}".
-                                    format(self.name, error[:-2]))
+                                  format(self.name, error[:-2]))
 
 
 # Handy Reverse Domain functions
@@ -139,8 +139,8 @@ def ip_to_reverse_domain(ip, ip_type):
     for i in reversed(range(1,len(tokens))):
         search_reverse_domain = '.'.join(tokens[:-i])
         tmp_reverse_domain = ReverseDomain.objects.filter(
-                                    name = search_reverse_domain,
-                                    ip_type=ip_type)
+                                name = search_reverse_domain,
+                                ip_type=ip_type)
         if tmp_reverse_domain:
             reverse_domain = tmp_reverse_domain[0]
         else:
@@ -148,8 +148,8 @@ def ip_to_reverse_domain(ip, ip_type):
     if reverse_domain:
         return reverse_domain
     else:
-        raise ValidationError("Error Could not find reverse domain for"
-                                "ip '{0}'".format(ip))
+        raise ValidationError("Error Could not find reverse domain for "
+                              "ip '{0}'".format(ip))
 
 def _name_to_master_reverse_domain(name, ip_type="4"):
     """Given an name return the most specific reverse_domain that the ip
@@ -183,9 +183,9 @@ def _name_to_master_reverse_domain(name, ip_type="4"):
                                             ip_type=ip_type)
 
         if not possible_master_reverse_domain:
-            raise ValidationError("Error: Coud not find master domain"
-                                    "for {0}. Consider creating it.".
-                                    format(name))
+            raise ValidationError("Error: Coud not find master domain "
+                                  "for {0}. Consider creating it.".
+                                  format(name))
         else:
             master_reverse_domain = possible_master_reverse_domain[0]
     return master_reverse_domain
@@ -215,7 +215,7 @@ def _reassign_reverse_ips(reverse_domain_1, reverse_domain_2, ip_type):
     ptrs = reverse_domain_2.ptr_set.iterator()
     for ptr in ptrs:
         correct_reverse_domain = ip_to_reverse_domain(ptr.ip_str,
-                                                        ip_type=ptr.ip_type)
+                                                      ip_type=ptr.ip_type)
         if correct_reverse_domain != ptr.reverse_domain:
             # TODO, is this needed? The save() function (actually the
             # clean_ip function) will assign the correct reverse domain.

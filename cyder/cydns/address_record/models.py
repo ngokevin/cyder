@@ -50,11 +50,11 @@ class AddressRecord(Ip, CommonRecord):
         """
         if self.nameserver_set.exists():
             raise ValidationError("Cannot delete the record {0}. It is a glue"
-                                    "record.".format(self.record_type()))
+                                  "record.".format(self.record_type()))
         if CNAME.objects.filter(data=self.fqdn):
             raise ValidationError("A CNAME points to this {0} record. Change"
-                                    "the CNAME before deleting this record.".
-                                    format(self.record_type()))
+                                  "the CNAME before deleting this record.".
+                                  format(self.record_type()))
         super(AddressRecord, self).delete(*args, **kwargs)
 
     def _check_glue_status(self):
@@ -74,8 +74,8 @@ class AddressRecord(Ip, CommonRecord):
         Nameserver = cyder.cydns.nameserver.models.Nameserver
         if Nameserver.objects.filter(glue=self).exists():
             raise ValidationError("This record is a glue record for a"
-                                    "Nameserver. Change the Nameserver to edit"
-                                    "this record.")
+                                  "Nameserver. Change the Nameserver to edit"
+                                  "this record.")
 
     def record_type(self):
         # If PTR didn't share this field, we would use 'A' and 'AAAA'

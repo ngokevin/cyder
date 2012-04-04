@@ -46,9 +46,9 @@ class CommonRecord(models.Model, ObjectUrlMixin):
 
     domain = models.ForeignKey(Domain, null=False)
     label = models.CharField(max_length=100, blank=True, null=True,
-                        validators=[validate_label])
+                             validators=[validate_label])
     fqdn = models.CharField(max_length=255, blank=True, null=True,
-                        validators=[validate_name])
+                            validators=[validate_name])
     # fqdn = label + domain.name <--- see set_fqdn
 
     class Meta:
@@ -90,7 +90,8 @@ class CommonRecord(models.Model, ObjectUrlMixin):
             return
         if not self.pk:  # We don't exist yet.
             raise ValidationError("No objects can be created in the {0}"
-                    "domain. It is delegated.".format(self.domain.name))
+                                  "domain. It is delegated."
+                                  .format(self.domain.name))
 
     def check_TLD_condition(self):
         _check_TLD_condition(self)

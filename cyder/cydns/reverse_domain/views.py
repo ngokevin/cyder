@@ -38,8 +38,8 @@ class ReverseDomainDetailView(ReverseDomainView, DetailView):
     template_name = "reverse_domain_detail.html"
 
     def get_context_data(self, **kwargs):
-        context = super(ReverseDomainDetailView, self)
-                        .get_context_data(**kwargs)
+        context = super(ReverseDomainDetailView, self).
+                        get_context_data(**kwargs)
 
         reverse_domain = kwargs.get('object', False)
         if not reverse_domain:
@@ -77,17 +77,17 @@ class ReverseDomainCreateView(ReverseDomainView, CreateView):
         try:
             reverse_domain = reverse_domain_form.save(commit=False)
             if (reverse_domain_form.cleaned_data['inherit_soa'] and
-                    reverse_domain.master_reverse_domain):
+                reverse_domain.master_reverse_domain):
                 reverse_domain.soa = reverse_domain.master_reverse_domain.soa
 
             reverse_domain.save()
         except ValidationError, e:
             return render(request, "reverse_domain_form.html",
-                            {"reverse_domain_form": reverse_domain_form})
+                          {"reverse_domain_form": reverse_domain_form})
 
         # Success. Redirect.
-        messages.success(request, '{0} was successfully created.'
-                            .format(reverse_domain.name))
+        messages.success(request, '{0} was successfully created.'.
+                         format(reverse_domain.name))
 
         return redirect(reverse_domain)
 
@@ -99,7 +99,7 @@ class ReverseDomainUpdateView(ReverseDomainView, UpdateView):
 
     def post(self, request, *args, **kwargs):
         reverse_domain = get_object_or_404(ReverseDomain,
-                                            pk=kwargs.get('pk', 0))
+                                           pk=kwargs.get('pk', 0))
         try:
             reverse_domain_form = ReverseDomainUpdateForm(request.POST)
             new_soa_pk = reverse_domain_form.data.get('soa', None)
@@ -111,24 +111,23 @@ class ReverseDomainUpdateView(ReverseDomainView, UpdateView):
                 reverse_domain.soa = None
 
             if (reverse_domain_form.data.get('inherit_soa', False) and
-                    reverse_domain.master_reverse_domain):
+                reverse_domain.master_reverse_domain):
                 reverse_domain.soa = reverse_domain.master_reverse_domain.soa
-
             reverse_domain.save()  # Major exception handling logic
                                    # happens here.
         except ValueError, e:
             rev_domain_form = ReverseDomainUpdateForm(instance=reverse_domain)
             messages.error(request, str(e))
             return render(request, "reverse_domain_update.html",
-                            {"reverse_domain_form": rev_domain_form})
+                          {"reverse_domain_form": rev_domain_form})
 
-        messages.success(request, '{0} was successfully updated.'
-                            .format(reverse_domain.name))
+        messages.success(request, '{0} was successfully updated.'.
+                         format(reverse_domain.name))
         return redirect(reverse_domain)
 
     def get(self, request, *args, **kwargs):
         ret = super(ReverseDomainUpdateView, self).get(request,
-                                                        *args, **kwargs)
+                                                       *args, **kwargs)
         return ret
 
 
@@ -147,20 +146,20 @@ def bootstrap_ipv6(request):
             except ValidationError, e:
                 messages.error(request, str(e))
                 return render(request, 'bootstrap_ipv6.html',
-                                {'bootstrap_form': bootstrap_form})
+                              {'bootstrap_form': bootstrap_form})
         else:
             return render(request, 'bootstrap_ipv6.html',
-                            {'bootstrap_form': bootstrap_form})
+                          {'bootstrap_form': bootstrap_form})
 
         # Success redirect to the last domain created.
-        messages.success(request, "Success! Bootstrap complete. You are"
-                            "now looking at the leaf reverse domain.")
+        messages.success(request, "Success! Bootstrap complete. You are "
+                         "now looking at the leaf reverse domain.")
         return redirect(reverse_domain)
 
     else:
         bootstrap_form = BootStrapForm()
         return render(request, 'bootstrap_ipv6.html',
-                        {'bootstrap_form': bootstrap_form})
+                      {'bootstrap_form': bootstrap_form})
 
 
 def inheirit_soa(request, pk):
@@ -169,6 +168,6 @@ def inheirit_soa(request, pk):
         if reverse_domain.master_reverse_domain:
             reverse_domain.soa = reverse_domain.master_reverse_domain.soa
             reverse_domain.save()
-            messages.success(request, '{0} was successfully updated.'
-                                .format(reverse_domain.name))
+            messages.success(request, '{0} was successfully updated.'.
+                             format(reverse_domain.name))
     return redirect('/cyder/cydns/reverse_domain')

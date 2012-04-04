@@ -25,7 +25,7 @@ class BaseNameserver(models.Model, ObjectUrlMixin):
             return
         else:
             raise ValidationError("You cannot create a NS record that is the"
-                                    "name of a domain.")
+                                  "name of a domain.")
 
 
 class ReverseNameserver(BaseNameserver):
@@ -98,9 +98,9 @@ class Nameserver(BaseNameserver):
             glue = AddressRecord.objects.filter(label=glue_label,
                                                 domain=self.domain)
             if not glue:
-                raise ValidationError("NS needs glue record. Create a"
-                                        "glue record for the server"
-                                        "before creating the NS record.")
+                raise ValidationError("NS needs glue record. Create a glue "
+                                      "record for the server before creating "
+                                      "the NS record.")
             else:
                 self.glue = glue[0]
 
