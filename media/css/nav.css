@@ -58,13 +58,13 @@ a.nav-link:hover {
 /* Icon Links */
 .side-link {
     top: .20em;
-    right: .20em;
+    right: .35em;
 
     position: absolute;
 }
 .side-icon {
     color: green;
-    font-size: 1.5em;
+    font-size: 1.25em;
 }
 .side-link .side-icon:hover {
     text-decoration: none;
