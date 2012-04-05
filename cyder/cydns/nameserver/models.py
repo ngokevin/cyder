@@ -45,8 +45,8 @@ class ReverseNameserver(BaseNameserver):
 
     def details(self):
         details = (
-                    ('Reverese Domain', self.reverse_domain.name),
                     ('Server', self.server),
+                    ('Reverese Domain', self.reverse_domain.name),
                   )
         return tuple(details)
 

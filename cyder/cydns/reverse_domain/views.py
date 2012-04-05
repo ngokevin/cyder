@@ -38,8 +38,8 @@ class ReverseDomainDetailView(ReverseDomainView, DetailView):
     template_name = "reverse_domain_detail.html"
 
     def get_context_data(self, **kwargs):
-        context = super(ReverseDomainDetailView, self).
-                        get_context_data(**kwargs)
+        context = super(ReverseDomainDetailView, self).get_context_data(
+                                                                **kwargs)
 
         reverse_domain = kwargs.get('object', False)
         if not reverse_domain:

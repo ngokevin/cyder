@@ -202,12 +202,16 @@ def find_root_domain(domain_type, soa):
         >>> find_root_domain('reverse', reverse_domain.soa)
 
     """
+
     if domain_type == 'forward':
-        ret = soa.domain_set.all().order_by('name')[:1]  # LIMIT 1
+        domains = soa.domain_set.all()
     else:  # domain_type == 'reverse':
-        ret = soa.reversedomain_set.all().order_by('name')[:1]  # LIMIT 1
-    if ret:
-        return ret[0]
+        domains = soa.reversedomain_set.all()
+    if domains:
+        key = lambda domain: len(domain.name.split('.'))
+        return sorted(domains, key=key)[0]  # Sort by number of labels
+    else:
+        return None
 
 ###################################################################
 #        Functions that validate labels and names                 #
