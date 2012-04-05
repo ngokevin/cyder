@@ -4,4 +4,7 @@
     {{ common }}
 
     <a href='{{ common.get_edit_url() }}'>Edit</a>
+    {% if common.data_domain %}
+        <a href='{{ common.data_domain.get_edit_url() }}'>View Data Domain{{ common.data_domain.name }}</a>
+    {% endif %}
 {% endblock %}
