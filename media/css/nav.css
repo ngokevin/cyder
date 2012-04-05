@@ -12,14 +12,17 @@ nav i {
 
 .logo {
     background: rgb(245,245,245);
-    padding: 4em 0 2em 0;
 }
-.logo a:hover {
+.logo a {
+    padding: 4em 0 2em 0;
+    display: block;
+}
+.logo a:hover i {
     -moz-transform: translateY(8px) rotate(35deg);
     -webkit-transform: translateY(8px) rotate(35deg);
 
-    -moz-transform-origin: 100% 100%;
-    -webkit-transform-origin: 75% 75%;
+    -moz-transform-origin: right;
+    -webkit-transform-origin: right;
 
     text-decoration: none;
 }
