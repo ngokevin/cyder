@@ -4,15 +4,39 @@ from django.contrib.auth.models import User
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 
 def has_perm(self, request, obj, write=False):
+    """This function checks whether a user (``request.user``) has
+    permission to act on an object (``obj``). Permissions will depend on
+    whether the user's current container has the requested access
+    (either 'read' or 'write') to the object and what status the user
+    holds within that CTRN (admin, user, etc.). CTNR admins have read and
+    write permissions to objects in their CTNR. Non-admin users only
+    have read permissions to objects in their CTNR. Full admins have read
+    and write access on every object in every CTNR. To be full admin
+    (superuser), the user must be an admin of the 'global' CTRN
+    (``pk=1``).
+
+    :param request: A django reqeust object.
+    :type reqeust: :class:`reqeust`
+    :param obj: The object being tested for permission.
+    :type obj: :class:`object`
+    :param write: The type of permission on the object. ``True`` for
+        write, ``False`` for read.
+    :type write: Boolean
+
+    An example of checking whether a user has 'write' permission on a
+    :class:`Domain` object.
+        >>> perm = request.user.get_profile().has_perm(request, domain,
+        ... write=True)
+
     """
-    Check if user has permission to act on given object,
-    with the action noted in perm, based on the current container
-    whether the object is in that container, and whether user
-    has admin over container.
-    """
-    # super-admin
+    # full admins automatically have perms
     if request.user.is_superuser:
         return True
+    try:
+        if CtnrUser.objects.get(ctnr=1, user=request.user).is_admin:
+            return True
+    except CtnrUser.DoesNotExist:
+        pass
 
     # check if obj falls under the cntr
     ctnr = request.session['ctnr']
@@ -61,26 +85,15 @@ def has_perm(self, request, obj, write=False):
 
     # check if user has admin over ctnr
     try:
-        global_is_admin = CtnrUser.objects.get(ctnr=1, user=request.user).is_admin
+        is_admin = CtnrUser.objects.get(ctnr=ctnr, user=request.user).is_admin
     except CtnrUser.DoesNotExist:
-        global_is_admin = False
+        return False
 
-    try:
-        ctnr_is_admin = CtnrUser.objects.get(ctnr=ctnr, user=request.user).is_admin
-    except CtnrUser.DoesNotExist:
-        if not global_is_admin:
-            return False
-
-    # if admin over global ctnr, admin over all ctnr
-    is_admin = False
-    if global_is_admin or ctnr_is_admin:
-        is_admin = True
-
-    # cntr admin
+    # cntr admin (can read and write)
     if is_admin:
         return True
 
-    # user
+    # user (can only read)
     elif not is_admin and not write:
         return True
 
