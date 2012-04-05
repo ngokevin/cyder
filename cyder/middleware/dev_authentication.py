@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
-from cyder.core.ctnr.models import Ctnr
+from cyder.core.ctnr.models import Ctnr, CtnrUser
 
 class DevAuthenticationMiddleware(object):
 
@@ -18,6 +18,8 @@ class DevAuthenticationMiddleware(object):
             else:
                 request.session['ctnr'] = Ctnr.objects.get(id=default_ctnr.id)
 
-        # print request.user.get_profile().has_perm(request, 'create', domain)
+            # get all of user's ctnrs for user to switch between
+            ctnrs_user = CtnrUser.objects.filter(user=request.user)
+            request.session['ctnrs'] = [ctnr_user.ctnr.name for ctnr_user in ctnrs_user]
 
         return None
