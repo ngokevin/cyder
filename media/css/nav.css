@@ -1,7 +1,10 @@
+/* General nav bar */
 nav {
     text-align: center;
 }
-nav i {
+
+/* Logo */
+.logo * i {
     display: block;
     position: relative;
 
@@ -9,8 +12,7 @@ nav i {
 
     color: rgb(200,100,100);
 }
-
-.logo {
+div.logo {
     background: rgb(245,245,245);
 }
 .logo a {
@@ -18,16 +20,21 @@ nav i {
     display: block;
 }
 .logo a:hover i {
-    -moz-transform: translateY(8px) rotate(35deg);
-    -webkit-transform: translateY(8px) rotate(35deg);
+    -moz-transform: rotate(25deg);
+    -webkit-transform: rotate(25deg);
 
-    -moz-transform-origin: right;
-    -webkit-transform-origin: right;
 
     text-decoration: none;
 }
 
-a.nav-item {
+/* Whole block */
+.nav-item {
+    display: block;
+    position: relative;
+}
+
+/* Links */
+a.nav-link {
     display: block;
     padding: .75em 0 .75em 0;
 
@@ -38,12 +45,27 @@ a.nav-item {
     border-width: 1px;
     border-color: rgb(46,46,46);
 }
-a.nav-item:hover {
+a.nav-link:hover {
     color: rgb(220,220,220);
     background: rgb(30, 30, 30);
 
     border-style: groove none;
     border-color: rgb(10,10,10);
 
+    text-decoration: none;
+}
+
+/* Icon Links */
+.side-link {
+    top: .20em;
+    right: .20em;
+
+    position: absolute;
+}
+.side-icon {
+    color: green;
+    font-size: 1.5em;
+}
+.side-link .side-icon:hover {
     text-decoration: none;
 }
