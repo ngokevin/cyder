@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
+import cyder
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.validation import validate_domain_name, _name_type_check
 from cyder.cydns.models import ObjectUrlMixin
@@ -42,11 +43,13 @@ class Domain(models.Model, ObjectUrlMixin):
         db_table = 'domain'
 
     def delete(self, *args, **kwargs):
-        self._check_for_children()
+        self.check_for_children()
+        self.reassign_data_domains()
         super(Domain, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         self.full_clean()
+        self.look_for_data_domains()
         super(Domain, self).save(*args, **kwargs)
 
     def clean(self):
@@ -67,11 +70,52 @@ class Domain(models.Model, ObjectUrlMixin):
     def __repr__(self):
         return "<Domain '{0}'>".format(self.name)
 
-    def _check_for_children(self):
+    def check_for_children(self):
         if self.domain_set.all().exists():
             raise ValidationError("Before deleting this domain, please "
                                   "remove it's children.")
 
+    def look_for_data_domains(self):
+        """When a domain is created, look for CNAMEs and PTRs that could
+        have data domains in this domain."""
+        if self.master_domain:
+            ptrs = self.master_domain.ptr_set.all()
+            cnames = self.master_domain.data_domains.all()
+        else:
+            CNAME = cyder.cydns.cname.models.CNAME
+            PTR = cyder.cydns.ptr.models.PTR
+            cnames = CNAME.objects.filter(data_domain=None)
+            ptrs = PTR.objects.filter(data_domain=None)
+
+        for ptr in ptrs:
+            ptr.data_domain = _name_to_domain(ptr.name)
+            ptr.save()
+
+        for cname in cnames:
+            cname.data_domain = _name_to_domain(cname.data)
+            cname.save()
+
+
+
+
+    def reassign_data_domains(self):
+        """:class:`PTR`s and :class:`CNAME`s keep track of which domain
+        their data is pointing to. This function reassign's those data
+        domains to the data_domain's master domain."""
+
+        for ptr in self.ptr_set.all():
+            if ptr.data_domain.master_domain:
+                ptr.data_domain = ptr.data_domain.master_domain
+            else:
+                ptr.data_domain = None
+            ptr.save()
+
+        for cname in self.data_domains.all():
+            if cname.data_domain.master_domain:
+                cname.data_domain = cname.data_domain.master_domain
+            else:
+                cname.data_domain = None
+            cname.save()
 
 # A bunch of handy functions that would cause circular dependencies if
 # they were in another file.

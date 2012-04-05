@@ -20,6 +20,7 @@ from cyder.cydns.soa.models import SOA
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.nameserver.models import Nameserver
 from cyder.cydns.cname.models import CNAME
+from cyder.cydns.ptr.models import PTR
 
 from cyder.cydns.validation import ValidationError
 
@@ -27,6 +28,9 @@ import ipaddr
 import pdb
 
 class DomainTests(TestCase):
+
+    def setUp(self):
+        ReverseDomain.objects.get_or_create(name="128")
 
     def test_remove_domain(self):
         c = Domain( name = 'com')
@@ -202,7 +206,7 @@ class DomainTests(TestCase):
         self.assertRaises(ValidationError, ns.save)
 
         cn = CNAME(label = "999asdf", domain = dom, data = "asdf.asdf")
-        self.assertRaises(ValidationError, cn.save)
+        self.assertRaises(ValidationError, cn.full_clean)
 
         # Undelegate (unlock) the domain.
         dom.delegated = False
@@ -224,7 +228,7 @@ class DomainTests(TestCase):
         self.assertRaises(ValidationError, ns1.save)
 
         cn1 = CNAME(label = "1000asdf", domain = dom, data = "asdf.asdf")
-        self.assertRaises(ValidationError, cn1.save)
+        self.assertRaises(ValidationError, cn1.full_clean)
 
         # Editing should be allowed.
         arec = AddressRecord.objects.get(pk=arec.pk)
@@ -253,8 +257,79 @@ class DomainTests(TestCase):
         t_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
 
         cn = CNAME(domain=t_dom, label="no", data="asdf")
+        cn.full_clean()
         cn.save()
 
         name = "no.to.bo"
         n_dom = Domain( name = name, delegated=False )
         self.assertRaises(ValidationError, n_dom.save)
+
+    def test_remove_domain_with_child_objects(self):
+        """Removing a domain should remove CNAMES and PTR records that
+        have data in that domain."""
+
+        name = "sucks"
+        a_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
+        a_dom.save()
+
+        name = "teebow.sucks"
+        b_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
+        b_dom.save()
+
+        name = "adsfme"
+        c_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
+        c_dom.save()
+
+        cn, _ = CNAME.objects.get_or_create(domain=c_dom, label="nddo",
+                data="really.teebow.sucks")
+        cn.full_clean()
+        cn.save()
+
+        ptr = PTR(ip_str="128.193.2.1", name="seriously.teebow.sucks", ip_type='4')
+        ptr.full_clean()
+        ptr.save()
+
+        self.assertTrue( cn.data_domain == b_dom )
+        self.assertTrue( ptr.data_domain == b_dom )
+
+        b_dom,_ = Domain.objects.get_or_create( name = "teebow.sucks", delegated=False )
+        b_dom.delete()
+
+        try:
+            cn = CNAME.objects.get(pk=cn.pk)
+        except:
+            self.fail("CNAME was deleted.")
+        self.assertTrue(cn.data_domain == a_dom)
+
+        try:
+            ptr = PTR.objects.get(pk=ptr.pk)
+        except:
+            self.fail("PTR was deleted")
+        self.assertTrue(ptr.data_domain == a_dom)
+
+    def test_look_for_cnames_ptrs(self):
+        name = "sucks1"
+        a_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
+        a_dom.save()
+
+        name = "adsfme1"
+        c_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
+        c_dom.save()
+
+        cn, _ = CNAME.objects.get_or_create(domain=c_dom, label="nddo",
+                data="really.teebow.sucks1")
+        cn.full_clean()
+        cn.save()
+
+        ptr = PTR(ip_str="128.193.2.1", name="seriously.teebow.sucks1", ip_type='4')
+        ptr.full_clean()
+        ptr.save()
+
+        name = "teebow.sucks1"
+        b_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
+        b_dom.save()
+
+        cn = CNAME.objects.get(pk=cn.pk)
+        ptr = PTR.objects.get(pk=ptr.pk)
+        self.assertTrue( cn.data_domain == b_dom )
+        self.assertTrue( ptr.data_domain == b_dom )

@@ -101,7 +101,7 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
         ptrs = self.ptr_set.iterator()
         for ptr in ptrs:
             ptr.reverse_domain = self.master_reverse_domain
-            ptr.save(**{'update_reverse_domain': False})
+            ptr.save()
 
     def _check_for_children(self):
         # TODO, merge forward and reverse "_check_for_children"
