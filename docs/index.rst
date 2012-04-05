@@ -59,6 +59,7 @@ Core
 
    coding_standard
    registration
+   backends
 
 DNS
 ---

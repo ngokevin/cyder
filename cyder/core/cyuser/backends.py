@@ -4,17 +4,30 @@ from django.contrib.auth.models import User
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 
 def has_perm(self, request, obj, write=False):
-    """
-    Check if user (in request obj) has permission to act on given obj by
-    first checking if obj is within current ctnr. If obj in ctnr, permissions
-    will then depend on whether the action is read or write and whether user
-    has admin over ctnr. Only ctnr admins can do write-related actions.
-    Non-admins that are users of a ctnr can only do read-related actions. To be
-    full admin (superuser), the user must be admin of the 'global' ctnr (pk=1).
-    Full admins have read and write to every obj.
+    """This function checks whether a user (``request.user``) has
+    permission to act on an object (``obj``). Permissions will depend on
+    whether the user's current container has the requested access
+    (either 'read' or 'write') to the object and what status the user
+    holds within that CTRN (admin, user, etc.). CTNR admins have read and
+    write permissions to objects in their CTNR. Non-admin users only
+    have read permissions to objects in their CTNR. Full admins have read
+    and write access on every object in every CTNR. To be full admin
+    (superuser), the user must be an admin of the 'global' CTRN
+    (``pk=1``).
 
-    # ask for write (create, update, delete) permissions to a domain object
-    perm = request.user.get_profile().has_perm(request, aDomainObj, write=True)
+    :param request: A django reqeust object.
+    :type reqeust: :class:`reqeust`
+    :param obj: The object being tested for permission.
+    :type obj: :class:`object`
+    :param write: The type of permission on the object. ``True`` for
+        write, ``False`` for read.
+    :type write: Boolean
+
+    An example of checking whether a user has 'write' permission on a
+    :class:`Domain` object.
+        >>> perm = request.user.get_profile().has_perm(request, domain,
+        ... write=True)
+
     """
     # full admins automatically have perms
     if request.user.is_superuser:
