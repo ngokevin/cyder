@@ -47,7 +47,7 @@ from cyder.cybind.generators.bind_reverse_domain_generator import render_reverse
 
 import pdb
 
-BUILD_PATH = "/home/uberj/cyder/cyder/cybind/build"
+BUILD_PATH = "/nfs/milo/u1/uberj/cyder_env/cyder/cyder/cybind/build"
 DEFAULT_TTL = 999
 
 # DEBUG OPTIONS

@@ -1,3 +1,11 @@
+from django.core.exceptions import ValidationError
+
+from cyder.cydns.reverse_domain.models import ReverseDomain
+from cyder.cydns.soa.models import SOA
+from cyder.cydns.ptr.models import PTR
+from cyder.cydns.ip.models import Ip
+from cyder.cydns.nameserver.models import ReverseNameserver
+
 import database
 from utilities import ip2long, long2ip
 import pdb
@@ -5,14 +13,6 @@ import pprint
 import printer
 import re
 import pdb
-
-from cyder.cydns.reverse_domain.models import ReverseDomain
-from cyder.cydns.soa.models import SOA
-from cyder.cydns.ptr.models import PTR
-from cyder.cydns.ip.models import Ip
-from cyder.cydns.nameserver.models import ReverseNameserver
-from cyder.cydns.cydns import InvalidRecordNameError, RecordExistsError
-
 
 class Reverse_Zone(object):
     BUILD_DIR="./build"
@@ -111,19 +111,8 @@ class Reverse_Zone(object):
             # TODO compile this
             if re.search( search_string, ip ):
                 #self.printer.print_PTR( ip, name )
-                cip  = Ip( ip_str = ip, ip_type='4' )
-                possible = PTR.objects.filter( name=name, ip__ip_upper=cip.ip_upper,\
-                                            ip__ip_lower=cip.ip_lower )
-                if possible:
-                    print "SKIPPING: PTR %s %s already created." % (ip, name)
-                else:
-                    cip.save()
-                    try:
-                        ptr = PTR( ip = cip, name = name )
-                        ptr.save()
-                    except RecordExistsError, e:
-                        cip.delete()
-                        print "SKIPPING: PTR %s %s already created." % (ip, name)
+                ptr,c = PTR.objects.get_or_create( ip_str = ip, name=name,
+                            ip_type='4' )
 
                 records_to_remove.append( record )
 
@@ -144,7 +133,7 @@ class Reverse_Zone(object):
             ns_name = record[1]
             try:
                 ns, created = ReverseNameserver.objects.get_or_create( server = ns_name, reverse_domain = rdomain )
-            except InvalidRecordNameError, e:
+            except ValidationError, e:
                 print "ERROR: NS NAME: %s error: %s" % (ns_name, str(e))
                 continue
             if created:
@@ -185,7 +174,9 @@ class Reverse_Zone(object):
         EXPIRE = record[6]
         MINIMUM = record[7] #TODO What is minimum, using TTL
         #self.printer.print_SOA( record[7], dname, primary_master, contact, Reverse_Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
-        soa, created = SOA.objects.get_or_create(  primary = primary_master, contact = contact )
+        soa, created = SOA.objects.get_or_create(  primary=primary_master,
+                        contact = contact, comment = "SOA for {0} "
+                        "zone".format(dname))
         if created:
             print "Created soa"
         else:

@@ -63,6 +63,7 @@ class SRV(models.Model, ObjectUrlMixin):
         super(SRV, self).save(*args, **kwargs)
 
     def clean(self):
+        self.set_fqdn()
         self.check_for_cname()
         self.check_for_delegation()
 
@@ -76,10 +77,7 @@ class SRV(models.Model, ObjectUrlMixin):
 
     def set_fqdn(self):
         try:
-            if self.label == '':
-                self.fqdn = self.domain.name
-            else:
-                self.fqdn = "{0}.{1}".format(self.label, self.domain.name)
+            self.fqdn = "{0}.{1}".format(self.label, self.domain.name)
         except ObjectDoesNotExist:
             return
 
