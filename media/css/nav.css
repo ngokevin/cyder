@@ -10,7 +10,7 @@ nav {
 
     font-size: 5em;
 
-    color: rgb(200,100,100);
+    color: rgb(160,0,0);
 }
 div.logo {
     background: rgb(245,245,245);
@@ -22,7 +22,7 @@ div.logo {
 .logo a:hover i {
     -moz-transform: rotate(25deg);
     -webkit-transform: rotate(25deg);
-
+    transform: rotate(25deg);
 
     text-decoration: none;
 }
@@ -63,9 +63,14 @@ a.nav-link:hover {
     position: absolute;
 }
 .side-icon {
-    color: green;
+    color: rgb(0,176,0);
     font-size: 1.25em;
+
+    padding-bottom: -5px;
+    border-radius: 10px;
 }
 .side-link .side-icon:hover {
+    color: rgb(0,234,0);
+
     text-decoration: none;
 }
