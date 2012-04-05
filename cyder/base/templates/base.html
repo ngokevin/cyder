@@ -16,7 +16,27 @@
     <div class="wrap main container-fluid">
 
         <header>
-            Logged in as: {{ request.user }}
+            <div class="navbar navbar-fixed-top">
+                <div class="navbar-inner">
+                    <div class="container-fluid">
+                        <ul class="nav pull-left">
+                            <input type="text" class="search-query" placeholder="Change container...">
+
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="#"><b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">Example Container</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <ul class="nav pull-right">
+                            <li><a href="#">{{ request.user }}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
             {% if messages %}
                 <ul class="messages">
                     {% for message in messages %}
@@ -24,6 +44,7 @@
                     {% endfor %}
                 </ul>
             {% endif %}
+
         </header>
 
         <div class="row-fluid">
@@ -47,6 +68,8 @@
     </div>
 
     {% block site_js %}
+        <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="/media/js/bootstrap.min.js"></script>
     {% endblock %}
 
 </body>
