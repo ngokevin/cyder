@@ -12,7 +12,7 @@ nav i {
 
 .logo {
     background: rgb(245,245,245);
-    padding: 4em 0 4em 0;
+    padding: 4em 0 2em 0;
 }
 .logo a:hover {
     -moz-transform: translateY(8px) rotate(35deg);
