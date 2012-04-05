@@ -134,8 +134,8 @@ class DomainCreateView(DomainView, CreateView):
         except ValidationError, e:
             return render(request, "domain_form.html", {'form': domain_form})
         # Success. Redirect.
-        messages.success(request, '{0} was successfully created.'
-                                    .format(domain.name))
+        messages.success(request, "{0} was successfully created.".
+                         format(domain.name))
         return redirect(domain)
 
     def get(self, request, *args, **kwargs):
@@ -180,7 +180,7 @@ class DomainUpdateView(DomainView, UpdateView):
             messages.error(request, str(e))
             return render(request, "domain_update.html", {"form": domain_form})
 
-        messages.success(request, '{0} was successfully updated.'\
-                            .format(domain.name))
+        messages.success(request, '{0} was successfully updated.'.
+                         format(domain.name))
 
         return redirect(domain)

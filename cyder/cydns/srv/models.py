@@ -21,7 +21,7 @@ class SRV(models.Model, ObjectUrlMixin):
     """
     id = models.AutoField(primary_key=True)
     label = models.CharField(max_length=100, blank=True, null=True,
-                                validators=[validate_srv_label])
+                             validators=[validate_srv_label])
 
     domain = models.ForeignKey(Domain, null=False)
     fqdn = models.CharField(max_length=255, blank=True, null=True,
@@ -29,16 +29,16 @@ class SRV(models.Model, ObjectUrlMixin):
     # fqdn = label + domain.name <--- see set_fqdn
 
     target = models.CharField(max_length=100,
-                                validators=[validate_name])
+                              validators=[validate_name])
 
     port = models.PositiveIntegerField(null=False,
-                                        validators=[validate_srv_port])
+                                       validators=[validate_srv_port])
 
     priority = models.PositiveIntegerField(null=False,
-                                            validators=[validate_srv_priority])
+                                           validators=[validate_srv_priority])
 
     weight = models.PositiveIntegerField(null=False,
-                                            validators=[validate_srv_weight])
+                                         validators=[validate_srv_weight])
 
     def details(self):
         return  (
@@ -53,7 +53,7 @@ class SRV(models.Model, ObjectUrlMixin):
     class Meta:
         db_table = 'srv'
         unique_together = ('label', 'domain', 'target', 'port',
-                            'priority', 'weight')
+                           'priority', 'weight')
 
     def delete(self, *args, **kwargs):
         super(SRV, self).delete(*args, **kwargs)
@@ -91,9 +91,9 @@ class SRV(models.Model, ObjectUrlMixin):
         if not self.domain.delegated:
             return
         if not self.pk:  # We don't exist yet.
-            raise ValidationError("No objects can be created in the {0}\
-                                    domain. It is delegated."\
-                                    .format(self.domain.name))
+            raise ValidationError("No objects can be created in the {0}"
+                                   "domain. It is delegated.".
+                                   format(self.domain.name))
 
     def check_for_cname(self):
         """"If a CNAME RR is preent at a node, no other data should be

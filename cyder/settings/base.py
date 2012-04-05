@@ -120,10 +120,10 @@ DATABASES = {
 }
 
 MIDDLEWARE_CLASSES = (
-    'cyder.middleware.authentication.AuthenticationMiddleware',
+    #'cyder.middleware.authentication.AuthenticationMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    #'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.common.CommonMiddleware',
     #'django_cas.middleware.CASMiddleware',
 

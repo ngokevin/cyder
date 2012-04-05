@@ -32,9 +32,9 @@ class Domain(models.Model, ObjectUrlMixin):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True,
-                        validators=[validate_domain_name])
+                            validators=[validate_domain_name])
     master_domain = models.ForeignKey("self", null=True,
-                        default=None, blank=True)
+                                      default=None, blank=True)
     soa = models.ForeignKey(SOA, null=True, default=None, blank=True)
     delegated = models.BooleanField(default=False, null=False, blank=True)
 
@@ -58,8 +58,8 @@ class Domain(models.Model, ObjectUrlMixin):
             qset = fqdn_exists(self.name)
             if qset:
                 objects = qset.all()
-                raise ValidationError("Objects with this name already\
-                        exist {0}".format(objects))
+                raise ValidationError("Objects with this name already "
+                                      "exist {0}".format(objects))
 
     def __str__(self):
         return "{0}".format(self.name)
@@ -69,8 +69,8 @@ class Domain(models.Model, ObjectUrlMixin):
 
     def _check_for_children(self):
         if self.domain_set.all().exists():
-            raise ValidationError("Before deleting this domain, please\
-                                    remove it's children.")
+            raise ValidationError("Before deleting this domain, please "
+                                  "remove it's children.")
 
 
 # A bunch of handy functions that would cause circular dependencies if
@@ -91,8 +91,8 @@ def _name_to_master_domain(name):
         parent_name = '.'.join(tokens[i + 1:])
         possible_master_domain = Domain.objects.filter(name=parent_name)
         if not possible_master_domain:
-            raise ValidationError("Master Domain for domain {0}, not\
-                                    found.".format(name))
+            raise ValidationError("Master Domain for domain {0}, not "
+                                  "found.".format(name))
         else:
             master_domain = possible_master_domain[0]
     return master_domain
@@ -116,5 +116,5 @@ def _check_TLD_condition(record):
     if record.label == '' and domain[0] == record.domain:
         return  # This is allowed
     else:
-        raise ValidationError("You cannot create an record that points\
-                                to the top level of another domain.")
+        raise ValidationError("You cannot create an record that points "
+                              "to the top level of another domain.")

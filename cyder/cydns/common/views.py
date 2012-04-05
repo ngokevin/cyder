@@ -42,7 +42,7 @@ class CommonDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
         context['form_title'] = "{0} Details".format(self.form_class.Meta.
-                                                        model.__name__)
+                                                     model.__name__)
         if self.extra_context:
             # extra_context takes precidence over original values in context
             context = dict(context.items() + self.extra_context.items())

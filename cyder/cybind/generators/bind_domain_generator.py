@@ -24,7 +24,7 @@ def render_mx(mx_set):
 
 def render_ns(nameserver_set):
     BUILD_STR = ''
-    template = Template("{label:$label_just}  {rclass:$class_just} {rtype:$type_just} {server:$data_just}.\n")
+    template = Template("{label:$label_just} {rclass:$class_just} {rtype:$type_just} {server:$data_just}.\n")
     template = template.substitute(label_just=label_just, class_just=class_just,\
                         type_just=type_just, data_just=data_just)
     for ns in nameserver_set:
