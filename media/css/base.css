@@ -1,0 +1,36 @@
+* {
+    /* Browser Reset */
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+header {
+    background: rgb(190,190,200);
+}
+
+nav {
+    text-align: center;
+    background: rgb(245,245,245);
+}
+nav .icon {
+    padding: 3em 0 3em 0;
+
+    -moz-transform: translateY(8px) rotate(35deg);
+    -webkit-transform: translateY(8px) rotate(35deg);
+}
+nav i {
+    color: rgb(190,190,200);
+    font-size: 6em;
+    display: block;
+    position: relative;
+
+}
+
+.content {
+    background: rgb(250,250,250);
+}
+
+#footer {
+    background: rgb(190,190,200);
+}

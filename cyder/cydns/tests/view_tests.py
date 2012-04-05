@@ -60,47 +60,47 @@ class GenericViewTests(object):
     # url(r'^cyder/cydns/nameserver$', NSListView.as_view() ),
     def build_base_app(self):
         def test_base_app(self):
-            resp = self.client.get(CYDNS_BASE_URL+"/%s" % (self.url_slug))
+            resp = self.client.get(CYDNS_BASE_URL+"/%s/" % (self.url_slug))
             self.assertEqual(resp.status_code, 200)
         return test_base_app
 
     # url(r'^cyder/cydns/nameserver/create$', NSCreateView.as_view()),
     def build_get_create(self):
         def test_get_create(self):
-            resp = self.client.get(CYDNS_BASE_URL+"/%s/create" % (self.url_slug))
+            resp = self.client.get(CYDNS_BASE_URL+"/%s/create/" % (self.url_slug))
             self.assertEqual(resp.status_code, 200)
         return test_get_create
 
     def build_post_create(self):
         def test_post_create(self):
-            resp = self.client.post(CYDNS_BASE_URL+"/%s/create" % (self.url_slug), self.post_data())
+            resp = self.client.post(CYDNS_BASE_URL+"/%s/create/" % (self.url_slug), self.post_data())
             self.assertTrue(resp.status_code in (302, 200))
         return test_post_create
 
     def build_get_create_in_domain(self):
         # url(r'^cyder/cydns/nameserver/(?P<domain>[\w-]+)/create$', NSCreateView.as_view()),
         def test_get_create_in_domain(self):
-            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/create" % (self.url_slug, self.domain.pk))
+            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/create/" % (self.url_slug, self.domain.pk))
             self.assertEqual(resp.status_code, 200)
         return test_get_create_in_domain
 
     def build_post_create_in_domain(self):
         def test_post_create_in_domain(self):
-            resp = self.client.post(CYDNS_BASE_URL+"/%s/%s/create" % (self.url_slug, self.domain.pk), self.post_data())
+            resp = self.client.post(CYDNS_BASE_URL+"/%s/%s/create/" % (self.url_slug, self.domain.pk), self.post_data())
             self.assertTrue(resp.status_code in (302, 200))
         return test_post_create_in_domain
 
     def build_get_object_update(self):
         # url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/update$', NSUpdateView.as_view() ),
         def test_get_object_update(self):
-            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/update" % (self.url_slug, self.test_obj.pk))
+            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/update/" % (self.url_slug, self.test_obj.pk))
             self.assertEqual(resp.status_code, 200)
         return test_get_object_update
 
 
     def build_post_object_update(self):
         def test_post_object_update(self):
-            resp = self.client.post(CYDNS_BASE_URL+"/%s/%s/update" % (self.url_slug,self.test_obj.pk), self.post_data())
+            resp = self.client.post(CYDNS_BASE_URL+"/%s/%s/update/" % (self.url_slug,self.test_obj.pk), self.post_data())
             self.assertTrue(resp.status_code in (302, 200))
             pass
         return test_post_object_update
@@ -108,14 +108,14 @@ class GenericViewTests(object):
     def build_get_object_details(self):
         # url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/detail$', NSDetailView.as_view() ),
         def test_get_object_details(self):
-            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/detail" % (self.url_slug, self.test_obj.pk))
+            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/detail/" % (self.url_slug, self.test_obj.pk))
             self.assertEqual(resp.status_code, 200)
         return test_get_object_details
 
     def build_get_object_delete(self):
         # url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/delete$', NSDeleteView.as_view() )
         def test_get_object_delete(self):
-            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/delete" % (self.url_slug, self.test_obj.pk))
+            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/delete/" % (self.url_slug, self.test_obj.pk))
             self.assertEqual(resp.status_code, 200)
             pass
         return test_get_object_delete

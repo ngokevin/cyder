@@ -1,64 +1,88 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html LANG="{{ LANG }}" dir="{{ DIR }}">
-    <head>
-        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-        <a href="/cyder/cydns/domain">Domains</a>
-        <a href="/cyder/cydns/domain/create">Create New Domain</a>
 
-        <a href="/cyder/cydns/reverse_domain">Reverse Domains</a>
-        <a href="/cyder/cydns/reverse_domain/create">Create New Reverse Domain</a>
-        <a href="/cyder/cydns/reverse_domain/bootstrap6">Bootstrap v6</a>
+<head>
+    <title>Cyder | {% block title %}Home{% endblock %}</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <link rel="stylesheet" type="text/css" href="/media/css/sticky_footer.css"/>
+    <link rel="stylesheet" type="text/css" href="/media/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/media/css/font-awesome.css"/>
+    <link rel="stylesheet" type="text/css" href="/media/css/base.css"/>
+</head>
 
-        <a href="/cyder/cydns/address_record/create">Create Address Record</a>
+<body>
+    <div class="wrap main container-fluid">
+
+        <header>
+            Logged in as: {{ request.user }}
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </header>
+
+        <div class="row-fluid">
+            <nav class="span2">
+                <div class="icon"><i class="icon-glass"></i></div><hr/>
+
+                <a href="/cydns/domain/">Domains</a><hr/>
+                <a href="/cydns/domain/create/">Create New Domain</a><hr/>
+
+                <a href="/cydns/reverse_domain/">Reverse Domains</a><hr/>
+                <a href="/cydns/reverse_domain/create/">Create New Reverse Domain</a><hr/>
+                <a href="/cydns/reverse_domain/bootstrap6/">Bootstrap v6</a><hr/>
+
+                <a href="/cydns/address_record/create/">Create Address Record</a><hr/>
 
 
-        <a href="/cyder/cydns/mx">MX</a>
-        <a href="/cyder/cydns/mx/create">Create New MX</a>
+                <a href="/cydns/mx/">MX</a><hr/>
+                <a href="/cydns/mx/create/">Create New MX</a><hr/>
 
-        <a href="/cyder/cydns/soa">SOA</a>
-        <a href="/cyder/cydns/soa/create">Create New SOA</a>
+                <a href="/cydns/soa/">SOA</a><hr/>
+                <a href="/cydns/soa/create/">Create New SOA</a><hr/>
 
-        <a href="/cyder/cydns/nameserver">NS</a>
-        <a href="/cyder/cydns/nameserver/create">Create New NS</a>
+                <a href="/cydns/nameserver/">NS</a><hr/>
+                <a href="/cydns/nameserver/create/">Create New NS</a><hr/>
 
-        <a href="/cyder/cydns/reverse_nameserver">Reverse NS</a>
-        <a href="/cyder/cydns/reverse_nameserver/create">Create New Reverse NS</a>
+                <a href="/cydns/reverse_nameserver/">Reverse NS</a><hr/>
+                <a href="/cydns/reverse_nameserver/create/">Create New Reverse NS</a><hr/>
 
-        <a href="/cyder/cydns/srv">SRV</a>
-        <a href="/cyder/cydns/srv/create">Create New SRV</a>
+                <a href="/cydns/srv/">SRV</a><hr/>
+                <a href="/cydns/srv/create/">Create New SRV</a><hr/>
 
-        <a href="/cyder/cydns/txt">TXT</a>
-        <a href="/cyder/cydns/txt/create">Create New TXT</a>
+                <a href="/cydns/txt/">TXT</a><hr/>
+                <a href="/cydns/txt/create/">Create New TXT</a><hr/>
 
-        <a href="/cyder/cydns/cname">CNAME</a>
-        <a href="/cyder/cydns/cname/create">Create New CNAME</a>
+                <a href="/cydns/cname/">CNAME</a><hr/>
+                <a href="/cydns/cname/create/">Create New CNAME</a><hr/>
 
-        <a href="/cyder/cydns/ptr">PTR</a>
-        <a href="/cyder/cydns/ptr/create">Create New PTR</a>
+                <a href="/cydns/ptr/">PTR</a><hr/>
+                <a href="/cydns/ptr/create/">Create New PTR</a><hr/>
 
-        <a href="/logout">Logout</a>
+                <a href="/logout/">Logout</a><hr/>
+            </nav>
 
-        <br />
-        <br />
-    </head>
-    Logged in as: {{ request.user }}
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
+            <div class="span10">
+                <div class="content fluid-container">
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
 
-    <div id="content">
-    {% block content %}
-    {% endblock %}
+        </div>
+
     </div>
 
-    <div id="footer">
+    <div id="footer" style="text-align:center;">
+        Cyder Footer
     </div>
+
     {% block site_js %}
     {% endblock %}
+
 </body>
 </html>
-

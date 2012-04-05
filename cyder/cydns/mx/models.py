@@ -17,7 +17,7 @@ class MX(CommonRecord):
     # The mail server this record should point to.
     server = models.CharField(max_length=100, validators=[validate_name])
     priority = models.PositiveIntegerField(null=False,
-                                            validators=[validate_mx_priority])
+                                           validators=[validate_mx_priority])
     ttl = models.PositiveIntegerField(null=False, validators=[validate_ttl])
 
     def details(self):
@@ -45,10 +45,8 @@ class MX(CommonRecord):
         self.no_point_to_cname()
 
     def __str__(self):
-        return "{0} {1} {3} {4} {5}".format(self.fqdn, self.ttl,
-                                            'IN', 'MX',
-                                            self.priority,
-                                            self.server)
+        return "{0} {1} {3} {4} {5}".format(self.fqdn, self.ttl, 'IN','MX',
+                                            self.priority, self.server)
 
     def __repr__(self):
         return "<MX '{0}'>".format(str(self))

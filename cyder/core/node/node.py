@@ -1,7 +1,7 @@
 from django.db import models
-from cyder.core.container import CTNR
+from cyder.core.ctnr import Ctnr
 
 class Node( models.Model ):
     id              = models.AutoField(primary_key=True)
-    ctnr           = models.ForeignKey(CTNR, null=False)
+    ctnr           = models.ForeignKey(Ctnr, null=False)
 

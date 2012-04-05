@@ -75,7 +75,7 @@ ns, _ = Nameserver.objects.get_or_create( domain= d, server = random_label()+"."
 
 d, _=Domain.objects.get_or_create(name=domains[1]) # bar.foo
 # CNAME
-label = "derp"
+label = "derpyyyy"
 domain = d
 data = "foo.com"
 cn, _ = CNAME.objects.get_or_create(label = label, domain = domain, data = data)

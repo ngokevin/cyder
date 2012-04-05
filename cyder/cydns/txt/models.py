@@ -13,9 +13,9 @@ class TXT(CommonRecord):
 
     def details(self):
         return (
-                    ('FQDN', self.fqdn),
-                    ('Record Type', 'TXT'),
-                    ('Text', self.txt_data)
+                ('FQDN', self.fqdn),
+                ('Record Type', 'TXT'),
+                ('Text', self.txt_data)
                )
 
     def save(self, *args, **kwargs):

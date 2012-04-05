@@ -51,7 +51,6 @@ class Ip(models.Model):
     """
     IP_TYPE_CHOICES = (('4', 'ipv4'), ('6', 'ipv6'))
     ip_str = models.CharField(max_length=39, editable=True)
-
     # ip_upper/lower are calculated from ip_str on ip_clean.
     ip_upper = models.BigIntegerField(null=False, blank=True)
     ip_lower = models.BigIntegerField(null=False, blank=True)
@@ -64,7 +63,7 @@ class Ip(models.Model):
     # reactor.addCallback(think_about_it)
     reverse_domain = models.ForeignKey(ReverseDomain, null=True, blank=True)
     ip_type = models.CharField(max_length=1, choices=IP_TYPE_CHOICES,
-                                editable=True)
+                               editable=True)
 
     class Meta:
         abstract = True
@@ -84,10 +83,10 @@ class Ip(models.Model):
                 self.ip_str = str(ip)
             except ipaddr.AddressValueError, e:
                 raise ValidationError("Invalid Ip address {0}".
-                                        format(self.ip_str))
+                                      format(self.ip_str))
             if update_reverse_domain:
                 self.reverse_domain = ip_to_reverse_domain(self.ip_str,
-                                                            ip_type='4')
+                                                           ip_type='4')
             self.ip_upper = 0
             self.ip_lower = int(ip)
         else:
@@ -95,12 +94,12 @@ class Ip(models.Model):
                 ip = ipaddr.IPv6Address(self.ip_str)
                 self.ip_str = str(ip)
             except ipaddr.AddressValueError, e:
-                raise ValidationError("Invalid ip {0} for IPv6s."
-                                        .format(self.ip_str))
+                raise ValidationError("Invalid ip {0} for IPv6s.".
+                                      format(self.ip_str))
 
             if update_reverse_domain:
                 self.reverse_domain = ip_to_reverse_domain(self.ip_str,
-                                                            ip_type='6')
+                                                           ip_type='6')
             self.ip_upper, self.ip_lower = ipv6_to_longs(int(ip))
 
     def __int__(self):
@@ -113,8 +112,8 @@ class Ip(models.Model):
         if isinstance(self.ip_str, str) or isinstance(self.ip_str, unicode):
             return
         else:
-            raise ValidationError("Plase provide the string representation\
-                                    of the IP")
+            raise ValidationError("Plase provide the string representation"
+                                  "of the IP")
 
 
 def ipv6_to_longs(addr):
@@ -130,8 +129,8 @@ def ipv6_to_longs(addr):
     try:
         ip = ipaddr.IPv6Address(addr)
     except ipaddr.AddressValueError, e:
-        raise ValidationError("AddressValueError: Invalid Ip address {0}"
-                                .format(addr))
+        raise ValidationError("AddressValueError: Invalid Ip address {0}".
+                              format(addr))
     ip_upper = ip._ip >> 64  # Put the last 64 bits in the first 64
     ip_lower = ip._ip & (1 << 64) - 1  # Mask off the last sixty four bits
     return (ip_upper, ip_lower)

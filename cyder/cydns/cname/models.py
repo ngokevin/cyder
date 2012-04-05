@@ -69,8 +69,8 @@ class CNAME(CommonRecord):
             return
 
         if domain[0].soa and domain[0].soa != domain[0].master_domain.soa:
-            raise ValidationError("You cannot create a CNAME that points to a\
-                                    domain at the root of a zone.")
+            raise ValidationError("You cannot create a CNAME that points to a"
+                                  "domain at the root of a zone.")
         return
 
     def existing_node_check(self):
@@ -105,5 +105,5 @@ class CNAME(CommonRecord):
         qset = fqdn_exists(self.fqdn, cn=False, dn=False)
         if qset:
             objects = qset.all()
-            raise ValidationError("Objects with this name already exist: {0}"\
-                                    .format(objects))
+            raise ValidationError("Objects with this name already exist: {0}".
+                                  format(objects))
