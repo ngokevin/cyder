@@ -14,9 +14,9 @@ urlpatterns = patterns('',
     # TODO: separate reverse_ns and ns into separate apps
     url(r'reverse_nameserver/$', RevNSListView.as_view()),
     url(r'reverse_nameserver/create/$', RevNSCreateView.as_view()),
+    url(r'reverse_nameserver/(?P<pk>[\w-]+)/$', RevNSDetailView.as_view()),
     url(r'reverse_nameserver/(?P<reverse_domain_pk>[\w-]+)/create/$', RevNSCreateView.as_view()),
     url(r'reverse_nameserver/(?P<pk>[\w-]+)/update/$', RevNSUpdateView.as_view()),
-    url(r'reverse_nameserver/(?P<pk>[\w-]+)/detail/$', RevNSDetailView.as_view()),
     url(r'reverse_nameserver/(?P<pk>[\w-]+)/delete/$', RevNSDeleteView.as_view()),
 
     url(r'address_record/', include('cyder.cydns.address_record.urls')),
