@@ -4,7 +4,7 @@ from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.mx.models import MX
-from cyder.cydns.nameserver.nameserver.models. import Nameserver
+from cyder.cydns.nameserver.nameserver.models import Nameserver
 from cyder.cydns.nameserver.reverse_nameserver.models import ReverseNameserver
 from cyder.cydns.ptr.models import PTR
 from cyder.cydns.reverse_domain.models import ReverseDomain
