@@ -37,3 +37,4 @@ class PTRUpdateView(PTRView, CommonUpdateView):
 
 class PTRListView(PTRView, CommonListView):
     """ """
+    template_name = "ptr/list.html"

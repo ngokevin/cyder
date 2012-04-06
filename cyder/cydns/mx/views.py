@@ -32,3 +32,4 @@ class MXUpdateView(MXView, CommonUpdateView):
 
 class MXListView(MXView, CommonListView):
     """List View"""
+    template_name = 'mx/list.html'
