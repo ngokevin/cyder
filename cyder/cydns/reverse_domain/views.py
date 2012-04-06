@@ -7,12 +7,12 @@ from django.views.generic import DetailView, ListView, CreateView, UpdateView
 
 from cyder.cydns.common.utils import tablefy
 from cyder.cydns.common.views import CommonDeleteView
+from cyder.cydns.nameserver.reverse_nameserver.models import ReverseNameserver
 from cyder.cydns.reverse_domain.models import boot_strap_ipv6_reverse_domain
 from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.reverse_domain.forms import BootStrapForm
 from cyder.cydns.reverse_domain.forms import ReverseDomainForm
 from cyder.cydns.reverse_domain.forms import ReverseDomainUpdateForm
-from cyder.cydns.nameserver.reverse_nameserver.models import ReverseNameserver
 from cyder.cydns.soa.models import SOA
 
 
@@ -26,13 +26,13 @@ class ReverseDomainDeleteView(ReverseDomainView, CommonDeleteView):
 
 
 class ReverseDomainListView(ReverseDomainView, ListView):
-    template_name = "reverse_domain_list.html"
+    template_name = "reverse_domain/list.html"
     context_object_name = "reverse_domains"
 
 
 class ReverseDomainDetailView(ReverseDomainView, DetailView):
     context_object_name = "reverse_domain"
-    template_name = "reverse_domain_detail.html"
+    template_name = "reverse_domain/detail.html"
 
     def get_context_data(self, **kwargs):
         context = super(ReverseDomainDetailView, self).get_context_data(
@@ -65,7 +65,7 @@ class ReverseDomainView(object):
 
 class ReverseDomainCreateView(ReverseDomainView, CreateView):
     form_class = ReverseDomainForm
-    template_name = "reverse_domain_form.html"
+    template_name = "reverse_domain/form.html"
     context_object_name = "reverse_domain_form"
 
     def post(self, request, *args, **kwargs):
@@ -79,7 +79,7 @@ class ReverseDomainCreateView(ReverseDomainView, CreateView):
 
             reverse_domain.save()
         except ValidationError, e:
-            return render(request, "reverse_domain_form.html",
+            return render(request, "reverse_domain/form.html",
                           {"reverse_domain_form": reverse_domain_form})
 
         # Success. Redirect.
@@ -91,7 +91,7 @@ class ReverseDomainCreateView(ReverseDomainView, CreateView):
 
 class ReverseDomainUpdateView(ReverseDomainView, UpdateView):
     form_class = ReverseDomainUpdateForm
-    template_name = "reverse_domain_update.html"
+    template_name = "reverse_domain/update.html"
     context_object_name = "reverse_domain"
 
     def post(self, request, *args, **kwargs):
@@ -115,7 +115,7 @@ class ReverseDomainUpdateView(ReverseDomainView, UpdateView):
         except ValueError, e:
             rev_domain_form = ReverseDomainUpdateForm(instance=reverse_domain)
             messages.error(request, str(e))
-            return render(request, "reverse_domain_update.html",
+            return render(request, "reverse_domain/update.html",
                           {"reverse_domain_form": rev_domain_form})
 
         messages.success(request, '{0} was successfully updated.'.
@@ -142,10 +142,10 @@ def bootstrap_ipv6(request):
                                     soa=soa)
             except ValidationError, e:
                 messages.error(request, str(e))
-                return render(request, 'bootstrap_ipv6.html',
+                return render(request, 'reverse_domain/bootstrap_ipv6.html',
                               {'bootstrap_form': bootstrap_form})
         else:
-            return render(request, 'bootstrap_ipv6.html',
+            return render(request, 'reverse_domain/bootstrap_ipv6.html',
                           {'bootstrap_form': bootstrap_form})
 
         # Success redirect to the last domain created.
@@ -155,7 +155,7 @@ def bootstrap_ipv6(request):
 
     else:
         bootstrap_form = BootStrapForm()
-        return render(request, 'bootstrap_ipv6.html',
+        return render(request, 'reverse_domain/bootstrap_ipv6.html',
                       {'bootstrap_form': bootstrap_form})
 
 

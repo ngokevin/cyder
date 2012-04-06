@@ -14,7 +14,7 @@ class NSDeleteView(NSView, CommonDeleteView):
 
 
 class NSDetailView(NSView, CommonDetailView):
-    template_name = "ns_detail.html"
+    template_name = "ns/detail.html"
 
 
 class NSListView(NSView, CommonListView):
