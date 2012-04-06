@@ -1,33 +1,28 @@
-# Create your views here.
+from operator import itemgetter
 
+from django.contrib import messages
+from django.forms import ValidationError
 from django.shortcuts import render
 from django.shortcuts import render_to_response
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
-from django.contrib import messages
 from django.views.generic import UpdateView
 from django.views.generic import DetailView
 from django.views.generic import ListView
 from django.views.generic import CreateView
-from django.forms import ValidationError
 
-
-from cyder.cydns.domain.models import Domain
-from cyder.cydns.domain.forms import DomainForm, DomainUpdateForm
 from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.cname.models import CNAME
 from cyder.cydns.common.utils import tablefy
 from cyder.cydns.common.views import CommonDeleteView, CommonListView
-
-from cyder.cydns.soa.models import SOA
-from cyder.cydns.nameserver.models import Nameserver
+from cyder.cydns.domain.models import Domain
+from cyder.cydns.domain.forms import DomainForm, DomainUpdateForm
 from cyder.cydns.mx.models import MX
+from cyder.cydns.nameserver.nameserver.models import Nameserver
+from cyder.cydns.ptr.models import PTR
+from cyder.cydns.soa.models import SOA
 from cyder.cydns.srv.models import SRV
 from cyder.cydns.txt.models import TXT
-from cyder.cydns.cname.models import CNAME
-from cyder.cydns.ptr.models import PTR
-
-import pdb
-from operator import itemgetter
 
 
 class DomainView(object):

@@ -1,20 +1,12 @@
-"""
-This file demonstrates writing tests using the unittest module. These will pass
-when you run "manage.py test".
-
-Replace this with more appropriate tests for your application.
-"""
-
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.test.client import Client
 
-from django.core.exceptions import ValidationError
-
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.address_record.models import AddressRecord
-from cyder.cydns.nameserver.models import Nameserver
+from cyder.cydns.nameserver.nameserver.models import Nameserver
 from cyder.cydns.reverse_domain.models import ReverseDomain
-import pdb
+
 
 class NSTestsModels(TestCase):
     def setUp(self):

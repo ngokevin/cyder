@@ -1,14 +1,12 @@
-from django.test import TestCase
-from django.test.client import Client
-
-from cyder.settings import CYDNS_BASE_URL
-from cyder.cydns.domain.models import Domain
-from cyder.cydns.nameserver.models import Nameserver
-
 import random
 import string
 
-import pdb
+from django.test import TestCase
+from django.test.client import Client
+
+from cyder.cydns.domain.models import Domain
+from cyder.cydns.nameserver.nameserver.models import Nameserver
+from cyder.settings import CYDNS_BASE_URL
 
 
 class GenericViewTests(object):
