@@ -26,7 +26,7 @@ from cyder.cydns.txt.models import TXT
 
 
 class DomainView(object):
-    queryset = Domain.objects.all()
+    queryset = Domain.objects.all().order_by('name')
     form_class = DomainForm
 
 
