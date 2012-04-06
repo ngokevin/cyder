@@ -65,13 +65,13 @@ class AddressRecord(Ip, CommonRecord):
         """
         if self.pk is None:
             return
-        # First get this object from the database and compare it to the
+        # First get this object from the database and compare it to the        nameserver.nameserver.
         # object about to be saved.
         db_self = AddressRecord.objects.get(pk=self.pk)
         if db_self.label == self.label and db_self.domain == self.domain:
             return
         # The label of the domain changed. Make sure it's not a glue record
-        Nameserver = cyder.cydns.nameserver.models.Nameserver
+        Nameserver = cyder.cydns.nameserver.nameserver.models.Nameserver
         if Nameserver.objects.filter(glue=self).exists():
             raise ValidationError("This record is a glue record for a"
                                   "Nameserver. Change the Nameserver to edit"
