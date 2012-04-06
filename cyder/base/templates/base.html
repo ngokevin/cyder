@@ -25,7 +25,9 @@
                             <li class="dropdown">
                                 <a class="dropdown-toggle" data-toggle="dropdown" href="#"><b class="caret"></b></a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="#">Example Container</a></li>
+                                    {% for ctnr in request.session.ctnrs %}
+                                        <li><a href="#">{{ ctnr.name }}</a></li>
+                                    {% endfor %}
                                 </ul>
                             </li>
                         </ul>

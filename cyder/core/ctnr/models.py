@@ -8,7 +8,7 @@ from cyder.cydns.reverse_domain.models import ReverseDomain
 
 class Ctnr( models.Model ):
     id              = models.AutoField(primary_key=True)
-    name            = models.CharField(max_length=100)
+    name            = models.CharField(max_length=100, unique=True)
     ranges          = models.ManyToManyField(Range, null=False)
     domains         = models.ManyToManyField(Domain, null=False)
     reverse_domains = models.ManyToManyField(ReverseDomain, null=False)
@@ -19,7 +19,6 @@ class Ctnr( models.Model ):
 
     class Meta:
         db_table = 'ctnr'
-        unique_together = ('name')
 
 
 class CtnrUser(models.Model):

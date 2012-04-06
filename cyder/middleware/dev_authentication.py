@@ -20,6 +20,6 @@ class DevAuthenticationMiddleware(object):
 
             # get all of user's ctnrs for user to switch between
             ctnrs_user = CtnrUser.objects.filter(user=request.user)
-            request.session['ctnrs'] = [ctnr_user.ctnr.name for ctnr_user in ctnrs_user]
+            request.session['ctnrs'] = [ctnr_user.ctnr for ctnr_user in ctnrs_user]
 
         return None
