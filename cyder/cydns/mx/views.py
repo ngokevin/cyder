@@ -20,6 +20,7 @@ class MXDeleteView(MXView, CommonDeleteView):
 
 class MXDetailView(MXView, CommonDetailView):
     """Detail View"""
+    template_name = 'mx/detail.html'
 
 
 class MXCreateView(MXView, CommonCreateView):

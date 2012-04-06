@@ -1,33 +1,5 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-{% from "tables.html" import render_table %}
-
-<h1>{{ form_title }}</h1>
-
-<table class="table">
-    <thead>
-        {% for item, value in common.details() %}
-            <th>{{ item }}</th>
-        {% endfor %}
-    </thead>
-
-    <tbody>
-        <tr>
-        {% for item, value in common.details() %}
-            <td>{{ value }}</td>
-        {% endfor %}
-        </tr>
-    </tbody>
-</table>
-
-<a href="{{ common.get_edit_url() }}">Edit</a>
-<a href="{{ common.get_delete_url() }}">Delete</a>
-{% if common.domain %}
-    <a href="{{ common.domain.get_absolute_url() }}">View Domain</a>
-{% elif common.reverse_domain %}
-    <a href="{{ common.reverse_domain.get_absolute_url() }}">View Reverse Domain</a>
-{% endif %}
-
+    {% include "common/detail.inc" %}
 {% endblock %}

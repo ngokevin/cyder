@@ -5,17 +5,16 @@
 {% endblock %}
 
 {% block reverse_domain_nav %}
-    <span class="active-nav">
-        {{ super() }}
+    {{ super() }}
+
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="{{ reverse_domain.get_edit_url() }}">Edit SOA</a>
     </span>
     <span class="nav-item">
-        <a class="sub-link nav-link" href='{{ reverse_domain.get_edit_url() }}'>Edit SOA</a>
+        <a class="sub-link nav-link" href="/cydns/reverse_nameserver/{{ reverse_domain.pk }}/create/">Create NS</a>
     </span>
     <span class="nav-item">
-        <a class="sub-link nav-link" href='/cydns/reverse_nameserver/{{ reverse_domain.pk }}/create/'>Create NS</a>
-    </span>
-    <span class="nav-item">
-        <a class="delete-link sub-link nav-link" href='{{ reverse_domain.get_delete_url() }}'>Delete {{ reverse_domain.name }}</a>
+        <a class="delete-link sub-link nav-link" href="{{ reverse_domain.get_delete_url() }}">Delete {{ reverse_domain.name }}</a>
     </span>
 {% endblock %}
 
@@ -25,12 +24,12 @@
     <h1> Reverse Domain {{ reverse_domain.name }}</h1>
 
     {% if reverse_domain.soa %}
-        SOA: <a href='{{ reverse_domain.soa.get_absolute_url() }}'>{{ reverse_domain.soa.primary }}</a>
+        SOA: <a href="{{ reverse_domain.soa.get_absolute_url() }}">{{ reverse_domain.soa.primary }}</a>
     {% endif %}
     <br/>
 
     {% if reverse_domain.master_reverse_domain %}
-        Master Reverse Domain: <a href='{{ reverse_domain.master_reverse_domain.get_absolute_url() }}'>{{ reverse_domain.master_reverse_domain.name }}</a>
+        Master Reverse Domain: <a href="{{ reverse_domain.master_reverse_domain.get_absolute_url() }}">{{ reverse_domain.master_reverse_domain.name }}</a>
     {% endif %}
     <br/>
 

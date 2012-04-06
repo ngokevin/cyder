@@ -5,9 +5,8 @@
 {% endblock %}
 
 {% block domain_nav %}
-    <span class="active-nav">
-        {{ super() }}
-    </span>
+    {{ super() }}
+
     <span class="nav-item">
         <a class="sub-link nav-link" href="{{ domain.get_edit_url() }}">Edit {{ domain.name }}</a>
     </span>
