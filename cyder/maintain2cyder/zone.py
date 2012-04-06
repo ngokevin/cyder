@@ -69,10 +69,11 @@ class Zone(object):
                 This helps bootstrap the process of generating revrse pointer .*in-addr.arpa files.
 
     """
-    def __init__( self, cur, zone_fd, domain, dname ):
+    def __init__( self, cur, zone_fd, domain, dname, soa ):
         self.cur = cur
         self.domain = domain
         self.dname = dname
+        self.soa = soa
         #self.printer = printer.Printer( fd=zone_fd )
 
 
@@ -83,18 +84,11 @@ class Zone(object):
     Notes: We skip domains with in-addr.arpa in their name (they are reverse domains).
         The Reverse_Zone object takes care of those specific domains.
     """
-    def walk_domain( self, cur_domain , dname, parent_cdomain=None ):
+    def walk_domain( self, cur_domain , dname ):
         #TODO Consider moving the SOA genration into __init__
-        soa = None
-        if self.check_for_SOA( cur_domain, dname ):
-            soa = self.gen_SOA( cur_domain, dname )
-
         new_domain = self.gen_domain( cur_domain, dname )
-        if not new_domain:
-            pdb.set_trace()
-        # If we found an soa, assign it. Else inheirit soa from master (if master domain has one)
-        if parent_cdomain:
-            new_domain.soa = parent_cdomain.soa
+        if new_domain:
+            new_domain.soa = self.soa
             new_domain.save()
 
         self.cur.execute("""SELECT * FROM `domain` WHERE `name` NOT LIKE "%%.in-addr.arpa" AND `master_domain`=%s;""" % (cur_domain))
@@ -103,11 +97,13 @@ class Zone(object):
             child_name = subdomain[1]
             child_domain = subdomain[0]
             if self.check_for_SOA( child_domain, child_name ):
+                soa = self.gen_SOA( child_domain, child_name )
                 zone_fd = None
-                new_zone = Zone( self.cur, zone_fd, child_domain, child_name )
+                new_zone = Zone( self.cur, zone_fd, child_domain,
+                        child_name, soa )
                 new_zone.walk_domain( child_domain, child_name )
                 continue
-            self.walk_domain( child_domain, child_name, new_domain )
+            self.walk_domain( child_domain, child_name)
 
     def gen_domain( self, domain, dname ):
         self.cur.execute("SELECT * FROM `zone_mx` WHERE `domain`='%s' ORDER BY `name`;" % (domain))
@@ -200,11 +196,7 @@ class Zone(object):
         self.cur.execute("SELECT * FROM `zone_cname` WHERE `domain`='%s';" % (domain))
         records = self.cur.fetchall()
         for record in records:
-<<<<<<< HEAD
             ##self.printer.print_CNAME( record[2], record[1] )
-=======
-            self.printer.print_CNAME( record[2], record[1] )
->>>>>>> de9599ab6787125afba08c52ddf4e6c983ad413d
             try:
                 cname, created = CNAME.objects.get_or_create( label=record[2], domain=cdomain, data=record[1])
             except:
@@ -227,8 +219,8 @@ class Zone(object):
     """
 
     def gen_A( self, domain, dname, cdomain ):
+        """ """
         self.gen_host( domain, dname, cdomain )
-        #self.gen_forward_pointers( domain, dname, cdomain )
 
     """
     Generate all A records from the pointer table (forward pointers)
@@ -259,8 +251,23 @@ class Zone(object):
                     split = dname.split('.')
                     for i in list(reversed(range(len(split)))):
                         name = '.'.join(split[i:])
-                        cdomain, created = Domain.objects.get_or_create( name = name )
-                        cdomain.save()
+                        try:
+                            cdomain, created = Domain.objects.get_or_create( name = name )
+                            cdomain.save()
+                        except ValidationError, e:
+                            arec = AddressRecord.objects.filter(fqdn=name)
+                            if arec:
+                                ip_str = arec.ip_str
+                                print "Resolved name conflict by re-adding A "
+                                    "record {0} to domain {1}".format(arec, dname)
+                                arec.delete()
+                            cdomain.save()
+
+                            if arec:
+                                AddressRecord(label="", domain=cdomain,
+                                        ip_str=ip_str, ip_type='4').save()
+
+
                 else:
                     cdomain = cdomain[0]
 
@@ -283,23 +290,11 @@ class Zone(object):
         for record in records:
             if record[1] == 0:
                 continue
-<<<<<<< HEAD
             #self.printer.print_A( record[3] , long2ip(record[1]) )
             name= record[3]
             ip_str = long2ip(record[1])
             arec, _ = AddressRecord.objects.get_or_create( label=name,
                     domain= cdomain, ip_str=ip_str, ip_type='4' )
-=======
-            self.printer.print_A( record[3] , long2ip(record[1]) )
-            name= record[3]
-            ip_str = long2ip(record[1])
-            print "{0} A {1}".format(name, ip_str)
-            try:
-                AddressRecord.objects.get_or_create( label=name,
-                        domain= cdomain, ip_str=ip_str, ip_type='4' )
-            except ValidationError, e:
-                print "ERROR: %s name: %s domain: %s ip: %s" % (str(e), name, cdomain.name, ip_str )
->>>>>>> de9599ab6787125afba08c52ddf4e6c983ad413d
 
     def gen_NS( self, domain, dname, cdomain=None ):
         self.cur.execute("SELECT * FROM `nameserver` WHERE `domain`='%s';" % (domain))
@@ -314,10 +309,5 @@ class Zone(object):
                     continue
                 try:
                     ns, _ = Nameserver.objects.get_or_create( domain = cdomain, server = ns_name )
-<<<<<<< HEAD
                 except Exception, e:
                     print "ERROR: couldn't create ns {0} {1}".format(ns_name, e)
-=======
-                except:
-                    print "ERROR: couldn't create ns {0}".format(ns_name)
->>>>>>> de9599ab6787125afba08c52ddf4e6c983ad413d

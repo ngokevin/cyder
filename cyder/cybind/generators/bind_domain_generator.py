@@ -13,8 +13,6 @@ def render_mx(mx_set):
     template = Template("{label:$label_just} {rclass:$class_just} {rtype:$type_just} {prio:$prio_just} {server:$data_just}.\n")
     template = template.substitute(label_just=label_just, class_just=class_just,\
                         type_just=type_just, prio_just=prio_just, data_just=data_just)
-    print template
-
     for mx in mx_set:
         BUILD_STR += "$TTL %s\n" % (mx.ttl)
         label = mx.label if mx.label != '' else '@'
