@@ -4,19 +4,18 @@ from django.contrib.auth.models import User
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 
 def has_perm(self, request, obj, write=False):
-    """This function checks whether a user (``request.user``) has
-    permission to act on an object (``obj``). Permissions will depend on
-    whether the user's current container has the requested access
-    (either 'read' or 'write') to the object and what status the user
-    holds within that CTRN (admin, user, etc.). CTNR admins have read and
-    write permissions to objects in their CTNR. Non-admin users only
-    have read permissions to objects in their CTNR. Full admins have read
-    and write access on every object in every CTNR. To be full admin
-    (superuser), the user must be an admin of the 'global' CTRN
-    (``pk=1``).
+    """
+    Checks whether a user (``request.user``) has permission to act on a
+    given object (``obj``) within the current session CTNR. Permissions will
+    depend on whether the object is within the user's current CTNR and whether
+    the user is admin to that CTNR. If so, they have full permissions to
+    objects within their CTNR.  Else, they are only users to the CTNR and have
+    only read permissions. Full admins (superusers) have read and write
+    permissions on every object in every CTNR. To be a full admins, the user
+    must be an admin of the 'global' CTNR (``pk=1``).
 
-    :param request: A django reqeust object.
-    :type reqeust: :class:`reqeust`
+    :param request: A django request object.
+    :type request: :class:`request`
     :param obj: The object being tested for permission.
     :type obj: :class:`object`
     :param write: The type of permission on the object. ``True`` for

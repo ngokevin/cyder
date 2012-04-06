@@ -1,4 +1,9 @@
-/* General nav bar */
+/* Top nav bar */
+.search-query {
+    margin-top: 5px;
+}
+
+/* Left nav bar */
 nav {
     text-align: center;
 }

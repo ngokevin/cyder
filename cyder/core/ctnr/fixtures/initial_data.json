@@ -26,5 +26,14 @@
       "default_ctnr": 1,
       "phone_number": 1234567890
     }
+  },
+  {
+    "model": "ctnr.ctnruser",
+    "pk": 1,
+    "fields": {
+        "user": 1,
+        "ctnr": 1,
+        "is_admin": 1
+    }
   }
 ]

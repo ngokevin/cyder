@@ -5,6 +5,11 @@
     border: 0;
 }
 
+/* Offset top bar */
+body {
+    padding-top: 40px;
+}
+
 header {
     background: rgb(190,190,200);
 }
