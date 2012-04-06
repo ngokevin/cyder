@@ -1,0 +1,49 @@
+nav {
+    text-align: center;
+}
+nav i {
+    display: block;
+    position: relative;
+
+    font-size: 5em;
+
+    color: rgb(200,100,100);
+}
+
+.logo {
+    background: rgb(245,245,245);
+}
+.logo a {
+    padding: 4em 0 2em 0;
+    display: block;
+}
+.logo a:hover i {
+    -moz-transform: translateY(8px) rotate(35deg);
+    -webkit-transform: translateY(8px) rotate(35deg);
+
+    -moz-transform-origin: right;
+    -webkit-transform-origin: right;
+
+    text-decoration: none;
+}
+
+a.nav-item {
+    display: block;
+    padding: .75em 0 .75em 0;
+
+    color: rgb(220,220,220);
+    background: rgb(40,40,40);
+
+    border-style: solid none;
+    border-width: 1px;
+    border-color: rgb(46,46,46);
+}
+a.nav-item:hover {
+    color: rgb(220,220,220);
+    background: rgb(30, 30, 30);
+
+    border-style: groove none;
+    border-color: rgb(10,10,10);
+
+    text-decoration: none;
+}

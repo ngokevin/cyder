@@ -1,87 +1,58 @@
 from django.db import models
-from django import forms
+from django.core.exceptions import ValidationError
 
-from cyder.settings import CYDNS_BASE_URL
-from cyder.cydns.domain.models import Domain
 from cyder.cydns.common.models import CommonRecord
-from cyder.cydns.cydns import InvalidRecordNameError, RecordExistsError, _validate_name, _validate_label, _validate_ttl
+from cyder.cydns.cname.models import CNAME
 
-import pdb
+from cyder.cydns.validation import validate_mx_priority
+from cyder.cydns.validation import validate_ttl
+from cyder.cydns.validation import validate_name
 
-class MX( CommonRecord ):
-    id              = models.AutoField(primary_key=True)
+
+class MX(CommonRecord):
+    """
+    >>> MX(label, domain, server, priority, ttl)
+    """
+    id = models.AutoField(primary_key=True)
     # The mail server this record should point to.
-    server          = models.CharField(max_length=100)
-    priority        = models.PositiveIntegerField(null=False)
-    ttl             = models.PositiveIntegerField(null=False)
+    server = models.CharField(max_length=100, validators=[validate_name])
+    priority = models.PositiveIntegerField(null=False,
+                                           validators=[validate_mx_priority])
+    ttl = models.PositiveIntegerField(null=False, validators=[validate_ttl])
 
     def details(self):
         return  (
-                    ('FQDN', self.fqdn()),
+                    ('FQDN', self.fqdn),
                     ('Record Type', 'MX'),
                     ('Server', self.server),
                     ('Priority', self.priority),
                     ('TTL', self.ttl)
                 )
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/mx/%s/detail" % (self.pk)
-
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/mx/%s/update" % (self.pk)
-
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/mx/%s/delete" % (self.pk)
-
-    def delete(self, *args, **kwargs):
-        super(MX, self).delete(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super(MX, self).save(*args, **kwargs)
-
-    def clean( self ):
-        if type(self.label) not in (str, unicode):
-            raise InvalidRecordNameError("Error: name must be type str")
-        if type(self.server) not in (str, unicode):
-            raise InvalidRecordNameError("Error: name must be type str")
-        _validate_label( self.label )
-        _validate_name( self.server )
-        _validate_mx_priority( self.priority )
-        _validate_ttl( self.ttl )
-        _check_exists( self )
-
-    def __str__(self):
-        return "%s %s %s %s %s %s" % ( self.fqdn(), self.ttl, 'IN', 'MX', self.priority, self.server)
-
-    def fqdn(self):
-        if self.label == '':
-            fqdn = self.domain.name
-        else:
-            fqdn = str(self.label)+"."+self.domain.name
-        return fqdn
-
-    def __repr__(self):
-        return "<MX '%s'>" % (self.__str__())
 
     class Meta:
         db_table = 'mx'
+        # label and domain in CommonRecord
+        unique_together = ('domain', 'label', 'server', 'priority')
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(MX, self).save(*args, **kwargs)
 
-def _validate_mx_priority( prio ):
-    if prio > 65535 or prio < 0:
-        raise InvalidRecordNameError("Error: MX priority must be within the 0 to 65535 range. See RFC 1035")
+    def clean(self, *args, **kwargs):
+        super(MX, self).clean(*args, **kwargs)
+        super(MX, self).check_for_delegation()
+        super(MX, self).check_for_cname()
+        self.no_point_to_cname()
 
-def _check_exists( mx ):
-    exist = MX.objects.filter( label = mx.label, server = mx.server, priority = mx.priority, ttl = mx.ttl, domain = mx.domain )
-    for possible in exist:
-        if possible.pk != mx.pk:
-            raise RecordExistsError("Error: This MX record already exists.")
+    def __str__(self):
+        return "{0} {1} {3} {4} {5}".format(self.fqdn, self.ttl, 'IN','MX',
+                                            self.priority, self.server)
 
-def _check_TLD_condition( mx ):
-    domain = Domain.objects.filter( name = mx.fqdn() )
-    if not domain:
-        return
-    if mx.label == '' and domain[0] == mx.domain:
-        return #This is allowed
-    else:
-        raise InvalidRecordNameError( "You cannot create a MX record with a non empty label that points to a TLD." )
+    def __repr__(self):
+        return "<MX '{0}'>".format(str(self))
+
+    def no_point_to_cname(self):
+        """MX records should not point to CNAMES."""
+        # TODO, cite an RFC.
+        if CNAME.objects.filter(fqdn=self.server):
+            raise ValidationError("MX records should not point to CNAMES.")

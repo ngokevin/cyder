@@ -2,21 +2,19 @@
 # repo. If you need to override a setting locally, use settings_local.py
 
 import os
-import sys
 
 from funfactory.settings_base import *
 
 CAS_SERVER_URL = "https://login.oregonstate.edu/cas/login"
 
-CYDER_BASE_URL = "/cyder"
-CYDNS_BASE_URL = CYDER_BASE_URL + "/cydns"
+CYDNS_BASE_URL = "/cydns"
 
-#os.environ['FORCE_DB']='1'
+# os.environ['FORCE_DB']='1'
 
 JINJA_CONFIG = {'autoescape': False}
 
 # NOSE_ARGS = ['-s', '-v', '-d' ]
-NOSE_ARGS = [ '-s', '-d', '--cover-package=cyder', "--with-coverage"  ]
+NOSE_ARGS = [ '-s', '-v', '-d', '--cover-package=cyder', "--with-coverage"  ]
 
 # Bundles is a dictionary of two dictionaries, css and js, which list css files
 # and js files that can be bundled together by the minify app.
@@ -41,6 +39,8 @@ MINIFY_BUNDLES = {
 # Defines the views served for root URLs.
 ROOT_URLCONF = 'cyder.urls'
 
+APPEND_SLASH = True
+
 INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,13 +48,14 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.sites',
     'django.contrib.messages',
     # Application base, containing global templates.
-    'cyder.maintain2cyder',
+    #'django.contrib.staticfiles',
     'cyder.base',
-    'cyder.cyuser',
+    'cyder.core.cyuser',
     'cyder.core',
-    'cyder.core.container',
+    'cyder.core.ctnr',
     'cyder.core.registrations',
     'cyder.core.node',
+    'cyder.cybind',
     'cyder.cydns',
     'cyder.cydns.common',
     'cyder.cydns.address_record',
@@ -76,7 +77,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'cyder.cydhcp.range',
     'cyder.cydhcp.subnet',
     'cyder.cydhcp.subnet_option',
-
+    'cyder.maintain2cyder',
 ]
 
 
@@ -103,10 +104,13 @@ JINGO_EXCLUDE_APPS = [
 # ]
 LOGGING = dict(loggers=dict(playdoh = {'level': logging.DEBUG}))
 
-AUTH_PROFILE_MODULE = 'cyder.core.cyuser.UserProfile'
+AUTH_PROFILE_MODULE = 'cyuser.UserProfile'
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'django_cas.backends.CASBackend',
+)
 
-"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -114,20 +118,22 @@ DATABASES = {
         'TEST_NAME':'cyder_db_test',
         },
 }
-"""
 
 MIDDLEWARE_CLASSES = (
+    #'cyder.middleware.authentication.AuthenticationMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django_cas.middleware.CASMiddleware',
-    'cyder.middleware.require_login.RequireLoginMiddleware',
+    #'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    #'django_cas.middleware.CASMiddleware',
 
 )
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'django_cas.backends.CASBackend',
+    #'django_cas.backends.CASBackend',
+    'django_cas.middleware.CASMiddleware',
+    'cyder.middleware.authentication.AuthenticationMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (

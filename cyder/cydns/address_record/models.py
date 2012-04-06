@@ -1,100 +1,93 @@
 from django.db import models
-from django import forms
+from django.core.exceptions import ValidationError
 
-from cyder.cydns.cydns import _validate_label, InvalidRecordNameError, CyAddressValueError
-from cyder.cydns.cydns import _validate_name, RecordExistsError, RecordNotFoundError
-from cyder.cydns.domain.models import Domain
-from cyder.cydns.ip.models import Ip, ipv6_to_longs
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
-from cyder.settings import CYDNS_BASE_URL
+import cyder
+from cyder.cydns.validation import validate_label, validate_name
+from cyder.cydns.cname.models import CNAME
+from cyder.cydns.ip.models import Ip
+from cyder.cydns.common.models import CommonRecord
 
-import ipaddr
-import string
 import pdb
 
-# This is the A and AAAA record class
-class AddressRecord( models.Model ):
-    """AddressRecord is the class that generates A and AAAA records."""
-    IP_TYPE_CHOICES = ( ('4','ipv4'),('6','ipv6') )
-    id              = models.AutoField(primary_key=True)
-    label           = models.CharField(max_length=100)
-    ip              = models.OneToOneField(Ip, null=False)
-    domain          = models.ForeignKey(Domain, null=False)
-    ip_type         = models.CharField(max_length=1, choices=IP_TYPE_CHOICES, editable=False)
 
+class AddressRecord(Ip, CommonRecord):
+    """AddressRecord is the class that generates A and AAAA records
 
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/address_record/%s/detail" % (self.pk)
+        >>> AddressRecord(label=label, domain=domain_object, ip_str=ip_str,
+        ... ip_type=ip_type)
 
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/address_record/%s/update" % (self.pk)
-
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/address_record/%s/delete" % (self.pk)
-
-    def details(self):
-        return  (
-                    ('FQDN', self.fqdn()),
-                    ('Record Type', 'A' if self.ip.ip_type == '4' else 'AAAA' ),
-                    ('IP', str(self.ip)),
-                )
-
-    def __init__(self, *args, **kwargs):
-        super(AddressRecord, self).__init__(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        self.ip.delete()
-        super(AddressRecord, self).delete(*args, **kwargs)
-
-    def clean( self ):
-        if type(self.label) not in (str, unicode):
-            raise InvalidRecordNameError("Error: name must be type str")
-        if self.ip_type not in ('4', '6'):
-            raise CyAddressValueError("Error: Plase provide the type of Address Record")
-        _validate_label( self.label )
-        _validate_name( self.fqdn() )
-        _check_exist( self )
-        _check_TLD_condition( self )
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super(AddressRecord, self).save(*args, **kwargs)
-
-    def __str__(self):
-        if self.ip_type == '4':
-            record_type = 'A'
-        else:
-            record_type = 'AAAA'
-        return "%s %s %s" % ( self.fqdn(), record_type, self.ip.__str__() )
-
-    def fqdn(self):
-        if self.label == '':
-            fqdn = self.domain.name
-        else:
-            fqdn = self.label+"."+self.domain.name
-        return fqdn
-
-    def __repr__(self):
-        return "<Address Record '%s'>" % (self.__str__())
+    """
+    id = models.AutoField(primary_key=True)
+    ############################
+    # See Ip for all ip fields #
+    ############################
 
     class Meta:
         db_table = 'address_record'
+        unique_together = ('label', 'domain', 'ip_str', 'ip_type')
 
+    def details(self):
+        return  (
+                    ('FQDN', self.fqdn),
+                    ('Record Type', self.record_type()),
+                    ('IP', str(self.ip_str)),
+                )
 
+    def clean(self):
+        self._check_glue_status()
+        super(AddressRecord, self).clean()
+        super(AddressRecord, self).check_for_delegation()
+        super(AddressRecord, self).check_for_cname()
+        self.clean_ip(update_reverse_domain=False)  # Function from Ip class.
 
-def _check_exist( record ):
-    exist = AddressRecord.objects.filter( label = record.label, domain = record.domain, ip_type = record.ip_type ).select_related('ip')
-    for possible in exist:
-        if possible.ip.__str__() == record.ip.__str__() and possible.ip.pk != record.ip.pk:
-            raise RecordExistsError(possible.__str__()+" already exists.")
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(AddressRecord, self).save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        """Address Records that are glue records or that are pointed to
+        by a CNAME should not be removed from the database.
+        """
+        if self.nameserver_set.exists():
+            raise ValidationError("Cannot delete the record {0}. It is a glue"
+                                  "record.".format(self.record_type()))
+        if CNAME.objects.filter(data=self.fqdn):
+            raise ValidationError("A CNAME points to this {0} record. Change"
+                                  "the CNAME before deleting this record.".
+                                  format(self.record_type()))
+        super(AddressRecord, self).delete(*args, **kwargs)
 
-def _check_TLD_condition( record ):
-    domain = Domain.objects.filter( name = record.fqdn() )
-    if not domain:
-        return
-    if record.label == '' and domain[0] == record.domain:
-        return #This is allowed
-    else:
-        raise InvalidRecordNameError( "You cannot create an A record that points to the top level of another domain." )
+    def _check_glue_status(self):
+        """If this record is a 'glue' record for a Nameserver instance,
+        do not allow modifications to this record. The Nameserver will
+        need to point to a different record before this record can
+        be updated.
+        """
+        if self.pk is None:
+            return
+        # First get this object from the database and compare it to the
+        # object about to be saved.
+        db_self = AddressRecord.objects.get(pk=self.pk)
+        if db_self.label == self.label and db_self.domain == self.domain:
+            return
+        # The label of the domain changed. Make sure it's not a glue record
+        Nameserver = cyder.cydns.nameserver.models.Nameserver
+        if Nameserver.objects.filter(glue=self).exists():
+            raise ValidationError("This record is a glue record for a"
+                                  "Nameserver. Change the Nameserver to edit"
+                                  "this record.")
 
+    def record_type(self):
+        # If PTR didn't share this field, we would use 'A' and 'AAAA'
+        # instead of '4' and '6'.
+        if self.ip_type == '4':
+            return 'A'
+        else:
+            return 'AAAA'
+
+    def __str__(self):
+        return "{0} {1} {2}".format(self.fqdn,
+                                    self.record_type(), str(self.ip_str))
+
+    def __repr__(self):
+        return "<Address Record '{0}'>".format(str(self))

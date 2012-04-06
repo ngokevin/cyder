@@ -6,13 +6,13 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 
-from cyder.cydns.domain.models import Domain, DomainExistsError, MasterDomainNotFoundError, DomainNotFoundError
-from cyder.cydns.address_record.models import AddressRecord,RecordExistsError, RecordNotFoundError
-from cyder.cydns.nameserver.models import ReverseNameserver,NSRecordMisconfiguredError
+from cyder.cydns.domain.models import Domain
+from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.nameserver.models import ReverseNameserver
 from cyder.cydns.reverse_domain.models import ReverseDomain
-from cyder.cydns.ip.models import Ip
-from cyder.cydns.cydns import RecordExistsError, InvalidRecordNameError
+
 import pdb
 
 class RevNSTests(TestCase):
@@ -65,24 +65,19 @@ class RevNSTests(TestCase):
 
 
     def test_invalid_create(self):
-        ip = Ip( ip_str = '128.193.1.10', ip_type = '4' )
-        ip.save()
-
         data = { 'reverse_domain':self.r , 'server':'ns2 .ru', }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
         data = { 'reverse_domain':self.r , 'server':'ns2$.ru', }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
         data = { 'reverse_domain':self.r , 'server':'ns2..ru', }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
         data = { 'reverse_domain':self.r , 'server':'ns2.ru ', }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
-        data = { 'reverse_domain':self.r , 'server':True, }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
         data = { 'reverse_domain':self.r , 'server':'', }
-        self.assertRaises( InvalidRecordNameError, self.do_add, **data )
+        self.assertRaises( ValidationError, self.do_add, **data )
 
     def test_add_dup(self):
         data = { 'reverse_domain':self.r , 'server':'ns2.moot.ru' }
         self.do_add( **data )
 
-        self.assertRaises( RecordExistsError, self.do_add, **data)
+        self.assertRaises( ValidationError, self.do_add, **data)

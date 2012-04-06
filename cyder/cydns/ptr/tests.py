@@ -6,14 +6,13 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 
-from cyder.cydns.reverse_domain.models import  ReverseDomainNotFoundError, ReverseDomain
-from cyder.cydns.reverse_domain.models import boot_strap_add_ipv6_reverse_domain
+from cyder.cydns.reverse_domain.models import  ReverseDomain
+from cyder.cydns.reverse_domain.models import  boot_strap_ipv6_reverse_domain
 from cyder.cydns.domain.models import Domain
 
 from cyder.cydns.ptr.models import PTR
-from cyder.cydns.cydns import CyAddressValueError, InvalidRecordNameError
-from cyder.cydns.cydns import RecordNotFoundError, RecordExistsError
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.ip.models import ipv6_to_longs, Ip
 
@@ -23,7 +22,7 @@ class PTRTests(TestCase):
     def setUp(self):
         self._128 = ReverseDomain( name = '128', ip_type='4')
         self._128.save()
-        boot_strap_add_ipv6_reverse_domain("8.6.2.0")
+        boot_strap_ipv6_reverse_domain("8.6.2.0")
         self.osu_block = "8620:105:F000:"
         self.o = Domain( name = "edu" )
         self.o.save()
@@ -33,17 +32,10 @@ class PTRTests(TestCase):
         self.b_o_e.save()
 
 
-    def do_generic_add( self, ip, fqdn, ip_type, domain = None ):
-        if ip_type == '4':
-            ip = Ip( ip_str = ip, ip_type = ip_type )
-            ip.save()
-            ret = PTR( ip = ip, name = fqdn )
-            ret.save()
-        else:
-            ip = Ip( ip_str = ip, ip_type = ip_type )
-            ip.save()
-            ret = PTR( ip = ip, name = fqdn )
-            ret.save()
+    def do_generic_add( self, ip_str, fqdn, ip_type, domain = None ):
+        ret = PTR( name = fqdn, ip_str = ip_str, ip_type=ip_type )
+        ret.full_clean()
+        ret.save()
 
 
         self.assertTrue(ret.details())
@@ -52,12 +44,15 @@ class PTRTests(TestCase):
         self.assertTrue(ret.get_delete_url())
 
 
-        ptr = PTR.objects.filter( name=fqdn, ip__ip_upper = ip.ip_upper, ip__ip_lower = ip.ip_lower )
+        ip = Ip( ip_str = ip_str, ip_type=ip_type )
+        ip.clean_ip()
+        ptr = PTR.objects.filter( name=fqdn, ip_upper = ip.ip_upper, ip_lower = ip.ip_lower )
         ptr.__repr__()
         self.assertTrue(ptr)
-        self.assertEqual( ptr[0].ip.__str__(), ip.__str__() )
+        ip_str = ip_str.lower()
+        self.assertEqual( ptr[0].ip_str, ip_str )
         if domain:
-            if prt[0].name == "":
+            if ptr[0].name == "":
                 self.assertEqual( fqdn, domain.name )
             else:
                 self.assertEqual( fqdn,ptr[0].name+"."+domain.name )
@@ -68,41 +63,41 @@ class PTRTests(TestCase):
 
     def test_add_ipv4_ptr(self):
         ret = self.do_generic_add("128.193.1.1", "foo.bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add("128.193.1.2", "foo.bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add("128.193.1.1", "baasdfr.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.o_e )
+        self.assertEqual( ret.data_domain, self.o_e )
         ret = self.do_generic_add("128.193.1.1", "fasdfasfdoo.bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add("128.193.1.1", "lj21312bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.o_e )
+        self.assertEqual( ret.data_domain, self.o_e )
         ret = self.do_generic_add("128.193.1.3", "baasdfr.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.o_e )
+        self.assertEqual( ret.data_domain, self.o_e )
         ret = self.do_generic_add("128.193.1.7", "fasdfasfdoo.bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add("128.193.16.1", "lj21312bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.o_e )
+        self.assertEqual( ret.data_domain, self.o_e )
         ret = self.do_generic_add("128.193.16.1", "lj21312bar", '4')
-        self.assertEqual( ret.domain, None )
+        self.assertEqual( ret.data_domain, None )
         ret = self.do_generic_add("128.193.16.1", "ewr.rqewr.lj21312bar", '4')
-        self.assertEqual( ret.domain, None )
+        self.assertEqual( ret.data_domain, None )
 
     def test_add_ipv6_ptr(self):
         ret = self.do_generic_add(self.osu_block+":1", "foo.bar.oregonstate.edu", '6')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add(self.osu_block+":8", "foo.bar.oregonstate.edu", '6')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add(self.osu_block+":f", "asdflkhasidfgwhqiefuhgiasdf.foo.bar.oregonstate.edu", '6')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add(self.osu_block+":d", "foo.bar.oregonstatesdfasdf.edu", '6')
-        self.assertEqual( ret.domain, self.o )
+        self.assertEqual( ret.data_domain, self.o )
         ret = self.do_generic_add(self.osu_block+":3", "foo.bar.oregonstate.eddfsafsadfu", '6')
-        self.assertEqual( ret.domain, None )
+        self.assertEqual( ret.data_domain, None )
         ret = self.do_generic_add(self.osu_block+":2", "foo.b213123123ar.oregonstate.edu", '6')
-        self.assertEqual( ret.domain, self.o_e )
+        self.assertEqual( ret.data_domain, self.o_e )
         ret = self.do_generic_add(self.osu_block+":5", "foo.bar.oregondfastate.com", '6')
-        self.assertEqual( ret.domain, None)
+        self.assertEqual( ret.data_domain, None)
 
 
     def do_generic_invalid_add( self, ip, fqdn, ip_type, exception, domain = None ):
@@ -116,17 +111,12 @@ class PTRTests(TestCase):
     def test_add_invalid_name_ipv6_ptr(self):
         bad_name = "testyfoo.com"
         test_ip = self.osu_block+":1"
-        bad_name = 123443214
-        self.do_generic_invalid_add( test_ip, bad_name, '6', InvalidRecordNameError )
         bad_name = "2134!@#$!@"
-        self.do_generic_invalid_add( test_ip, bad_name, '6', InvalidRecordNameError )
+        self.do_generic_invalid_add( test_ip, bad_name, '6', ValidationError )
         bad_name = "asdflj..com"
-        self.do_generic_invalid_add( test_ip, bad_name, '6', InvalidRecordNameError )
-        bad_name = True
-        self.do_generic_invalid_add( test_ip, bad_name, '6', InvalidRecordNameError )
-        bad_name = False
-        self.do_generic_invalid_add( test_ip, bad_name, '6', InvalidRecordNameError )
+        self.do_generic_invalid_add( test_ip, bad_name, '6', ValidationError )
         bad_name = "A"*257
+        self.do_generic_invalid_add( test_ip, bad_name, '6', ValidationError )
 
     """
     Is this test redundant?
@@ -134,100 +124,91 @@ class PTRTests(TestCase):
     def test_add_invalid_name_ipv4_ptr(self):
         bad_name = "testyfoo.com"
         test_ip = "128.123.123.123"
-        bad_name = 123443214
-        self.do_generic_invalid_add( test_ip, bad_name, '4', InvalidRecordNameError )
         bad_name = "2134!@#$!@"
-        self.do_generic_invalid_add( test_ip, bad_name, '4', InvalidRecordNameError )
+        self.do_generic_invalid_add( test_ip, bad_name, '4', ValidationError )
         bad_name = "asdflj..com"
-        self.do_generic_invalid_add( test_ip, bad_name, '4', InvalidRecordNameError )
-        bad_name = True
-        self.do_generic_invalid_add( test_ip, bad_name, '4', InvalidRecordNameError )
-        bad_name = False
-        self.do_generic_invalid_add( test_ip, bad_name, '4', InvalidRecordNameError )
+        self.do_generic_invalid_add( test_ip, bad_name, '4', ValidationError )
         bad_name = "A"*257
+        self.do_generic_invalid_add( test_ip, bad_name, '4', ValidationError )
 
     def test_add_invalid_ip_ipv6_ptr(self):
         test_name = "testyfoo.com"
         bad_ip = "123.123.123.123."
-        self.do_generic_invalid_add( bad_ip, test_name, '6', CyAddressValueError )
-        bad_ip = 1234
-        self.do_generic_invalid_add( bad_ip, test_name, '6', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '6', ValidationError )
         bad_ip = "123:!23:!23:"
-        self.do_generic_invalid_add( bad_ip, test_name, '6', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '6', ValidationError )
         bad_ip = ":::"
-        self.do_generic_invalid_add( bad_ip, test_name, '6', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '6', ValidationError )
         bad_ip = None
-        self.do_generic_invalid_add( bad_ip, test_name, '6', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '6', ValidationError )
         bad_ip = True
-        self.do_generic_invalid_add( bad_ip, test_name, '6', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '6', ValidationError )
         bad_ip = False
-        self.do_generic_invalid_add( bad_ip, test_name, '6', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '6', ValidationError )
         bad_ip = lambda x: x
-        self.do_generic_invalid_add( bad_ip, test_name, '6', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '6', ValidationError )
 
         bad_ip = "8::9:9:1"
-        self.do_generic_invalid_add( bad_ip, test_name, '6', ReverseDomainNotFoundError )
+        self.do_generic_invalid_add( bad_ip, test_name, '6', ValidationError )
         bad_ip = "11:9:9::1"
-        self.do_generic_invalid_add( bad_ip, test_name, '6', ReverseDomainNotFoundError )
+        self.do_generic_invalid_add( bad_ip, test_name, '6', ValidationError )
 
         bad_ip = "8.9.9.1"
-        self.do_generic_invalid_add( bad_ip, test_name, '6', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '6', ValidationError )
         bad_ip = "11.9.9.1"
-        self.do_generic_invalid_add( bad_ip, test_name, '6', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '6', ValidationError )
 
         bad_ip = self.osu_block+":233"
         self.do_generic_add(bad_ip, "foo.bar.oregonstate.edu", '6')
-        self.do_generic_invalid_add( bad_ip, "foo.bar.oregonstate.edu", '6', RecordExistsError )
-        self.do_generic_invalid_add( self.osu_block+":0:0:0233", "foo.bar.oregonstate.edu", '6', RecordExistsError )
+        self.do_generic_invalid_add( bad_ip, "foo.bar.oregonstate.edu", '6', ValidationError )
+        self.do_generic_invalid_add( self.osu_block+":0:0:0233", "foo.bar.oregonstate.edu", '6', ValidationError )
 
         ret = self.do_generic_add(self.osu_block+":dd", "foo.bar.oregondfastate.com", '6')
-        self.do_generic_invalid_add( self.osu_block+":dd", "foo.bar.oregondfastate.com", '6', RecordExistsError )
+        self.do_generic_invalid_add( self.osu_block+":dd", "foo.bar.oregondfastate.com", '6', ValidationError )
 
     def test_add_invalid_ip_ipv4_ptr(self):
         test_name = "testyfoo.com"
         bad_ip = "123.123"
-        self.do_generic_invalid_add( bad_ip, test_name, '4', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '4', ValidationError )
         bad_ip = "asdfasdf"
-        self.do_generic_invalid_add( bad_ip, test_name, '4', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '4', ValidationError )
         bad_ip = 32141243
-        self.do_generic_invalid_add( bad_ip, test_name, '4', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '4', ValidationError )
         bad_ip = "128.123.123.123.123"
-        self.do_generic_invalid_add( bad_ip, test_name, '4', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '4', ValidationError )
         bad_ip = "...."
-        self.do_generic_invalid_add( bad_ip, test_name, '4', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '4', ValidationError )
         bad_ip = "1234."
-        self.do_generic_invalid_add( bad_ip, test_name, '4', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '4', ValidationError )
         bad_ip = None
-        self.do_generic_invalid_add( bad_ip, test_name, '4', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '4', ValidationError )
         bad_ip = False
-        self.do_generic_invalid_add( bad_ip, test_name, '4', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '4', ValidationError )
         bad_ip = True
-        self.do_generic_invalid_add( bad_ip, test_name, '4', CyAddressValueError )
+        self.do_generic_invalid_add( bad_ip, test_name, '4', ValidationError )
 
         bad_ip = "8.9.9.1"
-        self.do_generic_invalid_add( bad_ip, test_name, '4', ReverseDomainNotFoundError )
+        self.do_generic_invalid_add( bad_ip, test_name, '4', ValidationError )
         bad_ip = "11.9.9.1"
-        self.do_generic_invalid_add( bad_ip, test_name, '4', ReverseDomainNotFoundError )
+        self.do_generic_invalid_add( bad_ip, test_name, '4', ValidationError )
 
         self.do_generic_add("128.193.1.1", "foo.bar.oregonstate.edu", '4')
-        self.do_generic_invalid_add( "128.193.1.1", "foo.bar.oregonstate.edu", '4', RecordExistsError )
+        self.do_generic_invalid_add( "128.193.1.1", "foo.bar.oregonstate.edu", '4', ValidationError )
 
         ret = self.do_generic_add("128.128.1.1", "foo.bar.oregondfastate.com", '4')
-        self.do_generic_invalid_add( "128.128.1.1", "foo.bar.oregondfastate.com", '4', RecordExistsError )
+        self.do_generic_invalid_add( "128.128.1.1", "foo.bar.oregondfastate.com", '4', ValidationError )
 
     def do_generic_remove( self, ip, fqdn, ip_type ):
-        ip = Ip( ip_str = ip, ip_type = ip_type )
-        ip.save()
-        ip_pk = ip.pk
-        ptr = PTR( ip = ip, name = fqdn )
+        ptr = PTR( ip_str = ip, name = fqdn, ip_type=ip_type )
+        ptr.full_clean()
         ptr.save()
 
         ptr.delete()
 
-        ptr = PTR.objects.filter( name=fqdn, ip__ip_upper = ip.ip_upper, ip__ip_lower = ip.ip_lower, domain = ptr.domain )
+        ip = Ip( ip_str = ip, ip_type=ip_type )
+        ip.clean_ip()
+        ptr = PTR.objects.filter( name=fqdn, ip_upper = ip.ip_upper, ip_lower = ip.ip_lower, data_domain = ptr.data_domain )
         self.assertFalse(ptr)
-        ip_search = Ip.objects.filter( ip_upper = ip.ip_upper, ip_lower = ip.ip_lower, ip_type = ip_type)
-        self.assertFalse(ip_search)
 
     def test_remove_ipv4( self ):
         ip = "128.255.233.244"
@@ -270,16 +251,17 @@ class PTRTests(TestCase):
         self.do_generic_remove( ip, fqdn, '6' )
 
 
-    def do_generic_update( self, ptr, new_fqdn, ip_type, domain = None ):
+    def do_generic_update( self, ptr, new_fqdn, ip_type, data_domain = None ):
         ptr.name = new_fqdn
-        if domain:
-            ptr.domain = domain
+        if data_domain:
+            ptr.data_domain = data_domain
+        ptr.full_clean()
         ptr.save()
 
-        ptr = PTR.objects.filter( name=new_fqdn, ip__ip_upper = ptr.ip.ip_upper , ip__ip_lower = ptr.ip.ip_lower, domain = ptr.domain )
+        ptr = PTR.objects.filter( name=new_fqdn, ip_upper = ptr.ip_upper , ip_lower = ptr.ip_lower, data_domain = ptr.data_domain )
         self.assertTrue(ptr)
-        if domain:
-            self.assertEqual( new_fqdn,ptr[0].name+"."+domain.name )
+        if data_domain:
+            self.assertEqual( new_fqdn,ptr[0].name+"."+data_domain.name )
         else:
             self.assertEqual( new_fqdn,ptr[0].name )
 
@@ -309,10 +291,10 @@ class PTRTests(TestCase):
         fqdn = "edu"
         self.do_generic_update( ptr, fqdn, '6' )
 
-    def do_generic_invalid_update( self, ptr, fqdn, ip_type, exception, domain = None ):
+    def do_generic_invalid_update( self, ptr, fqdn, ip_type, exception, data_domain = None ):
         e = None
         try:
-            self.do_generic_update( ptr, fqdn, ip_type, domain )
+            self.do_generic_update( ptr, fqdn, ip_type, data_domain )
         except exception, e:
             pass
         self.assertEqual(exception, type(e))
@@ -321,41 +303,29 @@ class PTRTests(TestCase):
         ptr = self.do_generic_add("128.3.1.1", "oregonstate.edu", '4')
         ptr2 = self.do_generic_add("128.3.1.1", "foo.oregonstate.edu", '4')
         fqdn = "oregonstate.edu"
-        self.do_generic_invalid_update( ptr2, fqdn, '4', RecordExistsError )
+        self.do_generic_invalid_update( ptr2, fqdn, '4', ValidationError )
         fqdn = ".oregonstate.edu "
-        self.do_generic_invalid_update( ptr, fqdn, '4', InvalidRecordNameError )
+        self.do_generic_invalid_update( ptr, fqdn, '4', ValidationError )
         fqdn = "asfd..as"
-        self.do_generic_invalid_update( ptr, fqdn, '4', InvalidRecordNameError )
-        fqdn = 2134123412
-        self.do_generic_invalid_update( ptr, fqdn, '4', InvalidRecordNameError )
+        self.do_generic_invalid_update( ptr, fqdn, '4', ValidationError )
         fqdn = "%.s#.com"
-        self.do_generic_invalid_update( ptr, fqdn, '4', InvalidRecordNameError )
-        fqdn = True
-        self.do_generic_invalid_update( ptr, fqdn, '4', InvalidRecordNameError )
-        fqdn = None
-        self.do_generic_invalid_update( ptr, fqdn, '4', InvalidRecordNameError )
+        self.do_generic_invalid_update( ptr, fqdn, '4', ValidationError )
 
     def test_invalid_update_ipv6( self ):
         ptr = self.do_generic_add(self.osu_block+":aa", "oregonstate.edu", '6')
         ptr2 = self.do_generic_add(self.osu_block+":aa", "foo.oregonstate.edu", '6')
         fqdn = "oregonstate.edu"
-        self.do_generic_invalid_update( ptr2, fqdn, '6', RecordExistsError )
+        self.do_generic_invalid_update( ptr2, fqdn, '6', ValidationError )
         fqdn = "asfd..as"
-        self.do_generic_invalid_update( ptr, fqdn, '6', InvalidRecordNameError )
-        fqdn = 2134123412
-        self.do_generic_invalid_update( ptr, fqdn, '6', InvalidRecordNameError )
+        self.do_generic_invalid_update( ptr, fqdn, '6', ValidationError )
         fqdn = "%.s#.com"
-        self.do_generic_invalid_update( ptr, fqdn, '6', InvalidRecordNameError )
-        fqdn = True
-        self.do_generic_invalid_update( ptr, fqdn, '6', InvalidRecordNameError )
-        fqdn = None
-        self.do_generic_invalid_update( ptr, fqdn, '6', InvalidRecordNameError )
+        self.do_generic_invalid_update( ptr, fqdn, '6', ValidationError )
 
     #TODO impliment this in cydns.domain.models
     """
     def test_reasign_domain( self ):
         _127 = add_reverse_ipv4_domain('127')
-        boot_strap_add_ipv6_reverse_domain("9.6.2.0")
+        boot_strap_ipv6_reverse_domain("9.6.2.0")
         osu_block = "9620:105:F000:"
         edu = add_domain("com")
         o_edu = add_domain("oregonstate.com")

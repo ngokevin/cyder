@@ -1,3 +1,11 @@
+from django.core.exceptions import ValidationError
+
+from cyder.cydns.reverse_domain.models import ReverseDomain
+from cyder.cydns.soa.models import SOA
+from cyder.cydns.ptr.models import PTR
+from cyder.cydns.ip.models import Ip
+from cyder.cydns.nameserver.models import ReverseNameserver
+
 import database
 from utilities import ip2long, long2ip
 import pdb
@@ -5,14 +13,6 @@ import pprint
 import printer
 import re
 import pdb
-
-from cyder.cydns.reverse_domain.models import ReverseDomain
-from cyder.cydns.soa.models import SOA
-from cyder.cydns.ptr.models import PTR
-from cyder.cydns.ip.models import Ip
-from cyder.cydns.nameserver.models import ReverseNameserver
-from cyder.cydns.cydns import InvalidRecordNameError, RecordExistsError
-
 
 class Reverse_Zone(object):
     BUILD_DIR="./build"
@@ -109,12 +109,9 @@ class Reverse_Zone(object):
             # TODO compile this
             if re.search( search_string, ip ):
                 #self.printer.print_PTR( ip, name )
-                ptr = PTR( ip_str = ip, name=name, ip_type='4' )
-                try:
-                    ptr.full_clean()
-                    ptr.save()
-                except Exception, e:
-                    print "Error {0}".format(e)
+                ptr,c = PTR.objects.get_or_create( ip_str = ip, name=name,
+                            ip_type='4' )
+
                 records_to_remove.append( record )
 
         for record in records_to_remove:
@@ -134,7 +131,7 @@ class Reverse_Zone(object):
             ns_name = record[1]
             try:
                 ns, created = ReverseNameserver.objects.get_or_create( server = ns_name, reverse_domain = rdomain )
-            except InvalidRecordNameError, e:
+            except ValidationError, e:
                 print "ERROR: NS NAME: %s error: %s" % (ns_name, str(e))
                 continue
         #self.printer.print_NS( '', [ record[1] for record in records ] )

@@ -1,109 +1,166 @@
 from django.db import models
-from cyder.cydns.soa.models import SOA
-from cyder.settings import CYDNS_BASE_URL
-from cyder.cydns.cydns import _validate_domain_name, InvalidRecordNameError
-from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ValidationError
 
-from django.forms import ValidationError
-from django import forms
+import cyder
+from cyder.cydns.soa.models import SOA
+from cyder.cydns.validation import validate_domain_name, _name_type_check
+from cyder.cydns.models import ObjectUrlMixin
+from cyder.cydns.validation import do_zone_validation
+from cyder.searchcydns.utils import fqdn_exists
+
 import pdb
 
 
-class Domain( models.Model ):
-    """A Domain is used for most DNS records."""
-    id              = models.AutoField(primary_key=True)
-    name            = models.CharField(max_length=100)
-    master_domain   = models.ForeignKey("self", null=True, default=None, blank=True)
-    soa             = models.ForeignKey(SOA, null=True, default=None, blank=True)
+class Domain(models.Model, ObjectUrlMixin):
+    """
+    A Domain is used as a foreign key for most DNS records.
 
-    def __init__(self, *args, **kwargs):
-        super(Domain, self).__init__(*args, **kwargs)
+    A domain's SOA should be shared by only domains within it's zone.
 
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/domain/%s/detail" % (self.pk)
+    If two domains are part of different zones, they (and their
+    subdomains) will need different SOA objects even if the data
+    contained in the SOA is exactly the same. Use the comment field to
+    distinguish between similar SOAs. Cyder enforces this condition and
+    will raise a ``ValidationError`` during ``clean_all`` if it is
+    violated.
 
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/domain/%s/update" % (self.pk)
+    For example: Say you are authoritative for the domains (and zones)
+    ``foo.com`` and ``baz.com``.  These zones should have different
+    SOA's because they are part of two separate zones. If you had the
+    subdomain ``baz.foo.com``, it could have the same SOA as the
+    ``foo.com`` domain because it is in the same zone.
+    """
 
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/domain/%s/delete" % (self.pk)
-
-    def delete(self, *args, **kwargs):
-        _check_for_children( self )
-        super(Domain, self).delete(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super(Domain, self).save(*args, **kwargs)
-
-    def clean( self ):
-        _validate_domain_name( self.name )
-        possible = Domain.objects.filter( name = self.name )
-        if possible and possible[0].pk != self.pk:
-            raise DomainExistsError("The %s domain already exists." % (self.name))
-
-        self.master_domain = _name_to_master_domain( self.name )
-
-    def __str__(self):
-        return "%s" % (self.name)
-    def __repr__(self):
-        return "<Domain '%s'>" % (self.name)
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True,
+                            validators=[validate_domain_name])
+    master_domain = models.ForeignKey("self", null=True,
+                                      default=None, blank=True)
+    soa = models.ForeignKey(SOA, null=True, default=None, blank=True)
+    delegated = models.BooleanField(default=False, null=False, blank=True)
 
     class Meta:
         db_table = 'domain'
 
+    def delete(self, *args, **kwargs):
+        self.check_for_children()
+        self.reassign_data_domains()
+        super(Domain, self).delete(*args, **kwargs)
 
-def _check_for_children( domain ):
-    if Domain.objects.filter( master_domain = domain ):
-        raise DomainHasChildDomains("Before deleting this domain, please remove it's children.")
-    pass
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(Domain, self).save(*args, **kwargs)
+        self.look_for_data_domains()  # This needs to come after super's
+        # save becase when a domain is first created it is not in the db.
+        # look_for_data_domains relies on the domain having a pk.
 
-class DomainNotFoundError(ValidationError):
-    """This exception is thrown when an attempt is made to reference a domain that doesn't exist."""
+    def clean(self):
+        self.master_domain = _name_to_master_domain(self.name)
+        do_zone_validation(self)
+        if self.pk is None:
+            # The object doesn't exist in the db yet. Make sure we don't
+            # conflict with existing objects.
+            qset = fqdn_exists(self.name)
+            if qset:
+                objects = qset.all()
+                raise ValidationError("Objects with this name already "
+                                      "exist {0}".format(objects))
 
-class DomainExistsError(ValidationError):
-    """This exception is thrown when an attempt is made to create a domain that already exists."""
-class MasterDomainNotFoundError(ValidationError):
-    """This exception is thrown when an attempt is made to add a domain that doesn't have a valid master domain."""
-class DomainHasChildDomains(ValidationError):
-    """This exception is thrown when an attempt is made to delete a domain that has children domains."""
+    def __str__(self):
+        return "{0}".format(self.name)
 
-"""
-Given an name return the most specific domain that the ip can belong to.
-This is used to check for rule 1 in add_domain() rules.
-@param: name
-@return: domain
+    def __repr__(self):
+        return "<Domain '{0}'>".format(self.name)
 
-A name x.y.z can be split up into x y and z. The domains, 'y.z' and 'z' shoud exist.
-@return master_domain if valid domain
-        None if invalid master domain
-"""
+    def check_for_children(self):
+        if self.domain_set.all().exists():
+            raise ValidationError("Before deleting this domain, please "
+                                  "remove it's children.")
 
-def _name_to_master_domain( dname ):
-    """Given an domain name, this function returns the appropriate master domain.
+    def look_for_data_domains(self):
+        """When a domain is created, look for CNAMEs and PTRs that could
+        have data domains in this domain."""
+        if self.master_domain:
+            ptrs = self.master_domain.ptr_set.all()
+            cnames = self.master_domain.data_domains.all()
+        else:
+            CNAME = cyder.cydns.cname.models.CNAME
+            PTR = cyder.cydns.ptr.models.PTR
+            cnames = CNAME.objects.filter(data_domain=None)
+            ptrs = PTR.objects.filter(data_domain=None)
 
-    :param dname: The domain for which we are using to search for a master domain.
-    :type dname: str
+        for ptr in ptrs:
+            ptr.data_domain = _name_to_domain(ptr.name)
+            ptr.save()
+
+        for cname in cnames:
+            cname.data_domain = _name_to_domain(cname.data)
+            cname.save()
+
+
+
+
+    def reassign_data_domains(self):
+        """:class:`PTR`s and :class:`CNAME`s keep track of which domain
+        their data is pointing to. This function reassign's those data
+        domains to the data_domain's master domain."""
+
+        for ptr in self.ptr_set.all():
+            if ptr.data_domain.master_domain:
+                ptr.data_domain = ptr.data_domain.master_domain
+            else:
+                ptr.data_domain = None
+            ptr.save()
+
+        for cname in self.data_domains.all():
+            if cname.data_domain.master_domain:
+                cname.data_domain = cname.data_domain.master_domain
+            else:
+                cname.data_domain = None
+            cname.save()
+
+# A bunch of handy functions that would cause circular dependencies if
+# they were in another file.
+def _name_to_master_domain(name):
+    """Given an domain name, this function returns the appropriate
+    master domain.
+
+    :param name: The domain for which we are using to search for a
+    master domain.
+    :type name: str
     :returns: domain -- Domain object
-    :raises: MasterDomainNotFoundError
+    :raises: ValidationError
     """
-    tokens = dname.split('.')
+    tokens = name.split('.')
     master_domain = None
-    for i in reversed(range(len(tokens)-1)):
-        parent_dname = '.'.join(tokens[i+1:])
-        possible_master_domain = Domain.objects.filter( name = parent_dname )
+    for i in reversed(range(len(tokens) - 1)):
+        parent_name = '.'.join(tokens[i + 1:])
+        possible_master_domain = Domain.objects.filter(name=parent_name)
         if not possible_master_domain:
-            raise MasterDomainNotFoundError("Master Domain for domain %s, not found." % (dname))
+            raise ValidationError("Master Domain for domain {0}, not "
+                                  "found.".format(name))
         else:
             master_domain = possible_master_domain[0]
     return master_domain
 
-def _name_to_domain( fqdn ):
+
+def _name_to_domain(fqdn):
+    _name_type_check(fqdn)
     labels = fqdn.split('.')
     for i in range(len(labels)):
         name = '.'.join(labels[i:])
-        longest_match = Domain.objects.filter( name = name )
+        longest_match = Domain.objects.filter(name=name)
         if longest_match:
             return longest_match[0]
     return None
 
+
+def _check_TLD_condition(record):
+    domain = Domain.objects.filter(name=record.fqdn)
+    if not domain:
+        return
+    if record.label == '' and domain[0] == record.domain:
+        return  # This is allowed
+    else:
+        raise ValidationError("You cannot create an record that points "
+                              "to the top level of another domain.")

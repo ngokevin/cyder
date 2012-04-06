@@ -1,33 +1,36 @@
 from django.db import models
-from cyder.cydns.domain.models import Domain
-from cyder.cydns.common.models import CommonRecord
-from cyder.settings import CYDNS_BASE_URL
 
-class TXT( CommonRecord ):
-    id              = models.AutoField(primary_key=True)
-    meta_data       = models.TextField()
+from cyder.cydns.common.models import CommonRecord
+
+
+class TXT(CommonRecord):
+    """
+    >>> TXT(label=label, domain=domain, txt_data=txt_data)
+    """
+
+    id = models.AutoField(primary_key=True)
+    txt_data = models.TextField()
 
     def details(self):
-        return  (
-                    ('FQDN', self.fqdn()),
-                    ('Record Type', 'TXT'),
-                    ('Text', self.meta_data)
-                )
+        return (
+                ('FQDN', self.fqdn),
+                ('Record Type', 'TXT'),
+                ('Text', self.txt_data)
+               )
 
-    def get_absolute_url(self):
-        return CYDNS_BASE_URL + "/txt/%s/detail" % (self.pk)
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(TXT, self).save(*args, **kwargs)
 
-    def get_edit_url(self):
-        return CYDNS_BASE_URL + "/txt/%s/update" % (self.pk)
-
-    def get_delete_url(self):
-        return CYDNS_BASE_URL + "/txt/%s/delete" % (self.pk)
-
-    def fqdn(self):
-        if self.label:
-            return self.label+"."+self.domain.name
-        else:
-            return self.domain.name
+    def clean(self):
+        super(TXT, self).clean()
+        super(TXT, self).check_for_delegation()
+        super(TXT, self).check_for_cname()
 
     class Meta:
         db_table = 'txt'
+        # unique_together = ('domain', 'label', 'txt_data')
+        # TODO
+        # _mysql_exceptions.OperationalError: (1170, "BLOB/TEXT column
+        # 'txt_data' used in key specification without a key length")
+        # Fix that ^

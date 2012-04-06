@@ -5,15 +5,14 @@ import printer
 import sys
 import os
 
-from cyder.cydns.cydns import InvalidRecordNameError
-from cyder.cydns.domain.models import Domain, DomainExistsError
+from django.core.exceptions import ValidationError
+from cyder.cydns.domain.models import Domain
 from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.address_record.models import AddressRecord
-from cyder.cydns.ip.models import Ip
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.mx.models import MX
 from cyder.cydns.cname.models import CNAME
-from cyder.cydns.nameserver.models import Nameserver, _needs_glue
+from cyder.cydns.nameserver.models import Nameserver
 """
 A Zone object should be initialized at a base domain. From that domain it should start to
 build a zone file. These are the steps it shuold take to build it's zone file.
@@ -117,7 +116,7 @@ class Zone(object):
         if dname not in bad_dnames:
             # Other baddies
             if dname.find('in-addr.arpa') >= 0:
-                pass
+                return None
             else:
                 # IT's a good domain. First see if it exists already. Else create it.
                 try:
@@ -148,18 +147,10 @@ class Zone(object):
             ttl = record[5]
             # Cyder stuff
             if cdomain:
-                possible = MX.objects.filter( label=name, domain = cdomain, server = server, priority= prio, ttl = ttl )
-                if possible: # Have we already created this?
-                    pass
-                else: # Create a new mx
-                    print name
-                    print server
-                    print cdomain
-                    mx = MX( label=name, domain = cdomain, server = server, priority= prio, ttl = ttl )
-                    try:
-                        mx.save()
-                    except InvalidRecordNameError, e:
-                        print "ERROR: %s. name: %s  cdomain: %s server: %s" %(str(e), name, str(cdomain), server)
+                try:
+                    mx, _ = MX.objects.get_or_create( label=name, domain = cdomain, server = server, priority= prio, ttl = ttl )
+                except ValidationError, e:
+                    print "ERROR: %s. name: %s  cdomain: %s server: %s" %(str(e), name, str(cdomain), server)
 
         self.gen_ORIGIN( domain, dname , Zone.DEFAULT_TTL )
 
@@ -191,11 +182,12 @@ class Zone(object):
         MINIMUM = record[7] #TODO What is minimum, using TTL
         ##self.printer.print_SOA( record[7], dname, primary_master, contact, Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
         # Let's create an soa in the new database and return it.
-        possible = SOA.objects.filter( primary = primary_master, contact = contact )
-        if possible:
-            return possible[0]
-        soa = SOA( primary = primary_master, contact = contact, retry = RETRY, refresh = REFRESH )
-        soa.save()
+        try:
+            soa, _ = SOA.objects.get_or_create( primary =
+                    primary_master, contact = contact, comment="SOA for "
+                    "{0} zone".format(dname))
+        except:
+            print "ERROR: creating soa {0}".format(soa)
         return soa
 
 
@@ -208,7 +200,11 @@ class Zone(object):
         self.cur.execute("SELECT * FROM `zone_cname` WHERE `domain`='%s';" % (domain))
         records = self.cur.fetchall()
         for record in records:
+<<<<<<< HEAD
             ##self.printer.print_CNAME( record[2], record[1] )
+=======
+            self.printer.print_CNAME( record[2], record[1] )
+>>>>>>> de9599ab6787125afba08c52ddf4e6c983ad413d
             try:
                 cname, created = CNAME.objects.get_or_create( label=record[2], domain=cdomain, data=record[1])
             except:
@@ -269,17 +265,11 @@ class Zone(object):
                     cdomain = cdomain[0]
 
             ip_str = long2ip(record[1])
-            if not AddressRecord.objects.filter( label = name, domain= cdomain, ip__ip_str = ip_str ):
-                ip = Ip( ip_str= ip_str, ip_type='4')
-                ip.save()
-                rec = AddressRecord( label=name, domain = cdomain, ip = ip , ip_type='4' )
-                try:
-                    rec.save()
-                except InvalidRecordNameError, e:
-                    print "ERROR: %s name: %s domain: %s ip: %s" % (str(e), name, cdomain.name, ip_str )
-                    ip.delete()
-            else:
-                print "SKIPPING name: %s domain: %s ip: %s (already created)" % (name, cdomain.name, ip_str )
+            try:
+                AddressRecord.objects.get_or_create( label=name,
+                        domain= cdomain, ip_str=ip_str, ip_type='4' )
+            except ValidationError, e:
+                print "ERROR: %s name: %s domain: %s ip: %s" % (str(e), name, cdomain.name, ip_str )
 
         # Revert to dname origin.
         self.gen_ORIGIN( domain, dname , 999 )
@@ -293,11 +283,23 @@ class Zone(object):
         for record in records:
             if record[1] == 0:
                 continue
+<<<<<<< HEAD
             #self.printer.print_A( record[3] , long2ip(record[1]) )
             name= record[3]
             ip_str = long2ip(record[1])
             arec, _ = AddressRecord.objects.get_or_create( label=name,
                     domain= cdomain, ip_str=ip_str, ip_type='4' )
+=======
+            self.printer.print_A( record[3] , long2ip(record[1]) )
+            name= record[3]
+            ip_str = long2ip(record[1])
+            print "{0} A {1}".format(name, ip_str)
+            try:
+                AddressRecord.objects.get_or_create( label=name,
+                        domain= cdomain, ip_str=ip_str, ip_type='4' )
+            except ValidationError, e:
+                print "ERROR: %s name: %s domain: %s ip: %s" % (str(e), name, cdomain.name, ip_str )
+>>>>>>> de9599ab6787125afba08c52ddf4e6c983ad413d
 
     def gen_NS( self, domain, dname, cdomain=None ):
         self.cur.execute("SELECT * FROM `nameserver` WHERE `domain`='%s';" % (domain))
@@ -310,16 +312,12 @@ class Zone(object):
                 possible = Nameserver.objects.filter( domain = cdomain, server = ns_name )
                 if possible:
                     continue
-                ns = Nameserver( domain = cdomain, server = ns_name )
-                if _needs_glue(ns):
-                    a_rec = AddressRecord.objects.filter( label = ns_name.split('.')[0], domain=cdomain )
-                    if not a_rec:
-                        print "ERROR: Could not find glue. ns: %s domain: %s" % (ns_name, cdomain.name)
-                        continue
-                    else:
-                        a_rec = a_rec[0]
-                    ns.glue = a_rec
                 try:
                     ns, _ = Nameserver.objects.get_or_create( domain = cdomain, server = ns_name )
+<<<<<<< HEAD
                 except Exception, e:
                     print "ERROR: couldn't create ns {0} {1}".format(ns_name, e)
+=======
+                except:
+                    print "ERROR: couldn't create ns {0}".format(ns_name)
+>>>>>>> de9599ab6787125afba08c52ddf4e6c983ad413d
