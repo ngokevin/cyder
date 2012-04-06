@@ -1,65 +1,80 @@
 {% extends "base.html" %}
-{% block content %}
-{% from "tables.html" import render_table %}
-
-<h3>Domain {{ domain.name }}</h3>
-<a href='{{ domain.get_edit_url() }}'>Edit</a>
-<a href='{{ domain.get_delete_url() }}'>Delete</a>
-<br/>
-{% if domain.soa %}
-SOA: <a href='{{ domain.soa.get_absolute_url() }}'>{{ domain.soa.primary }}</a>
-{% endif %}
-<br/>
 
 
-{% if domain.master_domain %}
-Master Domain: <a href='{{ domain.master_domain.get_absolute_url() }}'>{{ domain.master_domain.name }}</a>
-{% endif %}
-<br/>
-<h4>Domain Tools</h4>
-{% if domain.delegated %}
-This domain is delegated.
-<br/>
-{% else %}
-<a href='/cyder/cydns/cname/{{ domain.pk }}/create'>Create CNAME</a>
-<a href='/cyder/cydns/mx/{{ domain.pk }}/create'>Create MX</a>
-<a href='/cyder/cydns/srv/{{ domain.pk }}/create'>Create SRV</a>
-<a href='/cyder/cydns/txt/{{ domain.pk }}/create'>Create TXT</a>
-<a href='/cyder/cydns/address_record/{{ domain.pk }}/create'>Create A (AAAA)</a>
-<a href='/cyder/cydns/ptr/create'>Create PTR</a>
-{% endif %}
-<a href='/cyder/cydns/nameserver/{{ domain.pk }}/create'>Create NS</a>
-<br />
-
-{% if ns_matrix %}
-    <h4> Nameservers </h4>
-    {{ render_table( ns_headers, ns_matrix, ns_urls ) }}
-{% endif %}
-{% if address_matrix %}
-    <h4> Address Records </h4>
-    {{ render_table( address_headers, address_matrix, address_urls ) }}
-{% endif %}
-{% if mx_matrix %}
-    <h4> MX Records </h4>
-    {{ render_table( mx_headers, mx_matrix, mx_urls ) }}
-{% endif %}
-{% if srv_matrix %}
-    <h4> SRV Records </h4>
-    {{ render_table( srv_headers, srv_matrix, srv_urls ) }}
-{% endif %}
-{% if txt_matrix %}
-    <h4> TXT Records </h4>
-    {{ render_table( txt_headers, txt_matrix, txt_urls ) }}
-{% endif %}
-{% if cname_matrix %}
-    <h4> CNAME Records </h4>
-    {{ render_table( cname_headers, cname_matrix, cname_urls ) }}
-{% endif %}
-{% if ptr_matrix %}
-    <h4> PTR Records </h4>
-    {{ render_table( ptr_headers, ptr_matrix, ptr_urls ) }}
-{% endif %}
+{% block title %}
+    {{ domain.name }}
 {% endblock %}
-{# Print Address Records #}
 
 
+{% block content %}
+    {% from "tables.html" import render_table %}
+
+    <h1>Domain {{ domain.name }}</h1>
+
+    <a href='{{ domain.get_edit_url() }}'>Edit</a>
+    <a href='{{ domain.get_delete_url() }}'>Delete</a>
+
+    <br/>
+
+    {% if domain.soa %}
+        SOA: <a href='{{ domain.soa.get_absolute_url() }}'>{{ domain.soa.primary }}</a>
+        <br/>
+    {% endif %}
+
+    {% if domain.master_domain %}
+        Master Domain: <a href='{{ domain.master_domain.get_absolute_url() }}'>{{ domain.master_domain.name }}</a>
+        <br/>
+    {% endif %}
+
+    <h2>Domain Tools</h2>
+
+    {% if domain.delegated %}
+        This domain is delegated.
+        <br/>
+    {% else %}
+        <a href='/cyder/cydns/cname/{{ domain.pk }}/create/'>Create CNAME</a>
+        <a href='/cyder/cydns/mx/{{ domain.pk }}/create/'>Create MX</a>
+        <a href='/cyder/cydns/srv/{{ domain.pk }}/create/'>Create SRV</a>
+        <a href='/cyder/cydns/txt/{{ domain.pk }}/create/'>Create TXT</a>
+        <a href='/cyder/cydns/address_record/{{ domain.pk }}/create/'>Create A (AAAA)</a>
+        <a href='/cyder/cydns/ptr/create/'>Create PTR</a>
+    {% endif %}
+
+    <a href='/cyder/cydns/nameserver/{{ domain.pk }}/create'>Create NS</a>
+    <br />
+
+    {% if ns_matrix %}
+        <h3> Nameservers </h3>
+        {{ render_table(ns_headers, ns_matrix, ns_urls) }}
+    {% endif %}
+
+    {% if address_matrix %}
+        <h3> Address Records </h3>
+        {{ render_table(address_headers, address_matrix, address_urls) }}
+    {% endif %}
+
+    {% if mx_matrix %}
+        <h3> MX Records </h3>
+        {{ render_table(mx_headers, mx_matrix, mx_urls) }}
+    {% endif %}
+
+    {% if srv_matrix %}
+        <h3> SRV Records </h3>
+        {{ render_table(srv_headers, srv_matrix, srv_urls) }}
+    {% endif %}
+
+    {% if txt_matrix %}
+        <h3> TXT Records </h3>
+        {{ render_table(txt_headers, txt_matrix, txt_urls) }}
+    {% endif %}
+
+    {% if cname_matrix %}
+        <h3> CNAME Records </h3>
+        {{ render_table(cname_headers, cname_matrix, cname_urls) }}
+    {% endif %}
+
+    {% if ptr_matrix %}
+        <h3> PTR Records </h3>
+        {{ render_table(ptr_headers, ptr_matrix, ptr_urls) }}
+    {% endif %}
+{% endblock %}

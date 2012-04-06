@@ -1,9 +1,9 @@
 {% extends "base.html" %}
+
 {% block content %}
-<h3>Domains</h3>
+    <h1>Domains</h1>
     {% for domain in domains %}
-    <a href='{{ domain.get_absolute_url() }}'>{{ domain.name }}</a>
+        <a href='{{ domain.get_absolute_url() }}'>{{ domain.name }}</a>
         <br />
     {% endfor %}
 {% endblock %}
-
