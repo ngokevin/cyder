@@ -5,6 +5,8 @@ from cyder.cydns.views import Cydns
 
 urlpatterns = patterns('',
     url(r'^$', Cydns.as_view() ),
+
+    url(r'ctnr/', include('cyder.core.ctnr.urls')),
     url(r'cydns/', include('cyder.cydns.urls')),
 
     url(r'^login/$', 'django_cas.views.login'),

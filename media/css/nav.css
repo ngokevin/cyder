@@ -2,6 +2,9 @@
 .search-query {
     margin-top: 5px;
 }
+li.dropdown {
+    display: inline;
+}
 
 /* Left nav bar */
 nav {

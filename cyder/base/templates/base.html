@@ -20,16 +20,23 @@
                 <div class="navbar-inner">
                     <div class="container-fluid">
                         <ul class="nav pull-left">
-                            <input type="text" class="search-query" placeholder="Change container...">
 
+                            <!-- Container Dropdown -->
                             <li class="dropdown">
                                 <a class="dropdown-toggle" data-toggle="dropdown" href="#"><b class="caret"></b></a>
                                 <ul class="dropdown-menu">
+                                    <li><a href="#">{{ request.session.ctnr.name }}</a></li>
+                                    <li class="divider"></li>
                                     {% for ctnr in request.session.ctnrs %}
-                                        <li><a href="#">{{ ctnr.name }}</a></li>
+                                        {% if ctnr.name != request.session.ctnr.name %}
+                                            <li><a href="/ctnr/{{ ctnr.id }}/change/">{{ ctnr.name }}</a></li>
+                                        {% endif %}
                                     {% endfor %}
                                 </ul>
                             </li>
+
+                            <!-- Container Search -->
+                            <input type="text" class="search-query" placeholder="Change container...">
                         </ul>
 
                         <ul class="nav pull-right">
