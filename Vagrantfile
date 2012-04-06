@@ -13,11 +13,11 @@ rescue Errno::ENOENT # No vagrantconfig_local.yaml found -- that's OK; just
 end
 
 CONF = _config
-MOUNT_POINT = '/home/vagrant/project'
+MOUNT_POINT = '/home/vms'
 
 Vagrant::Config.run do |config|
-    config.vm.box = "lucid32"
-    config.vm.box_url = "http://files.vagrantup.com/lucid32.box"
+    config.vm.box = "debian"
+    config.vm.box_url = "/data/vagrant/debian-6_64.box"
 
     config.vm.forward_port("web", 8000, 8000)
 

@@ -105,6 +105,7 @@ class MXTests(TestCase):
         domain = self.o_e
         data = "foo.com"
         cn = CNAME( label = label, domain = domain, data = data )
+        cn.full_clean()
         cn.save()
 
         data = { 'label':'' ,'domain':self.o_e ,'server':'cnamederp.oregonstate.org' ,'priority':2 ,'ttl':2222 }

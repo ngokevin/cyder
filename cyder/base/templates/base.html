@@ -16,36 +16,7 @@
     <div class="wrap main container-fluid">
 
         <header>
-            <div class="navbar navbar-fixed-top">
-                <div class="navbar-inner">
-                    <div class="container-fluid">
-                        <ul class="nav pull-left">
-
-                            <!-- Container Dropdown -->
-                            <li class="dropdown">
-                                <a class="dropdown-toggle" data-toggle="dropdown" href="#"><b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="#">{{ request.session.ctnr.name }}</a></li>
-                                    <li class="divider"></li>
-                                    {% for ctnr in request.session.ctnrs %}
-                                        {% if ctnr.name != request.session.ctnr.name %}
-                                            <li><a href="/ctnr/{{ ctnr.id }}/change/">{{ ctnr.name }}</a></li>
-                                        {% endif %}
-                                    {% endfor %}
-                                </ul>
-                            </li>
-
-                            <!-- Container Search -->
-                            <input class="search-query" type="text" placeholder="Change container...">
-                        </ul>
-
-                        <ul class="nav pull-right">
-                            <li><a href="#">{{ request.user }} on {{ request.session.ctnr.name }}</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
+            {% include "top_nav.html" %}
             {% if messages %}
                 <ul class="messages">
                     {% for message in messages %}
@@ -53,7 +24,6 @@
                     {% endfor %}
                 </ul>
             {% endif %}
-
         </header>
 
         <div class="row-fluid">

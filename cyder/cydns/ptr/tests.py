@@ -34,6 +34,7 @@ class PTRTests(TestCase):
 
     def do_generic_add( self, ip_str, fqdn, ip_type, domain = None ):
         ret = PTR( name = fqdn, ip_str = ip_str, ip_type=ip_type )
+        ret.full_clean()
         ret.save()
 
 
@@ -62,41 +63,41 @@ class PTRTests(TestCase):
 
     def test_add_ipv4_ptr(self):
         ret = self.do_generic_add("128.193.1.1", "foo.bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add("128.193.1.2", "foo.bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add("128.193.1.1", "baasdfr.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.o_e )
+        self.assertEqual( ret.data_domain, self.o_e )
         ret = self.do_generic_add("128.193.1.1", "fasdfasfdoo.bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add("128.193.1.1", "lj21312bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.o_e )
+        self.assertEqual( ret.data_domain, self.o_e )
         ret = self.do_generic_add("128.193.1.3", "baasdfr.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.o_e )
+        self.assertEqual( ret.data_domain, self.o_e )
         ret = self.do_generic_add("128.193.1.7", "fasdfasfdoo.bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add("128.193.16.1", "lj21312bar.oregonstate.edu", '4')
-        self.assertEqual( ret.domain, self.o_e )
+        self.assertEqual( ret.data_domain, self.o_e )
         ret = self.do_generic_add("128.193.16.1", "lj21312bar", '4')
-        self.assertEqual( ret.domain, None )
+        self.assertEqual( ret.data_domain, None )
         ret = self.do_generic_add("128.193.16.1", "ewr.rqewr.lj21312bar", '4')
-        self.assertEqual( ret.domain, None )
+        self.assertEqual( ret.data_domain, None )
 
     def test_add_ipv6_ptr(self):
         ret = self.do_generic_add(self.osu_block+":1", "foo.bar.oregonstate.edu", '6')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add(self.osu_block+":8", "foo.bar.oregonstate.edu", '6')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add(self.osu_block+":f", "asdflkhasidfgwhqiefuhgiasdf.foo.bar.oregonstate.edu", '6')
-        self.assertEqual( ret.domain, self.b_o_e )
+        self.assertEqual( ret.data_domain, self.b_o_e )
         ret = self.do_generic_add(self.osu_block+":d", "foo.bar.oregonstatesdfasdf.edu", '6')
-        self.assertEqual( ret.domain, self.o )
+        self.assertEqual( ret.data_domain, self.o )
         ret = self.do_generic_add(self.osu_block+":3", "foo.bar.oregonstate.eddfsafsadfu", '6')
-        self.assertEqual( ret.domain, None )
+        self.assertEqual( ret.data_domain, None )
         ret = self.do_generic_add(self.osu_block+":2", "foo.b213123123ar.oregonstate.edu", '6')
-        self.assertEqual( ret.domain, self.o_e )
+        self.assertEqual( ret.data_domain, self.o_e )
         ret = self.do_generic_add(self.osu_block+":5", "foo.bar.oregondfastate.com", '6')
-        self.assertEqual( ret.domain, None)
+        self.assertEqual( ret.data_domain, None)
 
 
     def do_generic_invalid_add( self, ip, fqdn, ip_type, exception, domain = None ):
@@ -199,13 +200,14 @@ class PTRTests(TestCase):
 
     def do_generic_remove( self, ip, fqdn, ip_type ):
         ptr = PTR( ip_str = ip, name = fqdn, ip_type=ip_type )
+        ptr.full_clean()
         ptr.save()
 
         ptr.delete()
 
         ip = Ip( ip_str = ip, ip_type=ip_type )
         ip.clean_ip()
-        ptr = PTR.objects.filter( name=fqdn, ip_upper = ip.ip_upper, ip_lower = ip.ip_lower, domain = ptr.domain )
+        ptr = PTR.objects.filter( name=fqdn, ip_upper = ip.ip_upper, ip_lower = ip.ip_lower, data_domain = ptr.data_domain )
         self.assertFalse(ptr)
 
     def test_remove_ipv4( self ):
@@ -249,16 +251,17 @@ class PTRTests(TestCase):
         self.do_generic_remove( ip, fqdn, '6' )
 
 
-    def do_generic_update( self, ptr, new_fqdn, ip_type, domain = None ):
+    def do_generic_update( self, ptr, new_fqdn, ip_type, data_domain = None ):
         ptr.name = new_fqdn
-        if domain:
-            ptr.domain = domain
+        if data_domain:
+            ptr.data_domain = data_domain
+        ptr.full_clean()
         ptr.save()
 
-        ptr = PTR.objects.filter( name=new_fqdn, ip_upper = ptr.ip_upper , ip_lower = ptr.ip_lower, domain = ptr.domain )
+        ptr = PTR.objects.filter( name=new_fqdn, ip_upper = ptr.ip_upper , ip_lower = ptr.ip_lower, data_domain = ptr.data_domain )
         self.assertTrue(ptr)
-        if domain:
-            self.assertEqual( new_fqdn,ptr[0].name+"."+domain.name )
+        if data_domain:
+            self.assertEqual( new_fqdn,ptr[0].name+"."+data_domain.name )
         else:
             self.assertEqual( new_fqdn,ptr[0].name )
 
@@ -288,10 +291,10 @@ class PTRTests(TestCase):
         fqdn = "edu"
         self.do_generic_update( ptr, fqdn, '6' )
 
-    def do_generic_invalid_update( self, ptr, fqdn, ip_type, exception, domain = None ):
+    def do_generic_invalid_update( self, ptr, fqdn, ip_type, exception, data_domain = None ):
         e = None
         try:
-            self.do_generic_update( ptr, fqdn, ip_type, domain )
+            self.do_generic_update( ptr, fqdn, ip_type, data_domain )
         except exception, e:
             pass
         self.assertEqual(exception, type(e))
