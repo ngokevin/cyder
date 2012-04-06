@@ -35,7 +35,7 @@ class SOAViewTests(TestCase):
         self.assertTrue(resp.status_code in (302, 200))
 
     def test_get_object_details_soa(self):
-        resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/detail/" % (self.url_slug, self.test_obj.pk))
+        resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/" % (self.url_slug, self.test_obj.pk))
         self.assertEqual(resp.status_code, 200)
 
     def test_get_object_delete_soa(self):

@@ -64,6 +64,8 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'cyder.cydns.ip',
     'cyder.cydns.mx',
     'cyder.cydns.nameserver',
+    'cyder.cydns.nameserver.nameserver',
+    'cyder.cydns.nameserver.reverse_nameserver',
     'cyder.cydns.ptr',
     'cyder.cydns.reverse_domain',
     'cyder.cydns.soa',

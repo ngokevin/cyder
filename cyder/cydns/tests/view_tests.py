@@ -1,14 +1,12 @@
-from django.test import TestCase
-from django.test.client import Client
-
-from cyder.settings import CYDNS_BASE_URL
-from cyder.cydns.domain.models import Domain
-from cyder.cydns.nameserver.models import Nameserver
-
 import random
 import string
 
-import pdb
+from django.test import TestCase
+from django.test.client import Client
+
+from cyder.cydns.domain.models import Domain
+from cyder.cydns.nameserver.nameserver.models import Nameserver
+from cyder.settings import CYDNS_BASE_URL
 
 
 class GenericViewTests(object):
@@ -108,7 +106,7 @@ class GenericViewTests(object):
     def build_get_object_details(self):
         # url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/detail$', NSDetailView.as_view() ),
         def test_get_object_details(self):
-            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/detail/" % (self.url_slug, self.test_obj.pk))
+            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/" % (self.url_slug, self.test_obj.pk))
             self.assertEqual(resp.status_code, 200)
         return test_get_object_details
 

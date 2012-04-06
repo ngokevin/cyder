@@ -1,26 +1,16 @@
-"""
-This file demonstrates writing tests using the unittest module. These will pass
-when you run "manage.py test".
+import ipaddr
 
-Replace this with more appropriate tests for your application.
-"""
-
-from django.test import TestCase
-from django.db import IntegrityError
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+from django.test import TestCase
 
+from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.domain.models import Domain
+from cyder.cydns.ip.models import ipv6_to_longs
+from cyder.cydns.nameserver.nameserver.models import Nameserver
 from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.reverse_domain.models import boot_strap_ipv6_reverse_domain
 
-from cyder.cydns.ip.models import ipv6_to_longs
-
-from cyder.cydns.domain.models import Domain
-
-from cyder.cydns.address_record.models import AddressRecord
-from cyder.cydns.nameserver.models import Nameserver
-
-import ipaddr
-import pdb
 
 class AddressRecordTests(TestCase):
     def setUp(self):
