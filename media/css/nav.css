@@ -83,18 +83,22 @@ a.nav-link:hover {
 
 /* Highlighted nav-link when within that part of app */
 .active-nav a {
-    background: rgb(0,0,144);
 }
 .active-nav a:hover {
-    background: rgb(0,0,112);
 }
 
 /* Sublinks that appear deeper within app */
 a.sub-link {
-    color: rgb(230,230,230);
     background: rgb(120,120,120);
 }
 a.sub-link:hover {
-    color: rgb(230,230,230);
     background: rgb(110, 110, 110);
 }
+
+a.delete-link.sub-link {
+    background: rgb(160,0,0);
+}
+a.delete-link.sub-link:hover {
+    background: rgb(140, 0, 0);
+}
+
