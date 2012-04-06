@@ -58,10 +58,10 @@ class Reverse_Zone(object):
             split = reverse_name.split('.')
             for i in range(len(split)):
                 name = '.'.join(split[:i+1])
-                print "NAME: "+name
                 rdomain, created = ReverseDomain.objects.get_or_create( name = name, ip_type='4')
                 if created:
-                    print "Created reverse domain %s" % (name)
+                    print "Created reverse domain %s (%s)" % (name,
+                            rdomain.pk)
                 else:
                     print "Reverse domain %s already existed" % (name)
 
@@ -100,9 +100,7 @@ class Reverse_Zone(object):
         #if not re.search( "^10" ,self.ip_from_domainname(dname) ):
         #    return
 
-        self.gen_ORIGIN( domain, dname, 999 )
         self.gen_NS( domain, dname, rdomain )
-        self.gen_ORIGIN( domain, 'in-addr.arpa', 999 )
         records_to_remove = []
         search_string = "^"+self.ip_from_domainname(dname).replace('.','\.')+"\."
         for record in records:
@@ -136,10 +134,6 @@ class Reverse_Zone(object):
             except ValidationError, e:
                 print "ERROR: NS NAME: %s error: %s" % (ns_name, str(e))
                 continue
-            if created:
-                print "Created ns"
-            else:
-                print "Skipping %s already exists." % (ns)
         #self.printer.print_NS( '', [ record[1] for record in records ] )
 
     """
@@ -148,8 +142,6 @@ class Reverse_Zone(object):
     def check_for_SOA( self, domain, dname ):
         self.cur.execute("SELECT * FROM `soa` WHERE `domain`='%s' ;" % (domain))
         records = self.cur.fetchall() # Could use fetch one. Want to do check though.
-        if len(records) > 1:
-            self.printer.print_raw( ";Sanity Check failed\n" )
         if not records:
             # We don't have an SOA for this domain.
             return False
@@ -177,10 +169,6 @@ class Reverse_Zone(object):
         soa, created = SOA.objects.get_or_create(  primary=primary_master,
                         contact = contact, comment = "SOA for {0} "
                         "zone".format(dname))
-        if created:
-            print "Created soa"
-        else:
-            print "Skipping %s already exists." % (soa)
         return soa
 
     """
