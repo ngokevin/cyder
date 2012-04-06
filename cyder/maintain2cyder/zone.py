@@ -74,7 +74,7 @@ class Zone(object):
         self.cur = cur
         self.domain = domain
         self.dname = dname
-        self.printer = printer.Printer( fd=zone_fd )
+        #self.printer = printer.Printer( fd=zone_fd )
 
 
 
@@ -84,21 +84,19 @@ class Zone(object):
     Notes: We skip domains with in-addr.arpa in their name (they are reverse domains).
         The Reverse_Zone object takes care of those specific domains.
     """
-    def walk_domain( self, cur_domain , dname ):
+    def walk_domain( self, cur_domain , dname, parent_cdomain=None ):
         #TODO Consider moving the SOA genration into __init__
         soa = None
         if self.check_for_SOA( cur_domain, dname ):
             soa = self.gen_SOA( cur_domain, dname )
 
         new_domain = self.gen_domain( cur_domain, dname )
+        if not new_domain:
+            pdb.set_trace()
         # If we found an soa, assign it. Else inheirit soa from master (if master domain has one)
-        if soa and new_domain:
-            new_domain.soa = soa
+        if parent_cdomain:
+            new_domain.soa = parent_cdomain.soa
             new_domain.save()
-        else:
-            if new_domain and new_domain.master_domain and new_domain.master_domain.soa:
-                new_domain.soa = new_domain.master_domain.soa
-                new_domain.save()
 
         self.cur.execute("""SELECT * FROM `domain` WHERE `name` NOT LIKE "%%.in-addr.arpa" AND `master_domain`=%s;""" % (cur_domain))
         domains = self.cur.fetchall()
@@ -106,15 +104,14 @@ class Zone(object):
             child_name = subdomain[1]
             child_domain = subdomain[0]
             if self.check_for_SOA( child_domain, child_name ):
-                zone_fd = open( "%s/%s" % (Zone.BUILD_DIR, child_name), "w+")
+                zone_fd = None
                 new_zone = Zone( self.cur, zone_fd, child_domain, child_name )
                 new_zone.walk_domain( child_domain, child_name )
                 continue
-            self.walk_domain( child_domain, child_name )
+            self.walk_domain( child_domain, child_name, new_domain )
 
     def gen_domain( self, domain, dname ):
-        print "Generating %s" % (dname)
-        self.gen_ORIGIN( domain, dname, 999 )
+        self.cur.execute("SELECT * FROM `zone_mx` WHERE `domain`='%s' ORDER BY `name`;" % (domain))
         bad_dnames = ['', '.', '_']
         cdomain = None
         if dname not in bad_dnames:
@@ -123,21 +120,18 @@ class Zone(object):
                 pass
             else:
                 # IT's a good domain. First see if it exists already. Else create it.
-                possible = Domain.objects.filter( name = dname )
-                if possible:
-                    cdomain = possible[0]
-                else:
-                    cdomain = Domain( name = dname )
-                    try:
-                        cdomain.save()
-                    except DomainExistsError, e:
-                        print "ERROR: %s " % dname
-                        pass
+                try:
+                    cdomain, _ = Domain.objects.get_or_create( name = dname )
+                except Exception, e:
+                    print "ERROR: creating {0} {1}".format(dname, e)
+                    return None
+        if cdomain:
+            print "Migrating %s (%s)" % (dname, cdomain.pk)
 
-        self.gen_MX( domain, dname, cdomain )
+        #self.gen_MX( domain, dname, cdomain )
         self.gen_A( domain, dname, cdomain )
-        self.gen_dyn_ranges( domain, dname )
-        self.gen_CNAME( domain, dname, cdomain )
+        #self.gen_dyn_ranges( domain, dname )
+        #self.gen_CNAME( domain, dname, cdomain )
         self.gen_NS( domain, dname, cdomain )
         return cdomain
 
@@ -152,10 +146,6 @@ class Zone(object):
             server = record[3]
             prio = record[4]
             ttl = record[5]
-            if name == "":
-                self.printer.print_MX( dname, domain, ttl, prio, server  )
-            else:
-                self.printer.print_MX( name+"."+dname, domain, ttl, prio, server  )
             # Cyder stuff
             if cdomain:
                 possible = MX.objects.filter( label=name, domain = cdomain, server = server, priority= prio, ttl = ttl )
@@ -179,8 +169,6 @@ class Zone(object):
     def check_for_SOA( self, domain, dname ):
         self.cur.execute("SELECT * FROM `soa` WHERE `domain`='%s' ;" % (domain))
         records = self.cur.fetchall() # Could use fetch one. Want to do check though.
-        if len(records) > 1:
-            self.printer.print_raw( ";Sanity Check failed\n" )
         if not records:
             # We don't have an SOA for this domain.
             return False
@@ -190,11 +178,9 @@ class Zone(object):
     def gen_SOA( self, domain, dname ):
         self.cur.execute("SELECT * FROM `soa` WHERE `domain`='%s' ;" % (domain))
         records = self.cur.fetchall() # Could use fetch one. Want to do check though.
-        if len(records) > 1:
-            self.printer.print_raw( ";Sanity Check failed" )
         if not records:
             # We don't have an SOA for this domain.
-            self.printer.print_raw( ";No soa for "+dname+"  "+str(domain) )
+            #self.printer.print_raw( ";No soa for "+dname+"  "+str(domain) )
             return
         record = records[0]
         primary_master = record[2]
@@ -203,7 +189,7 @@ class Zone(object):
         RETRY = record[5]
         EXPIRE = record[6]
         MINIMUM = record[7] #TODO What is minimum, using TTL
-        self.printer.print_SOA( record[7], dname, primary_master, contact, Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
+        ##self.printer.print_SOA( record[7], dname, primary_master, contact, Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
         # Let's create an soa in the new database and return it.
         possible = SOA.objects.filter( primary = primary_master, contact = contact )
         if possible:
@@ -216,18 +202,21 @@ class Zone(object):
     def gen_ORIGIN( self, domain, dname, ttl ):
         origin = "$ORIGIN  %s.\n" % (dname)
         origin += "$TTL     %s\n" % (ttl)
-        self.printer.print_raw( origin )
+        ##self.printer.print_raw( origin )
 
     def gen_CNAME( self, domain, dname, cdomain ):
         self.cur.execute("SELECT * FROM `zone_cname` WHERE `domain`='%s';" % (domain))
         records = self.cur.fetchall()
         for record in records:
-            self.printer.print_CNAME( record[2], record[1] )
-            cname, created = CNAME.objects.get_or_create( label=record[2], domain=cdomain, data=record[1])
-            cname.save()
+            ##self.printer.print_CNAME( record[2], record[1] )
+            try:
+                cname, created = CNAME.objects.get_or_create( label=record[2], domain=cdomain, data=record[1])
+            except:
+                print "ERROR creating cname: {0} {1}".format(record[2],
+                        record[1])
 
     def gen_dyn_ranges( self, domain, dname ):
-        self.printer.print_raw( "; Gen dyn_ranges for %s\n" % (dname) )
+        ##self.printer.print_raw( "; Gen dyn_ranges for %s\n" % (dname) )
         self.cur.execute(  "SELECT start, end FROM ranges, zone_range\
                             WHERE ranges.id = zone_range.range AND zone_range.default_domain = %s\
                             AND ranges.type='dynamic' ORDER by start" % (domain) )
@@ -235,7 +224,7 @@ class Zone(object):
         for ip_range in ip_ranges:
             for ip in range(ip_range[0],ip_range[1]+1):
                 ip = long2ip(ip)
-                self.printer.print_A( ip.replace('.','-'),ip )
+                ##self.printer.print_A( ip.replace('.','-'),ip )
     """
     domain: maintain id of the domain
     dname: the base name of that domain. i.e. domain 218 has dname oregonstate.edu
@@ -304,32 +293,22 @@ class Zone(object):
         for record in records:
             if record[1] == 0:
                 continue
-            self.printer.print_A( record[3] , long2ip(record[1]) )
-            print record[3]
-            print long2ip(record[1])
-            if not AddressRecord.objects.filter( label = record[3], domain= cdomain, ip__ip_str = long2ip(record[1]) ):
-                ip = Ip( ip_str=long2ip(record[1]), ip_type='4')
-                ip.save()
-                rec = AddressRecord( label=record[3], domain = cdomain, ip =ip , ip_type='4' )
-                try:
-                    rec.save()
-                except InvalidRecordNameError, e:
-                    print "ERROR: %s name: %s domain: %s ip: %s" % (str(e), record[3], cdomain.name, long2ip(record[1]))
-                    ip.delete()
-            else:
-                print "SKIPPING %s %s %s (already created)" % (record[3], cdomain.name, long2ip(record[1]))
+            #self.printer.print_A( record[3] , long2ip(record[1]) )
+            name= record[3]
+            ip_str = long2ip(record[1])
+            arec, _ = AddressRecord.objects.get_or_create( label=name,
+                    domain= cdomain, ip_str=ip_str, ip_type='4' )
 
     def gen_NS( self, domain, dname, cdomain=None ):
         self.cur.execute("SELECT * FROM `nameserver` WHERE `domain`='%s';" % (domain))
         records = self.cur.fetchall()
-        self.printer.print_NS( '', [ record[1] for record in records ] )
+        #self.printer.print_NS( '', [ record[1] for record in records ] )
         # TODO we need glue records for some of these.
         if cdomain:
             for record in records:
                 ns_name = record[1]
                 possible = Nameserver.objects.filter( domain = cdomain, server = ns_name )
                 if possible:
-                    print "SKIPPING: nameserver: %s domain: %s (already created)" % (ns_name, cdomain.name)
                     continue
                 ns = Nameserver( domain = cdomain, server = ns_name )
                 if _needs_glue(ns):
@@ -341,6 +320,6 @@ class Zone(object):
                         a_rec = a_rec[0]
                     ns.glue = a_rec
                 try:
-                    ns.save()
-                except InvalidRecordNameError, e:
-                    print "ERROR: %s nameserver: %s domain: %s" % (str(e), ns_name, cdomain.name)
+                    ns, _ = Nameserver.objects.get_or_create( domain = cdomain, server = ns_name )
+                except Exception, e:
+                    print "ERROR: couldn't create ns {0} {1}".format(ns_name, e)

@@ -58,10 +58,10 @@ class Reverse_Zone(object):
             split = reverse_name.split('.')
             for i in range(len(split)):
                 name = '.'.join(split[:i+1])
-                print "NAME: "+name
                 rdomain, created = ReverseDomain.objects.get_or_create( name = name, ip_type='4')
                 if created:
-                    print "Created reverse domain %s" % (name)
+                    print "Created reverse domain %s (%s)" % (name,
+                            rdomain.pk)
                 else:
                     print "Reverse domain %s already existed" % (name)
 
@@ -100,9 +100,7 @@ class Reverse_Zone(object):
         #if not re.search( "^10" ,self.ip_from_domainname(dname) ):
         #    return
 
-        self.gen_ORIGIN( domain, dname, 999 )
         self.gen_NS( domain, dname, rdomain )
-        self.gen_ORIGIN( domain, 'in-addr.arpa', 999 )
         records_to_remove = []
         search_string = "^"+self.ip_from_domainname(dname).replace('.','\.')+"\."
         for record in records:
@@ -111,20 +109,12 @@ class Reverse_Zone(object):
             # TODO compile this
             if re.search( search_string, ip ):
                 #self.printer.print_PTR( ip, name )
-                cip  = Ip( ip_str = ip, ip_type='4' )
-                possible = PTR.objects.filter( name=name, ip__ip_upper=cip.ip_upper,\
-                                            ip__ip_lower=cip.ip_lower )
-                if possible:
-                    print "SKIPPING: PTR %s %s already created." % (ip, name)
-                else:
-                    cip.save()
-                    try:
-                        ptr = PTR( ip = cip, name = name )
-                        ptr.save()
-                    except RecordExistsError, e:
-                        cip.delete()
-                        print "SKIPPING: PTR %s %s already created." % (ip, name)
-
+                ptr = PTR( ip_str = ip, name=name, ip_type='4' )
+                try:
+                    ptr.full_clean()
+                    ptr.save()
+                except Exception, e:
+                    print "Error {0}".format(e)
                 records_to_remove.append( record )
 
         for record in records_to_remove:
@@ -147,10 +137,6 @@ class Reverse_Zone(object):
             except InvalidRecordNameError, e:
                 print "ERROR: NS NAME: %s error: %s" % (ns_name, str(e))
                 continue
-            if created:
-                print "Created ns"
-            else:
-                print "Skipping %s already exists." % (ns)
         #self.printer.print_NS( '', [ record[1] for record in records ] )
 
     """
@@ -159,8 +145,6 @@ class Reverse_Zone(object):
     def check_for_SOA( self, domain, dname ):
         self.cur.execute("SELECT * FROM `soa` WHERE `domain`='%s' ;" % (domain))
         records = self.cur.fetchall() # Could use fetch one. Want to do check though.
-        if len(records) > 1:
-            self.printer.print_raw( ";Sanity Check failed\n" )
         if not records:
             # We don't have an SOA for this domain.
             return False
@@ -185,11 +169,9 @@ class Reverse_Zone(object):
         EXPIRE = record[6]
         MINIMUM = record[7] #TODO What is minimum, using TTL
         #self.printer.print_SOA( record[7], dname, primary_master, contact, Reverse_Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
-        soa, created = SOA.objects.get_or_create(  primary = primary_master, contact = contact )
-        if created:
-            print "Created soa"
-        else:
-            print "Skipping %s already exists." % (soa)
+        soa, created = SOA.objects.get_or_create(  primary=primary_master,
+                        contact = contact, comment = "SOA for {0} "
+                        "zone".format(dname))
         return soa
 
     """
