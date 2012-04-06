@@ -56,13 +56,12 @@ a.nav-link:hover {
     color: rgb(220,220,220);
     background: rgb(30, 30, 30);
 
-    border-style: groove none;
     border-color: rgb(10,10,10);
 
     text-decoration: none;
 }
 
-/* Icon Links */
+/* Icon links */
 .side-link {
     top: .20em;
     right: .35em;
@@ -80,4 +79,22 @@ a.nav-link:hover {
     color: rgb(0,234,0);
 
     text-decoration: none;
+}
+
+/* Highlighted nav-link when within that part of app */
+.active-nav a {
+    background: rgb(0,0,144);
+}
+.active-nav a:hover {
+    background: rgb(0,0,112);
+}
+
+/* Sublinks that appear deeper within app */
+a.sub-link {
+    color: rgb(230,230,230);
+    background: rgb(120,120,120);
+}
+a.sub-link:hover {
+    color: rgb(230,230,230);
+    background: rgb(110, 110, 110);
 }

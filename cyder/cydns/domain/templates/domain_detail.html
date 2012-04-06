@@ -1,10 +1,37 @@
 {% extends "base.html" %}
 
-
 {% block title %}
     {{ domain.name }}
 {% endblock %}
 
+{% block domain_nav %}
+    <span class="active-nav">
+        {{ super() }}
+    </span>
+    {% if not domain.delegated %}
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/cname/{{ domain.pk }}/create/">Create CNAME</a>
+        </span>
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/mx/{{ domain.pk }}/create/">Create MX</a>
+        </span>
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/srv/{{ domain.pk }}/create/">Create SRV</a>
+        </span>
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/txt/{{ domain.pk }}/create/">Create TXT</a>
+        </span>
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/address_record/{{ domain.pk }}/create/">Create Address Record</a>
+        </span>
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/ptr/{{ domain.pk }}/create/">Create PTR</a>
+        </span>
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/nameserver/{{ domain.pk }}/create/">Create NS</a>
+        </span>
+    {% endif %}
+{% endblock %}
 
 {% block content %}
     {% from "tables.html" import render_table %}
@@ -26,22 +53,10 @@
         <br/>
     {% endif %}
 
-    <h2>Domain Tools</h2>
-
     {% if domain.delegated %}
         This domain is delegated.
         <br/>
-    {% else %}
-        <a href='/cyder/cydns/cname/{{ domain.pk }}/create/'>Create CNAME</a>
-        <a href='/cyder/cydns/mx/{{ domain.pk }}/create/'>Create MX</a>
-        <a href='/cyder/cydns/srv/{{ domain.pk }}/create/'>Create SRV</a>
-        <a href='/cyder/cydns/txt/{{ domain.pk }}/create/'>Create TXT</a>
-        <a href='/cyder/cydns/address_record/{{ domain.pk }}/create/'>Create A (AAAA)</a>
-        <a href='/cyder/cydns/ptr/create/'>Create PTR</a>
     {% endif %}
-
-    <a href='/cyder/cydns/nameserver/{{ domain.pk }}/create'>Create NS</a>
-    <br />
 
     {% if ns_matrix %}
         <h3> Nameservers </h3>
