@@ -1,18 +1,18 @@
+import random
+
+from cyder.cydns.address_record.models import AddressRecord
+from cyder.cydns.cname.models import CNAME
 from cyder.cydns.domain.models import Domain
+from cyder.cydns.mx.models import MX
+from cyder.cydns.nameserver.nameserver.models. import Nameserver
+from cyder.cydns.nameserver.reverse_nameserver.models import ReverseNameserver
+from cyder.cydns.ptr.models import PTR
 from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.srv.models import SRV
-from cyder.cydns.mx.models import MX
-from cyder.cydns.txt.models import TXT
-from cyder.cydns.ptr.models import PTR
-from cyder.cydns.nameserver.models import Nameserver
-from cyder.cydns.nameserver.models import ReverseNameserver
-from cyder.cydns.cname.models import CNAME
-from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.tests.view_tests import random_label
+from cyder.cydns.txt.models import TXT
 
-import random
-import pdb
 
 def random_ipv4( base_ip ):
     split = base_ip.split('.')
@@ -79,6 +79,8 @@ label = "derpyyyy"
 domain = d
 data = "foo.com"
 cn, _ = CNAME.objects.get_or_create(label = label, domain = domain, data = data)
+cn.full_clean()
+cn.save()
 
 # SRV
 srv, _ = SRV.objects.get_or_create(label = "_tcp", domain=d, target="target.foo.com", port=80, priority=1, weight=1)
@@ -109,7 +111,18 @@ r1.save()
 rns, _ = ReverseNameserver.objects.get_or_create( reverse_domain= r1, server = random_label()+"."+random_label()+"."+random_label() )
 
 for i in range(0, 100):
-    PTR.objects.get_or_create( name = random_label(), ip_str= random_ipv4('128.193'), ip_type = '4')
+    try:
+        ptr= PTR( name = random_label(), ip_str= random_ipv4('128.193'), ip_type = '4')
+    except:
+        continue
+    ptr.full_clean()
+    ptr.save()
+
 
 for i in range(0, 100):
-    PTR.objects.get_or_create( name = random_label(), ip_str= random_ipv4('128.193.15'), ip_type = '4')
+    try:
+        ptr = PTR( name = random_label(), ip_str= random_ipv4('128.193.15'), ip_type = '4')
+    except:
+        continue
+    ptr.full_clean()
+    ptr.save()

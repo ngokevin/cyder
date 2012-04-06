@@ -18,7 +18,7 @@ class CNAMEDeleteView(CNAMEView, CommonDeleteView):
 
 
 class CNAMEDetailView(CNAMEView, CommonDetailView):
-    """ """
+    template_name = "cname_detail.html"
 
 
 class CNAMECreateView(CNAMEView, CommonCreateView):

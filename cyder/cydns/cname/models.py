@@ -6,7 +6,6 @@ from cyder.cydns.common.models import CommonRecord
 from cyder.cydns.validation import validate_name
 from cyder.searchcydns.utils import fqdn_exists
 
-
 class CNAME(CommonRecord):
     """CNAMES can't point to an any other records. Said another way,
     CNAMES can't be at the samle level as any other record. This means
@@ -22,8 +21,8 @@ class CNAME(CommonRecord):
     id = models.AutoField(primary_key=True)
     data = models.CharField(max_length=100, validators=[validate_name])
     data_domain = models.ForeignKey(Domain, null=True,
-                                    related_name='data_domains',
-                                    blank=True)
+                                    related_name='data_domains', blank=True,
+                                    on_delete=models.DO_NOTHING)
 
     def details(self):
         return  (
@@ -37,7 +36,6 @@ class CNAME(CommonRecord):
         unique_together = ('domain', 'label', 'data')
 
     def save(self, *args, **kwargs):
-        self.full_clean()
         super(CNAME, self).save(*args, **kwargs)
 
     def clean(self, *args, **kwargs):

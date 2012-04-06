@@ -41,6 +41,7 @@ class CNAMETests(TestCase):
 
     def do_add(self, label, domain, data):
         cn = CNAME(label = label, domain = domain, data = data)
+        cn.full_clean()
         cn.save()
         cn.save()
         self.assertTrue(cn.get_absolute_url())
@@ -106,7 +107,7 @@ class CNAMETests(TestCase):
 
         cn = CNAME(label = label, domain = domain, data = data)
 
-        self.assertRaises(ValidationError, cn.save)
+        self.assertRaises(ValidationError, cn.full_clean)
 
     def test_address_record_exists(self):
         label = "testyfoo"
@@ -117,7 +118,7 @@ class CNAMETests(TestCase):
         rec, _ = AddressRecord.objects.get_or_create(label=label, domain=dom, ip_type='4', ip_str="128.193.1.1")
 
         cn = CNAME(label = label, domain = dom, data = data)
-        self.assertRaises(ValidationError, cn.save)
+        self.assertRaises(ValidationError, cn.full_clean)
 
     def test_address_record_cname_exists(self):
         label = "testyfoo"
@@ -140,7 +141,7 @@ class CNAMETests(TestCase):
                                             port=2, priority=2, weight=4)
 
         cn = CNAME(label = label, domain = dom, data = data)
-        self.assertRaises(ValidationError, cn.save)
+        self.assertRaises(ValidationError, cn.full_clean)
 
     def test_srv_cname_exists(self):
         label = "testyfoo"
@@ -164,7 +165,7 @@ class CNAMETests(TestCase):
         rec, _ = TXT.objects.get_or_create(label=label, domain=dom, txt_data="asdf")
 
         cn = CNAME(label = label, domain = dom, data = data)
-        self.assertRaises(ValidationError, cn.save)
+        self.assertRaises(ValidationError, cn.full_clean)
 
     def test_txt_cname_exists(self):
         label = "testyfoo"
@@ -172,7 +173,9 @@ class CNAMETests(TestCase):
         dom,_ = Domain.objects.get_or_create(name="cd")
         dom,_ = Domain.objects.get_or_create(name="what.cd")
 
-        cn = CNAME.objects.get_or_create(label = label, domain = dom, data = data)
+        cn,_ = CNAME.objects.get_or_create(label = label, domain = dom, data = data)
+        cn.full_clean()
+        cn.save()
 
         rec = TXT(label=label, domain=dom, txt_data="asdf1")
 
@@ -188,7 +191,7 @@ class CNAMETests(TestCase):
                                             priority=123, ttl=123)
 
         cn = CNAME(label = label, domain = dom, data = data)
-        self.assertRaises(ValidationError, cn.save)
+        self.assertRaises(ValidationError, cn.full_clean)
 
     def test_mx_cname_exists(self):
         # Duplicate test?
@@ -198,6 +201,8 @@ class CNAMETests(TestCase):
         dom,_ = Domain.objects.get_or_create(name="what.cd")
 
         cn,_ = CNAME.objects.get_or_create(label = label, domain = dom, data = data)
+        cn.full_clean()
+        cn.save()
 
         rec = MX(label=label, domain=dom, server="asdf1",\
                                             priority=123, ttl=123)
