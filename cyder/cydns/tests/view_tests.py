@@ -106,7 +106,7 @@ class GenericViewTests(object):
     def build_get_object_details(self):
         # url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/detail$', NSDetailView.as_view() ),
         def test_get_object_details(self):
-            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/detail/" % (self.url_slug, self.test_obj.pk))
+            resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/" % (self.url_slug, self.test_obj.pk))
             self.assertEqual(resp.status_code, 200)
         return test_get_object_details
 
