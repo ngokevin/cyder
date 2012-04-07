@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.common.models import CommonRecord
 from cyder.cydns.validation import validate_name, find_root_domain
-from cyder.searchcydns.utils import fqdn_exists
+from cyder.cysearch.utils import fqdn_exists
 
 class CNAME(CommonRecord):
     """CNAMES can't point to an any other records. Said another way,
@@ -99,7 +99,7 @@ class CNAME(CommonRecord):
                 * :class:`TXT`
                 * :class:`MX`
         """
-        qset = fqdn_exists(self.fqdn, cn=False, dn=False)
+        qset = fqdn_exists(self.fqdn, cn=False, dn=False, pt=False)
         if qset:
             objects = qset.all()
             raise ValidationError("Objects with this name already exist: {0}".

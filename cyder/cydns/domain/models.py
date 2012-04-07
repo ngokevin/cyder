@@ -6,7 +6,7 @@ from cyder.cydns.soa.models import SOA
 from cyder.cydns.validation import validate_domain_name, _name_type_check
 from cyder.cydns.models import ObjectUrlMixin
 from cyder.cydns.validation import do_zone_validation
-from cyder.searchcydns.utils import fqdn_exists
+from cyder.cysearch.utils import fqdn_exists
 
 import pdb
 
@@ -60,7 +60,7 @@ class Domain(models.Model, ObjectUrlMixin):
         if self.pk is None:
             # The object doesn't exist in the db yet. Make sure we don't
             # conflict with existing objects.
-            qset = fqdn_exists(self.name)
+            qset = fqdn_exists(self.name, pt=False)
             if qset:
                 objects = qset.all()
                 raise ValidationError("Objects with this name already "
