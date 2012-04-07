@@ -17,14 +17,15 @@
 
         <header>
             {% include "top_nav.html" %}
-            {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
         </header>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
         <div class="row-fluid">
             <nav class="span2">
@@ -118,7 +119,9 @@
     </div>
 
     <div id="footer" style="text-align:center;">
-        Cyder Footer
+        <a href="http://github.com/uberj/cyder/">Cyder</a><br/>
+        Sensible DNS and DHCP<br/>
+        Replacement for OSU <a href="http://maintain.oregonstate.edu">MainPain</a> Network Manager<br/>
     </div>
 
     {% block site_js %}

@@ -10,8 +10,34 @@ body {
     padding-top: 40px;
 }
 
-header {
-    background: rgb(190,190,200);
+/* Django messages */
+ul.messages {
+    background-image: -moz-linear-gradient(top, rgb(190,190,190), rgb(165,165,165));
+    background-image: -webkit-linear-gradient(top, rgb(190,190,190), rgb(165,165,165));
+    background-image: -ms-linear-gradient(top, rgb(190,190,190), rgb(165,165,165));
+    background-image: -o-linear-gradient(top, rgb(190,190,190), rgb(165,165,165));
+    background-image: linear-gradient(top, rgb(190,190,190), rgb(165,165,165));
+
+    color: rgb(230,230,230);
+    font-size: 1.1em;
+
+    margin: 0px;
+    padding: 3px 0 3px 0;
+
+    text-align: center;
+    list-style: none;
+}
+li.info {
+    color: rgb(10,10,10);
+}
+li.success {
+    color: rgb(0,96,0);
+}
+li.warning {
+    color: rgb(144,0,0);
+}
+li.error {
+    color: rgb(144,0,0);
 }
 
 .content {
@@ -19,5 +45,18 @@ header {
 }
 
 #footer {
-    background: rgb(190,190,200);
+    background-image: -moz-linear-gradient(bottom, rgb(110,110,110), rgb(095,095,095));
+    background-image: -webkit-linear-gradient(bottom, rgb(120,120,120), rgb(105,105,105));
+    background-image: -ms-linear-gradient(bottom, rgb(120,120,120), rgb(105,105,105));
+    background-image: -o-linear-gradient(bottom, rgb(120,120,120), rgb(105,105,105));
+    background-image: linear-gradient(bottom, rgb(120,120,120), rgb(105,105,105));
+
+    color: rgb(240, 230, 230);
+
+    font-size: 1.05em;
+    line-height: 1.50em;
+    padding-top: 10px;
+}
+#footer a {
+    color: rgb(96,0,0);
 }

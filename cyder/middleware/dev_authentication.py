@@ -1,3 +1,5 @@
+import simplejson
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
@@ -22,13 +24,27 @@ class DevAuthenticationMiddleware(object):
             else:
                 request.session['ctnr'] = Ctnr.objects.get(id=default_ctnr.id)
 
-            # get all of user's ctnrs for user to switch between
+            # load session vars to load templates up with ctnr data
             try:
+                # get all of ctnrs for user to switch between
                 global_ctnr = CtnrUser.objects.get(user=request.user, ctnr=1)
                 if global_ctnr:
                     request.session['ctnrs'] = Ctnr.objects.all()
+
+                    # set user as superuser if so
+                    if global_ctnr.level == 2:
+                        request.session['superuser'] = True
+
+                # to set up the bootstrap typeahead ctnr search bar
+                ctnrs = Ctnr.objects.all()
+                ctnr_names = [ctnr.name for ctnr in ctnrs]
+                request.session['ctnr_names_json'] = simplejson.dumps(ctnr_names)
             except CtnrUser.DoesNotExist:
+                # get all of user's ctnrs for user to switch between
                 ctnrs_user = CtnrUser.objects.filter(user=request.user)
                 request.session['ctnrs'] = [ctnr_user.ctnr for ctnr_user in ctnrs_user]
+                # to set up the bootstrap typeahead ctnr search bar
+                ctnr_names = [ctnr_user.ctnr.name for ctnr_user in ctnrs_user]
+                request.session['ctnr_names_json'] = simplejson.dumps(ctnr_names)
 
         return None

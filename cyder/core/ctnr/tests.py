@@ -6,6 +6,7 @@ Replace this with more appropriate tests for your application.
 """
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.sessions.backends.db import SessionStore
 from django.http import HttpRequest
 from django.test import TestCase
 from django.test.client import Client
@@ -15,7 +16,8 @@ from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.mx.models import MX
-from cyder.cydns.nameserver.models import Nameserver, ReverseNameserver
+from cyder.cydns.nameserver.nameserver.models import Nameserver
+from cyder.cydns.nameserver.reverse_nameserver.models import ReverseNameserver
 from cyder.cydns.ptr.models import PTR
 from cyder.cydns.txt.models import TXT
 from cyder.cydns.soa.models import SOA
@@ -35,21 +37,21 @@ class CtnrPermissionsTest(TestCase):
         self.dev_user = User.objects.get(username='development')
 
         # create container where user has no admin
-        self.ctnr = Ctnr(id=None)
+        self.ctnr = Ctnr(id=None, name="no_admin")
         self.ctnr.save()
-        self.ctnr_user = CtnrUser(id=None, ctnr=self.ctnr, user=self.test_user, is_admin=0)
+        self.ctnr_user = CtnrUser(id=None, ctnr=self.ctnr, user=self.test_user, level=0)
         self.ctnr_user.save()
 
         # create container where user has admin
-        self.ctnr_admin = Ctnr(id=None)
+        self.ctnr_admin = Ctnr(id=None, name="has_admin")
         self.ctnr_admin.save()
-        self.ctnr_user_admin = CtnrUser(id=None, ctnr=self.ctnr_admin, user=self.test_user, is_admin=1)
+        self.ctnr_user_admin = CtnrUser(id=None, ctnr=self.ctnr_admin, user=self.test_user, level=1)
         self.ctnr_user_admin.save()
 
         # create container that is meant to stay empty
-        self.ctnr_empty = Ctnr(id=None)
+        self.ctnr_empty = Ctnr(id=None, name="empty")
         self.ctnr_empty.save()
-        self.ctnr_user_empty = CtnrUser(id=None, ctnr=self.ctnr_empty, user=self.test_user, is_admin=1)
+        self.ctnr_user_empty = CtnrUser(id=None, ctnr=self.ctnr_empty, user=self.test_user, level=1)
         self.ctnr_user_empty.save()
 
     def test_session_has_ctnr_dev(self):
@@ -60,7 +62,7 @@ class CtnrPermissionsTest(TestCase):
         """
         request = HttpRequest()
         request.user = AnonymousUser()
-        request.session = {}
+        request.session = SessionStore()
 
         dev_middleware = DevAuthenticationMiddleware()
         dev_middleware.process_request(request)
@@ -75,7 +77,8 @@ class CtnrPermissionsTest(TestCase):
         """
         request = HttpRequest()
         request.user = self.test_user
-        request.session = {'ctnr': self.ctnr}
+        request.session = SessionStore()
+        request.session['ctnr'] = self.ctnr
 
         # create domain, add domain to ctnr
         domain = Domain(id=None, name='foo')
@@ -94,14 +97,14 @@ class CtnrPermissionsTest(TestCase):
         self.assertFalse(has_perm, 'user should not have write access')
 
         # checks where user is admin
-        request.session = {'ctnr': self.ctnr_admin}
+        request.session['ctnr'] = self.ctnr_admin
         has_perm = self.test_user.get_profile().has_perm(request, domain, write=False)
         self.assertTrue(has_perm, 'user should have read access')
         has_perm = self.test_user.get_profile().has_perm(request, domain, write=True)
         self.assertTrue(has_perm, 'user should have write access')
 
         # checks where obj not in ctnr
-        request.session = {'ctnr': self.ctnr_empty}
+        request.session['ctnr'] = self.ctnr_empty
         has_perm = self.test_user.get_profile().has_perm(request, domain, write=False)
         self.assertFalse(has_perm, 'user should not have read access')
         has_perm = self.test_user.get_profile().has_perm(request, domain, write=True)
@@ -115,7 +118,8 @@ class CtnrPermissionsTest(TestCase):
         """
         request = HttpRequest()
         request.user = self.test_user
-        request.session = {'ctnr': self.ctnr}
+        request.session = SessionStore()
+        request.session['ctnr'] = self.ctnr
 
         # create reverse domain, add reverse domain to ctnr
         rdomain = ReverseDomain(id=None, name='128')
@@ -154,7 +158,8 @@ class CtnrPermissionsTest(TestCase):
         """
         request = HttpRequest()
         request.user = self.test_user
-        request.session = {'ctnr': self.ctnr}
+        request.session = SessionStore()
+        request.session['ctnr'] = self.ctnr
 
         # create domain, add domain to ctnr
         domain = Domain(id=None, name='foo')
@@ -203,7 +208,8 @@ class CtnrPermissionsTest(TestCase):
         """
         request = HttpRequest()
         request.user = self.test_user
-        request.session = {'ctnr': self.ctnr}
+        request.session = SessionStore()
+        request.session['ctnr'] = self.ctnr
 
         # create domain, add domain to ctnr
         rdomain = ReverseDomain(id=None, name='128')
@@ -218,8 +224,6 @@ class CtnrPermissionsTest(TestCase):
         rdomain_records = []
         rdomain_records.append(PTR(reverse_domain=rdomain))
         rdomain_records.append(ReverseNameserver(reverse_domain=rdomain))
-
-        print ReverseNameserver(reverse_domain=rdomain)._meta.app_label
 
         for record in rdomain_records:
             # checks where user is not admin
@@ -250,7 +254,8 @@ class CtnrPermissionsTest(TestCase):
         """
         request = HttpRequest()
         request.user = self.test_user
-        request.session = {'ctnr': self.ctnr}
+        request.session = SessionStore()
+        request.session['ctnr'] = self.ctnr
 
         # create domain, add domain to ctnr
         rdomain = ReverseDomain(id=None, name='128')
@@ -265,8 +270,6 @@ class CtnrPermissionsTest(TestCase):
         rdomain_records = []
         rdomain_records.append(PTR(reverse_domain=rdomain))
         rdomain_records.append(ReverseNameserver(reverse_domain=rdomain))
-
-        print ReverseNameserver(reverse_domain=rdomain)._meta.app_label
 
         for record in rdomain_records:
             # checks where user is not admin
@@ -296,7 +299,8 @@ class CtnrPermissionsTest(TestCase):
         """
         request = HttpRequest()
         request.user = self.test_user
-        request.session = {'ctnr': self.ctnr}
+        request.session = SessionStore()
+        request.session['ctnr'] = self.ctnr
 
         # create domain with soa, add domain to ctnr
         soa = SOA()
