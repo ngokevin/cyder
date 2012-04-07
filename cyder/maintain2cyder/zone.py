@@ -256,6 +256,7 @@ class Zone(object):
             try:
                 cn.full_clean()
             except ValidationError, e:
+                cn.delete()
                 fqdn = label+"."+dname
                 dom = Domain.objects.filter(name=fqdn)
                 if dom:
@@ -265,7 +266,7 @@ class Zone(object):
                     cn.save()
                     print "Re-Added CNAME ({0})".format(id_)
                     continue
-
+            cn.full_clean()
             cn.save()
 
 
