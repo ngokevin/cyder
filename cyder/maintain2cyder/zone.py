@@ -12,7 +12,7 @@ from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.mx.models import MX
 from cyder.cydns.cname.models import CNAME
-from cyder.cydns.nameserver.models import Nameserver
+from cyder.cydns.nameserver.nameserver.models import Nameserver
 """
 A Zone object should be initialized at a base domain. From that domain it should start to
 build a zone file. These are the steps it shuold take to build it's zone file.
@@ -115,18 +115,37 @@ class Zone(object):
                 return None
             else:
                 # IT's a good domain. First see if it exists already. Else create it.
+                cdomain = Domain( name = dname )
                 try:
-                    cdomain, _ = Domain.objects.get_or_create( name = dname )
-                except Exception, e:
-                    print "ERROR: creating {0} {1}".format(dname, e)
-                    return None
+                    cdomain.save()
+                except ValidationError, e:
+                    arecs = AddressRecord.objects.filter(fqdn=dname)
+                    ip_strs = []
+                    mxs = MX.objects.filter(fqdn=dname)
+                    mx_data = []
+                    for arec in arecs:
+                        ip_strs.append(arec.ip_str)
+                        print "Re-Adding A record {0} to domain {1}".format(arec, dname)
+                        arec.delete()
+
+                    for mx in mxs:
+                        print "Re-Adding MX record {0} to domain {1}".format(mx, dname)
+                        mx_data.append((mx.server, mx.priority, mx.ttl))
+                        mx.delete()
+
+                    cdomain.save()
+                    for ip_str in ip_strs:
+                        AddressRecord(label="", domain=cdomain, ip_str=ip_str, ip_type='4').save()
+                    for server, prio, ttl in mx_data:
+                        mx = MX(label="", domain=cdomain, server=server, priority=prio, ttl=ttl)
+                        mx.save()
+                        print "Adding: {0} MX {1}".format(mx.fqdn, mx.server)
         if cdomain:
             print "Migrating %s (%s)" % (dname, cdomain.pk)
 
-        #self.gen_MX( domain, dname, cdomain )
+        self.gen_MX( domain, dname, cdomain )
         self.gen_A( domain, dname, cdomain )
         #self.gen_dyn_ranges( domain, dname )
-        #self.gen_CNAME( domain, dname, cdomain )
         self.gen_NS( domain, dname, cdomain )
         return cdomain
 
@@ -192,17 +211,6 @@ class Zone(object):
         origin += "$TTL     %s\n" % (ttl)
         ##self.printer.print_raw( origin )
 
-    def gen_CNAME( self, domain, dname, cdomain ):
-        self.cur.execute("SELECT * FROM `zone_cname` WHERE `domain`='%s';" % (domain))
-        records = self.cur.fetchall()
-        for record in records:
-            ##self.printer.print_CNAME( record[2], record[1] )
-            try:
-                cname, created = CNAME.objects.get_or_create( label=record[2], domain=cdomain, data=record[1])
-            except:
-                print "ERROR creating cname: {0} {1}".format(record[2],
-                        record[1])
-
     def gen_dyn_ranges( self, domain, dname ):
         ##self.printer.print_raw( "; Gen dyn_ranges for %s\n" % (dname) )
         self.cur.execute(  "SELECT start, end FROM ranges, zone_range\
@@ -221,6 +229,45 @@ class Zone(object):
     def gen_A( self, domain, dname, cdomain ):
         """ """
         self.gen_host( domain, dname, cdomain )
+
+    def gen_CNAME( self ):
+        self.cur.execute("SELECT id, server, name, domain, ttl, zone FROM `zone_cname` WHERE 1=1;")
+        cnames = self.cur.fetchall()
+        for cname in cnames:
+            id_ = cname[0]
+            server = cname[1]
+            label = cname[2]
+            domain_id = cname[3]
+            ttl = cname[4]
+            zone = cname[5]
+            # Get it's domain
+            self.cur.execute("SELECT name FROM domain where id='%s'" %
+                    (domain_id))
+            dname = self.cur.fetchone()
+            if not dname:
+                print "ERROR: CNAME with id ({0}) doens't have a valid domain".format(id_)
+                continue
+            dname = dname[0]
+            domain = Domain.objects.filter(name=dname)
+            if not domain:
+                pdb.set_trace()
+            domain = domain[0]
+            cn, _ = CNAME.objects.get_or_create(label=label, domain=domain, data=server)
+            try:
+                cn.full_clean()
+            except ValidationError, e:
+                fqdn = label+"."+dname
+                dom = Domain.objects.filter(name=fqdn)
+                if dom:
+                    dom = dom[0]
+                    cn, _ = CNAME.objects.get_or_create(label='', domain=dom, data=server)
+                    cn.full_clean()
+                    cn.save()
+                    print "Re-Added CNAME ({0})".format(id_)
+                    continue
+
+            cn.save()
+
 
     """
     Generate all A records from the pointer table (forward pointers)
@@ -255,17 +302,29 @@ class Zone(object):
                             cdomain, created = Domain.objects.get_or_create( name = name )
                             cdomain.save()
                         except ValidationError, e:
-                            arec = AddressRecord.objects.filter(fqdn=name)
-                            if arec:
-                                ip_str = arec.ip_str
-                                print "Resolved name conflict by re-adding A "
-                                    "record {0} to domain {1}".format(arec, dname)
+                            arecs = AddressRecord.objects.filter(fqdn=dname)
+                            ip_strs = []
+                            mxs = MX.objects.filter(fqdn=dname)
+                            mx_data = []
+                            for arec in arecs:
+                                ip_strs.append(arec.ip_str)
+                                print "Re-Adding A record {0} to domain {1}".format(arec, dname)
                                 arec.delete()
+
+                            for mx in mxs:
+                                print "Re-Adding MX record {0} to domain {1}".format(mx, dname)
+                                mx_data.append((mx.server, mx.priority, mx.ttl))
+                                mx.delete()
+
                             cdomain.save()
 
-                            if arec:
+                            for ip_str in ip_strs:
                                 AddressRecord(label="", domain=cdomain,
                                         ip_str=ip_str, ip_type='4').save()
+                            for server, prio, ttl in mx_data:
+                                mx = MX(label="", domain=cdomain, server=server, priority=prio, ttl=ttl)
+                                mx.save()
+                                print "Adding: {0} MX {1}".format(mx.fqdn, mx.server)
 
 
                 else:
@@ -309,5 +368,5 @@ class Zone(object):
                     continue
                 try:
                     ns, _ = Nameserver.objects.get_or_create( domain = cdomain, server = ns_name )
-                except Exception, e:
+                except ValidationError, e:
                     print "ERROR: couldn't create ns {0} {1}".format(ns_name, e)

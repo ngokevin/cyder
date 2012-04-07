@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 
 from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.common.models import CommonRecord
-from cyder.cydns.validation import validate_name
+from cyder.cydns.validation import validate_name, find_root_domain
 from cyder.searchcydns.utils import fqdn_exists
 
 class CNAME(CommonRecord):
@@ -62,11 +62,10 @@ class CNAME(CommonRecord):
         master domain will have no soa (or it will have a a different
         soa).
         """
-        domain = Domain.objects.filter(name=self.fqdn)
-        if not domain:
+        root_domain = find_root_domain( 'forward', self.domain.soa )
+        if root_domain is None:
             return
-
-        if domain[0].soa and domain[0].soa != domain[0].master_domain.soa:
+        if self.fqdn == root_domain.name:
             raise ValidationError("You cannot create a CNAME that points to a"
                                   "domain at the root of a zone.")
         return

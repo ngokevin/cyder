@@ -203,6 +203,9 @@ def find_root_domain(domain_type, soa):
 
     """
 
+    if soa is None:
+        return None
+
     if domain_type == 'forward':
         domains = soa.domain_set.all()
     else:  # domain_type == 'reverse':

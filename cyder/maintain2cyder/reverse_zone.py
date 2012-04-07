@@ -4,7 +4,7 @@ from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.ptr.models import PTR
 from cyder.cydns.ip.models import Ip
-from cyder.cydns.nameserver.models import ReverseNameserver
+from cyder.cydns.nameserver.reverse_nameserver.models import ReverseNameserver
 
 import database
 from utilities import ip2long, long2ip
