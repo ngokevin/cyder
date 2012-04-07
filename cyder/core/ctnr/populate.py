@@ -15,7 +15,7 @@ for reverse_domain in reverse_domains:
     ctnr.reverse_domains.add(reverse_domain)
 
 user = User.objects.get(username='development')
-ctnr_user = CtnrUser(id=None, ctnr=ctnr, user=user, is_admin=1)
+ctnr_user = CtnrUser(id=None, ctnr=ctnr, user=user, level=2)
 ctnr_user.save()
 
 ctnr.save()

@@ -32,7 +32,7 @@ def has_perm(self, request, obj, write=False):
     if request.user.is_superuser:
         return True
     try:
-        if CtnrUser.objects.get(ctnr=1, user=request.user).is_admin:
+        if CtnrUser.objects.get(ctnr=1, user=request.user).level:
             return True
     except CtnrUser.DoesNotExist:
         pass
@@ -84,7 +84,7 @@ def has_perm(self, request, obj, write=False):
 
     # check if user has admin over ctnr
     try:
-        is_admin = CtnrUser.objects.get(ctnr=ctnr, user=request.user).is_admin
+        is_admin = CtnrUser.objects.get(ctnr=ctnr, user=request.user).level
     except CtnrUser.DoesNotExist:
         return False
 

@@ -7,6 +7,7 @@ Replace this with more appropriate tests for your application.
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.sessions.backends.db import SessionStore
 from django.http import HttpRequest
 from django.test import TestCase
 from django.test.client import Client
@@ -27,7 +28,7 @@ class AuthenticationTest(TestCase):
         """
         request = HttpRequest()
         request.user = AnonymousUser()
-        request.session = {}
+        request.session = SessionStore()
 
         self.dev_middleware.process_request(request)
 
