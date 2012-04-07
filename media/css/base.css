@@ -45,5 +45,18 @@ li.error {
 }
 
 #footer {
-    background: rgb(190,190,200);
+    background-image: -moz-linear-gradient(bottom, rgb(110,110,110), rgb(095,095,095));
+    background-image: -webkit-linear-gradient(bottom, rgb(120,120,120), rgb(105,105,105));
+    background-image: -ms-linear-gradient(bottom, rgb(120,120,120), rgb(105,105,105));
+    background-image: -o-linear-gradient(bottom, rgb(120,120,120), rgb(105,105,105));
+    background-image: linear-gradient(bottom, rgb(120,120,120), rgb(105,105,105));
+
+    color: rgb(240, 230, 230);
+
+    font-size: 1.05em;
+    line-height: 1.50em;
+    padding-top: 10px;
+}
+#footer a {
+    color: rgb(96,0,0);
 }
