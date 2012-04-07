@@ -19,6 +19,8 @@ class SOADeleteView(SOAView, CommonDeleteView):
 
 class SOADetailView(SOAView, CommonDetailView):
     """ """
+    template_name = 'soa/detail.html'
+    context_object_name = 'soa'
 
 
 class SOACreateView(SOAView, CommonCreateView):
