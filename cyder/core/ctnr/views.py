@@ -3,12 +3,15 @@ from django.shortcuts import redirect
 
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 
-def change_ctnr(request, pk):
+def change_ctnr(request, pk = None):
     referer = request.META['HTTP_REFERER']
 
     # check if ctnr exists
     try:
-        ctnr = Ctnr.objects.get(id=pk)
+        if request.method == 'POST':
+            ctnr = Ctnr.objects.get(name=request.POST['ctnr_name'])
+        else:
+            ctnr = Ctnr.objects.get(id=pk)
     except:
         messages.error(request, "Could not change container, does not exist")
         return redirect(referer)

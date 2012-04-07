@@ -3,7 +3,7 @@
         <div class="container-fluid">
             <ul class="nav pull-left">
 
-                <!-- Container Dropdown -->
+                <!-- Container dropdown -->
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#"><b class="caret"></b></a>
                     <ul class="dropdown-menu">
@@ -17,10 +17,13 @@
                     </ul>
                 </li>
 
-                <!-- Container Search -->
-                <input class="search-query" type="text" placeholder="Change container...">
+                <!-- Container search form -->
+                <form action="/ctnr/change/" method="POST" style="display:inline">
+                    <input class="search-query" type="text" name="ctnr_name" data-source='{{ request.session.ctnr_names_json }}' data-items="4" data-provide="typeahead" placeholder="Change container...">
+                </form>
             </ul>
 
+            <!-- User and container dropdown -->
             <ul class="nav pull-right">
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">{{ request.user }} on {{ request.session.ctnr.name }} <b class="caret"></b></a>
