@@ -22,7 +22,20 @@
             </ul>
 
             <ul class="nav pull-right">
-                <li><a href="#">{{ request.user }} on {{ request.session.ctnr.name }}</a></li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">{{ request.user }} on {{ request.session.ctnr.name }} <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/cyuser/{{ request.user.id }}/">View user profile</a></li>
+                        <li><a href="/ctnr/{{ request.session.ctnr.id }}/detail/">View current container</a></li>
+
+                        <li class="divider"></li>
+                        {% if request.session.superuser %}
+                            <li><a href="/admin/">Admin page</a></li>
+                        {% endif %}
+                        <li class="divider"></li>
+                        <li><a href="/logout/">Logout</a></li>
+                    </ul>
+                </li>
             </ul>
         </div>
     </div>

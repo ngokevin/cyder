@@ -27,6 +27,8 @@ class DevAuthenticationMiddleware(object):
                 global_ctnr = CtnrUser.objects.get(user=request.user, ctnr=1)
                 if global_ctnr:
                     request.session['ctnrs'] = Ctnr.objects.all()
+                    if global_ctnr.level == 2:
+                        request.session['superuser'] = True
             except CtnrUser.DoesNotExist:
                 ctnrs_user = CtnrUser.objects.filter(user=request.user)
                 request.session['ctnrs'] = [ctnr_user.ctnr for ctnr_user in ctnrs_user]
