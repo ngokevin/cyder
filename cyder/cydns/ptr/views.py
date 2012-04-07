@@ -1,16 +1,15 @@
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.shortcuts import render
+
+from cyder.cydns.common.views import CommonCreateView
 from cyder.cydns.common.views import CommonDeleteView
 from cyder.cydns.common.views import CommonDetailView
-from cyder.cydns.common.views import CommonCreateView
-from cyder.cydns.common.views import CommonUpdateView
 from cyder.cydns.common.views import CommonListView
-from django.shortcuts import render
-from django.shortcuts import redirect
-from django.contrib import messages
-from cyder.cydns.ptr.models import PTR
-from cyder.cydns.ptr.forms import PTRForm
+from cyder.cydns.common.views import CommonUpdateView
 from cyder.cydns.ip.forms import IpForm
-
-import pdb
+from cyder.cydns.ptr.forms import PTRForm
+from cyder.cydns.ptr.models import PTR
 
 
 class PTRView(object):
@@ -25,7 +24,7 @@ class PTRDeleteView(PTRView, CommonDeleteView):
 
 class PTRDetailView(PTRView, CommonDetailView):
     """ """
-    template_name = "ptr_detail.html"
+    template_name = "ptr/detail.html"
 
 
 class PTRCreateView(PTRView, CommonCreateView):
@@ -38,3 +37,4 @@ class PTRUpdateView(PTRView, CommonUpdateView):
 
 class PTRListView(PTRView, CommonListView):
     """ """
+    template_name = "ptr/list.html"

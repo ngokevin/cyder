@@ -13,8 +13,8 @@ import pdb
 
 class CommonDeleteView(DeleteView):
     context_object_name = "common"
-    template_name = "common_delete.html"
-    success_url = "/cyder/cydns"
+    template_name = "common/delete.html"
+    success_url = "/cydns"
 
     def get_object(self, queryset=None):
         obj = super(CommonDeleteView, self).get_object()
@@ -36,7 +36,7 @@ class CommonDeleteView(DeleteView):
 
 class CommonDetailView(DetailView):
     context_object_name = "common"
-    template_name = "common_detail.html"
+    template_name = "common/detail.html"
     extra_context = None
 
     def get_context_data(self, **kwargs):
@@ -50,7 +50,7 @@ class CommonDetailView(DetailView):
 
 
 class CommonCreateView(CreateView):
-    template_name = "common_form.html"
+    template_name = "common/form.html"
     context_object_name = "common"
     extra_context = None
 
@@ -94,7 +94,7 @@ class CommonCreateView(CreateView):
 
 
 class CommonUpdateView(UpdateView):
-    template_name = "common_form.html"
+    template_name = "common/form.html"
     context_object_name = "common"
     extra_context = None
 

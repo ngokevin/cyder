@@ -31,3 +31,4 @@ class SRVUpdateView(SRVView, CommonUpdateView):
 
 class SRVListView(SRVView, CommonListView):
     """SRV List View"""
+    template_name = 'srv/list.html'

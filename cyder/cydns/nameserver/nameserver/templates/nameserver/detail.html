@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %} Nameserver {% endblock %}
+
+{% block nameserver_nav %}
+    {{ super () }}
+
+    {% include "common/detail_nav.inc" %}
+{% endblock %}
+
+{% block content %}
+    {% include "common/detail.inc" %}
+{% endblock %}

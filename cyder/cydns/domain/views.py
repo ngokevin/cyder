@@ -36,12 +36,12 @@ class DomainDeleteView(DomainView, CommonDeleteView):
 
 class DomainListView(DomainView, CommonListView):
     """ """
-    #context_object_name = "domains"
+    template_name = "domain/list.html"
 
 
 class DomainDetailView(DomainView, DetailView):
     context_object_name = "domain"
-    template_name = "domain_detail.html"
+    template_name = "domain/detail.html"
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
@@ -112,7 +112,7 @@ class DomainView(object):
 
 class DomainCreateView(DomainView, CreateView):
     model_form = DomainForm
-    template_name = "domain_form.html"
+    template_name = "domain/form.html"
 
     def post(self, request, *args, **kwargs):
         domain_form = DomainForm(request.POST)
@@ -120,14 +120,14 @@ class DomainCreateView(DomainView, CreateView):
         try:
             domain = domain_form.save(commit=False)
         except ValueError, e:
-            return render(request, "domain_form.html", {'form': domain_form})
+            return render(request, "domain/form.html", {'form': domain_form})
 
         if domain_form.cleaned_data['inherit_soa'] and domain.master_domain:
             domain.soa = domain.master_domain.soa
         try:
             domain.save()
         except ValidationError, e:
-            return render(request, "domain_form.html", {'form': domain_form})
+            return render(request, "domain/form.html", {'form': domain_form})
         # Success. Redirect.
         messages.success(request, "{0} was successfully created.".
                          format(domain.name))
@@ -135,12 +135,12 @@ class DomainCreateView(DomainView, CreateView):
 
     def get(self, request, *args, **kwargs):
         domain_form = DomainForm()
-        return render(request, "domain_form.html", {'form': domain_form})
+        return render(request, "domain/form.html", {'form': domain_form})
 
 
 class DomainUpdateView(DomainView, UpdateView):
     form_class = DomainUpdateForm
-    template_name = "domain_update.html"
+    template_name = "domain/update.html"
     context_object_name = "domain"
 
     def post(self, request, *args, **kwargs):
@@ -173,7 +173,7 @@ class DomainUpdateView(DomainView, UpdateView):
         except ValidationError, e:
             domain_form = DomainUpdateForm(instance=domain)
             messages.error(request, str(e))
-            return render(request, "domain_update.html", {"form": domain_form})
+            return render(request, "domain/update.html", {"form": domain_form})
 
         messages.success(request, '{0} was successfully updated.'.
                          format(domain.name))

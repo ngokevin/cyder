@@ -31,3 +31,4 @@ class SOAUpdateView(SOAView, CommonUpdateView):
 
 class SOAListView(SOAView, CommonListView):
     """ """
+    template_name = 'soa/list.html'

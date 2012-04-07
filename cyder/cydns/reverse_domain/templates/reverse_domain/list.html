@@ -1,4 +1,16 @@
 {% extends "base.html" %}
+
+{% block reverse_domain_nav %}
+    {{ super() }}
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="/cydns/reverse_domain/create/">Create Reverse Domain</a>
+    </span>
+
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="/cydns/reverse_domain/bootstrap_ipv6/">Bootstrap v6</a>
+    </span>
+{% endblock %}
+
 {% block content %}
     <h3>IPv4 Reverse Domains</h3>
     {% for reverse_domain in reverse_domains %}
