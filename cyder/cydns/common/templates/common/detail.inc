@@ -17,3 +17,7 @@
         </tr>
     </tbody>
 </table>
+
+<a href='{{ common.get_edit_url() }}'>Edit</a>
+<br />
+<a href='{{ common.domain.get_absolute_url() }}'>View Domain</a>
