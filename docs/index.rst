@@ -39,9 +39,10 @@ Maintain Bugs
 * No support of other DNS output types. Only ``tinydns`` is supported.
 * The following DNS record types are not supported ``SRV``, ``TXT``, (more)?
 * DNS Zone delegation is broken.
-* When a zone admin wants to manually assign an IP address to a client, DHCP needs to be bypassed.
+* When a (maintain) zone administrator wants to manually assign an IP address to a client, DHCP needs to be bypassed.
   Maintian does this by providing a mac with all zeroes. It's a kludge.
 * There can be several different ``defualt_domains`` assigned to the same range.
+* Poor searching capabilities.
 * Maintain was not built with a web framework. Ironically, this makes the code very hard to maintain.
 * Written in PHP.
 
