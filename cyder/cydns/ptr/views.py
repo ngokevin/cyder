@@ -24,7 +24,7 @@ class PTRDeleteView(PTRView, CommonDeleteView):
 
 class PTRDetailView(PTRView, CommonDetailView):
     """ """
-    template_name = "ptr/detail.html"
+    template_name = "ptr/ptr_detail.html"
 
 
 class PTRCreateView(PTRView, CommonCreateView):
@@ -37,4 +37,4 @@ class PTRUpdateView(PTRView, CommonUpdateView):
 
 class PTRListView(PTRView, CommonListView):
     """ """
-    template_name = "ptr/list.html"
+    template_name = "ptr/ptr_list.html"

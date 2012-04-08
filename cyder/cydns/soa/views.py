@@ -19,7 +19,7 @@ class SOADeleteView(SOAView, CommonDeleteView):
 
 class SOADetailView(SOAView, CommonDetailView):
     """ """
-    template_name = 'soa/detail.html'
+    template_name = 'soa/soa_detail.html'
     context_object_name = 'soa'
 
 
@@ -33,4 +33,4 @@ class SOAUpdateView(SOAView, CommonUpdateView):
 
 class SOAListView(SOAView, CommonListView):
     """ """
-    template_name = 'soa/list.html'
+    template_name = 'soa/soa_list.html'

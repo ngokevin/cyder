@@ -32,4 +32,4 @@ class TXTUpdateView(TXTView, CommonUpdateView):
 
 class TXTListView(TXTView, CommonListView):
     """ """
-    template_name = 'txt/list.html'
+    template_name = 'txt/txt_list.html'

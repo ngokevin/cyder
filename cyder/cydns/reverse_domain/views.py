@@ -26,13 +26,13 @@ class ReverseDomainDeleteView(ReverseDomainView, CommonDeleteView):
 
 
 class ReverseDomainListView(ReverseDomainView, ListView):
-    template_name = "reverse_domain/list.html"
+    template_name = "reverse_domain/reverse_domain_list.html"
     context_object_name = "reverse_domains"
 
 
 class ReverseDomainDetailView(ReverseDomainView, DetailView):
     context_object_name = "reverse_domain"
-    template_name = "reverse_domain/detail.html"
+    template_name = "reverse_domain/reverse_domain_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super(ReverseDomainDetailView, self).get_context_data(

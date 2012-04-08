@@ -18,7 +18,7 @@ class RevNSDetailView(RevNSView, CommonDetailView):
 
 class RevNSListView(RevNSView, CommonListView):
     """ """
-    template_name = "reverse_nameserver/list.html"
+    template_name = "reverse_nameserver/reverse_nameserver_list.html"
 
 
 class RevNSCreateView(RevNSView, CommonCreateView):

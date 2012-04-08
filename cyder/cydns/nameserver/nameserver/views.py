@@ -14,12 +14,12 @@ class NSDeleteView(NSView, CommonDeleteView):
 
 
 class NSDetailView(NSView, CommonDetailView):
-    template_name = "nameserver/detail.html"
+    template_name = "nameserver/nameserver_detail.html"
 
 
 class NSListView(NSView, CommonListView):
     """ """
-    template_name = "nameserver/list.html"
+    template_name = "nameserver/nameserver_list.html"
 
 
 class NSCreateView(NSView, CommonCreateView):

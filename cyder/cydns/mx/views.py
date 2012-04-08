@@ -20,7 +20,7 @@ class MXDeleteView(MXView, CommonDeleteView):
 
 class MXDetailView(MXView, CommonDetailView):
     """Detail View"""
-    template_name = 'mx/detail.html'
+    template_name = 'mx/mx_detail.html'
 
 
 class MXCreateView(MXView, CommonCreateView):
@@ -33,4 +33,4 @@ class MXUpdateView(MXView, CommonUpdateView):
 
 class MXListView(MXView, CommonListView):
     """List View"""
-    template_name = 'mx/list.html'
+    template_name = 'mx/mx_list.html'
