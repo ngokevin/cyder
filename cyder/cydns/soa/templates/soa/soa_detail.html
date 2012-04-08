@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h3>SOA</h3>
+    {{ soa }}
+    <a href='{{ soa.get_edit_url() }}'>Edit</a>
+    <br />
+    {%if soa.domain_set.all().exists() %}
+        <h2>Domains in this zone</h2>
+        {% for domain in soa.domain_set.all().order_by('name') %}
+            <p> View Domain <a href='{{ domain.get_absolute_url() }}'>{{ domain.name }}</a> </p>
+        {% endfor %}
+    {% else %}
+        <h2>Reverse Domains in this zone</h2>
+        {% for reverse_domain in soa.reversedomain_set.all().order_by('name') %}
+            <p> View Domain <a href='{{ reverse_domain.get_absolute_url() }}'>{{ reverse_domain.name }}</a> </p>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}

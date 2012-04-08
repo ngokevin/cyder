@@ -1,0 +1,16 @@
+{% extends "common/detail.html" %}
+
+{% block title %} {{ common.data_domain.name }} {% endblock %}
+
+{% block cname_nav %}
+    {{ super() }}
+
+    <span class="nav-item">
+        <a class="sub-link nav-link" href='{{ common.get_edit_url() }}'>Edit</a>
+    </span>
+    {% if common.data_domain %}
+        <span class="nav-item">
+            <a class="sub-link nav-link" href='{{ common.data_domain.get_absolute_url() }}'>View Domain</a>
+        </span>
+    {% endif %}
+{% endblock %}
