@@ -1,14 +1,14 @@
+from django.contrib import messages
+from django.forms import ValidationError
+from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import DeleteView
 from django.views.generic import DetailView
 from django.views.generic import CreateView
 from django.views.generic import UpdateView
 from django.views.generic import ListView
-from django.shortcuts import redirect, get_object_or_404
-from django.contrib import messages
-from django.forms import ValidationError
+
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.utils import slim_form
-import pdb
 
 
 class CommonDeleteView(DeleteView):

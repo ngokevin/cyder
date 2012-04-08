@@ -1,6 +1,3 @@
-<!-- Base generic title off of object's class name -->
-<h1>{{ objects[0].__class__.__name__ + 's' }}</h1>
-
 <!-- Basic bootstrap pagination -->
 <div class="pagination">
     <ul>
