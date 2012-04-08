@@ -9,6 +9,8 @@ from django.views.generic import UpdateView
 
 from cyder.core.ctnr.forms import CtnrForm
 from cyder.core.ctnr.models import Ctnr, CtnrUser
+from cyder.core.cyuser.utils import tablefy_users
+from cyder.cydns.common.utils import tablefy
 
 
 class CtnrView(object):
@@ -26,7 +28,34 @@ class CtnrDeleteView(CtnrView, DeleteView):
 
 class CtnrDetailView(CtnrView, DetailView):
     """ Detail View """
+    def get_context_data(self, **kwargs):
+        context = super(DetailView, self).get_context_data(**kwargs)
+        ctnr = kwargs.get('object', False)
+        if not ctnr:
+            return context
 
+        users = ctnr.users.all()
+        user_headers, user_matrix, user_urls = tablefy_users(users)
+
+        domains = ctnr.domains.all()
+        domain_headers, domain_matrix, domain_urls = tablefy(domains)
+
+        rdomains = ctnr.reverse_domains.all()
+        rdomain_headers, rdomain_matrix, rdomain_urls = tablefy(rdomains)
+
+        return dict({
+            "user_headers": user_headers,
+            "user_matrix": user_matrix,
+            "user_urls": user_urls,
+
+            "domain_headers": domain_headers,
+            "domain_matrix": domain_matrix,
+            "domain_urls": domain_urls,
+
+            "rdomain_headers": rdomain_headers,
+            "rdomain_matrix": rdomain_matrix,
+            "rdomain_urls": rdomain_urls,
+        }.items() + context.items())
 
 class CtnrCreateView(CtnrView, CreateView):
     """ Create View """

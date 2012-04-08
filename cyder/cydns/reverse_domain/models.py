@@ -58,6 +58,14 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
     class Meta:
         db_table = 'reverse_domain'
 
+    def details(self):
+        return (
+            ('Name', self.name),
+            ('Master Reverse Domain', self.master_reverse_domain),
+            ('SOA', self.soa),
+            ('Delegated', self.delegated),
+        )
+
     def delete(self, *args, **kwargs):
         self._check_for_children()
         # Reassign Ip's in my reverse domain to my parent's reverse domain.

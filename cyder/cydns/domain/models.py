@@ -42,6 +42,14 @@ class Domain(models.Model, ObjectUrlMixin):
     class Meta:
         db_table = 'domain'
 
+    def details(self):
+        return (
+            ('Name', self.name),
+            ('Master Domain', self.master_domain),
+            ('SOA', self.soa),
+            ('Delegated', self.delegated),
+        )
+
     def delete(self, *args, **kwargs):
         self.check_for_children()
         self.reassign_data_domains()

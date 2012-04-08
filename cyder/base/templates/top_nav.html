@@ -29,7 +29,7 @@
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">{{ request.user }} on {{ request.session.ctnr.name }} <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li><a href="/cyuser/{{ request.user.id }}/">View user profile</a></li>
-                        <li><a href="/ctnr/{{ request.session.ctnr.id }}/detail/">View current container</a></li>
+                        <li><a href="/ctnr/{{ request.session.ctnr.id }}/">View current container</a></li>
 
                         <li class="divider"></li>
                         {% if request.session.superuser %}

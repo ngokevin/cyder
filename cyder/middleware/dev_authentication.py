@@ -24,7 +24,10 @@ class DevAuthenticationMiddleware(object):
             else:
                 request.session['ctnr'] = Ctnr.objects.get(id=default_ctnr.id)
 
+
             # load session vars to load templates up with ctnr data
+            request.session['level'] = CtnrUser.objects.get(user=request.user, ctnr=default_ctnr).level
+
             try:
                 # get all of ctnrs for user to switch between
                 global_ctnr = CtnrUser.objects.get(user=request.user, ctnr=1)
@@ -43,6 +46,8 @@ class DevAuthenticationMiddleware(object):
                 # get all of user's ctnrs for user to switch between
                 ctnrs_user = CtnrUser.objects.filter(user=request.user)
                 request.session['ctnrs'] = [ctnr_user.ctnr for ctnr_user in ctnrs_user]
+
+
                 # to set up the bootstrap typeahead ctnr search bar
                 ctnr_names = [ctnr_user.ctnr.name for ctnr_user in ctnrs_user]
                 request.session['ctnr_names_json'] = simplejson.dumps(ctnr_names)

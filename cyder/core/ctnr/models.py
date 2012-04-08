@@ -23,6 +23,12 @@ class Ctnr(models.Model, ObjectUrlMixin):
     def __str__(self):
         return self.name
 
+    def details(self):
+        return (
+            ('Name', self.name),
+            ('Description', self.description),
+        )
+
 
 class CtnrUser(models.Model):
     user = models.ForeignKey(User)
@@ -31,3 +37,4 @@ class CtnrUser(models.Model):
 
     class Meta:
         db_table = 'ctnr_users'
+        unique_together = ('ctnr', 'user')

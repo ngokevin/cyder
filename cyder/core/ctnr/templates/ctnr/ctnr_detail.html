@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "tables.html" import render_table %}
+
+{% block title %}
+    {{ object.name }}
+{% endblock %}
+
+{% block header %}
+    Container {{ object.name }}
+{% endblock %}
+
+{% block content %}
+    <table class="table">
+        <thead>
+            {% for item, value in object.details() %}
+                <th>{{ item }}</th>
+            {% endfor %}
+        </thead>
+
+        <tbody>
+            <tr>
+            {% for item, value in object.details() %}
+                <td>{{ value }}</td>
+            {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Users</h3>
+    {{ render_table(user_headers, user_matrix, user_urls) }}
+
+    <h3>Domains</h3>
+    {{ render_table(domain_headers, domain_matrix, domain_urls) }}
+
+    <h3>Reverse Domains</h3>
+    {{ render_table(rdomain_headers, rdomain_matrix, rdomain_urls) }}
+
+{% endblock %}
