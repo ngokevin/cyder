@@ -26,17 +26,17 @@
         </tbody>
     </table>
 
-    {% if object.users[0] %}
+    {% if user_matrix %}
         <h3>Users</h3>
         {{ render_table(user_headers, user_matrix, user_urls) }}
     {% endif %}
 
-    {% if object.domains[0] %}
+    {% if domain_matrix %}
         <h3>Domains</h3>
         {{ render_table(domain_headers, domain_matrix, domain_urls) }}
     {% endif %}
 
-    {% if object.reverse_domains[0] %}
+    {% if rdomain_matrix %}
         <h3>Reverse Domains</h3>
         {{ render_table(rdomain_headers, rdomain_matrix, rdomain_urls) }}
     {% endif %}
