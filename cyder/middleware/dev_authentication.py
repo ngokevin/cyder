@@ -31,7 +31,7 @@ class DevAuthenticationMiddleware(object):
                 # get all of ctnrs for user to switch between
                 global_ctnr = CtnrUser.objects.get(user=request.user, ctnr=1)
                 if global_ctnr:
-                    request.session['ctnrs'] = Ctnr.objects.all()
+                    request.session['ctnrs'] = list(Ctnr.objects.all())
 
                     # set user as superuser if so
                     if global_ctnr.level == 2:
@@ -39,7 +39,8 @@ class DevAuthenticationMiddleware(object):
 
                 # to set up the bootstrap typeahead ctnr search bar
                 names = Ctnr.objects.all().values_list('name', flat=True)
-                request.session['ctnr_names_json'] = simplejson.dumps(str(names))
+                names = sorted([str(name) for name in names], key=str.lower)
+                request.session['ctnr_names_json'] = simplejson.dumps(names)
 
             except CtnrUser.DoesNotExist:
                 # get all of user's ctnrs for user to switch between
@@ -48,7 +49,7 @@ class DevAuthenticationMiddleware(object):
                 request.session['ctnrs'] = ctnrs
 
                 # to set up the bootstrap typeahead ctnr search bar
-                names = [ctnr.name for ctnr in ctnrs]
-                request.session['ctnr_names_json'] = simplejson.dumps(str(names))
+                names = sorted([str(ctnr.name) for ctnr in ctnrs], key=str.lower)
+                request.session['ctnr_names_json'] = simplejson.dumps(names)
 
         return None

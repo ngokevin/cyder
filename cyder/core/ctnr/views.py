@@ -1,5 +1,8 @@
+import simplejson
+
 from django.contrib import messages
-from django.shortcuts import redirect
+from django import forms
+from django.shortcuts import redirect, render
 
 from django.views.generic import CreateView
 from django.views.generic import DeleteView
@@ -60,13 +63,23 @@ class CtnrDetailView(CtnrView, DetailView):
 class CtnrCreateView(CtnrView, CreateView):
     """ Create View """
     def post(self, request, *args, **kwargs):
-        try:
-            response = super(CtnrCreateView, self).post(request, *args, **kwargs)
-        except ValidationError, e:
-            request.method = 'GET'
-            return super(CtnrCreateView, self).get(request, *args, **kwargs)
+        ctnr_form = CtnrForm(request.POST)
 
-        return response
+        # try to save the ctnr TODO: call has_perms
+        try:
+            ctnr = ctnr_form.save(commit=False)
+        except ValueError as e:
+            return render(request, "ctnr/ctnr_form.html", {'form': ctnr_form})
+
+        ctnr.save()
+
+        # update ctnr-related session variables
+        request.session['ctnrs'].append(ctnr)
+        ctnr_names = simplejson.loads(request.session['ctnr_names_json'])
+        ctnr_names.append(ctnr.name)
+        request.session['ctnr_names_json'] = simplejson.dumps(ctnr_names)
+
+        return redirect('/ctnr/' + str(ctnr.id))
 
     def get(self, request, *args, **kwargs):
         return super(CtnrCreateView, self).get(request, *args, **kwargs)

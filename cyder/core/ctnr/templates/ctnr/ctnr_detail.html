@@ -26,12 +26,19 @@
         </tbody>
     </table>
 
-    <h3>Users</h3>
-    {{ render_table(user_headers, user_matrix, user_urls) }}
+    {% if object.users[0] %}
+        <h3>Users</h3>
+        {{ render_table(user_headers, user_matrix, user_urls) }}
+    {% endif %}
 
-    <h3>Domains</h3>
-    {{ render_table(domain_headers, domain_matrix, domain_urls) }}
+    {% if object.domains[0] %}
+        <h3>Domains</h3>
+        {{ render_table(domain_headers, domain_matrix, domain_urls) }}
+    {% endif %}
 
-    <h3>Reverse Domains</h3>
-    {{ render_table(rdomain_headers, rdomain_matrix, rdomain_urls) }}
+    {% if object.reverse_domains[0] %}
+        <h3>Reverse Domains</h3>
+        {{ render_table(rdomain_headers, rdomain_matrix, rdomain_urls) }}
+    {% endif %}
+
 {% endblock %}
