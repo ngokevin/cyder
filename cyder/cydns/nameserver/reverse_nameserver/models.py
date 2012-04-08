@@ -13,7 +13,7 @@ class ReverseNameserver(BaseNameserver):
         unique_together = ('reverse_domain', 'server')
 
     def get_absolute_url(self):
-        return "/cyder/cydns/reverse_nameserver/{0}/".format(self.pk)
+        return "/cydns/reverse_nameserver/{0}/".format(self.pk)
 
     def details(self):
         details = (

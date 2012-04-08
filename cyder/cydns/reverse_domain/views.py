@@ -167,4 +167,4 @@ def inheirit_soa(request, pk):
             reverse_domain.save()
             messages.success(request, '{0} was successfully updated.'.
                              format(reverse_domain.name))
-    return redirect('/cyder/cydns/reverse_domain')
+    return redirect('/cydns/reverse_domain')

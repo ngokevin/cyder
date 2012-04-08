@@ -24,7 +24,6 @@ class DevAuthenticationMiddleware(object):
             else:
                 request.session['ctnr'] = Ctnr.objects.get(id=default_ctnr.id)
 
-
             # load session vars to load templates up with ctnr data
             request.session['level'] = CtnrUser.objects.get(user=request.user, ctnr=default_ctnr).level
 
@@ -39,17 +38,17 @@ class DevAuthenticationMiddleware(object):
                         request.session['superuser'] = True
 
                 # to set up the bootstrap typeahead ctnr search bar
-                ctnrs = Ctnr.objects.all()
-                ctnr_names = [ctnr.name for ctnr in ctnrs]
-                request.session['ctnr_names_json'] = simplejson.dumps(ctnr_names)
+                names = Ctnr.objects.all().values_list('name', flat=True)
+                request.session['ctnr_names_json'] = simplejson.dumps(str(names))
+
             except CtnrUser.DoesNotExist:
                 # get all of user's ctnrs for user to switch between
                 ctnrs_user = CtnrUser.objects.filter(user=request.user)
-                request.session['ctnrs'] = [ctnr_user.ctnr for ctnr_user in ctnrs_user]
-
+                ctnrs = ctnrs_user.values_list('ctnr', flat=True)
+                request.session['ctnrs'] = ctnrs
 
                 # to set up the bootstrap typeahead ctnr search bar
-                ctnr_names = [ctnr_user.ctnr.name for ctnr_user in ctnrs_user]
-                request.session['ctnr_names_json'] = simplejson.dumps(ctnr_names)
+                names = [ctnr.name for ctnr in ctnrs]
+                request.session['ctnr_names_json'] = simplejson.dumps(str(names))
 
         return None

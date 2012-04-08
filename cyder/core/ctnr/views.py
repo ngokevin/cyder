@@ -59,6 +59,17 @@ class CtnrDetailView(CtnrView, DetailView):
 
 class CtnrCreateView(CtnrView, CreateView):
     """ Create View """
+    def post(self, request, *args, **kwargs):
+        try:
+            response = super(CtnrCreateView, self).post(request, *args, **kwargs)
+        except ValidationError, e:
+            request.method = 'GET'
+            return super(CtnrCreateView, self).get(request, *args, **kwargs)
+
+        return response
+
+    def get(self, request, *args, **kwargs):
+        return super(CtnrCreateView, self).get(request, *args, **kwargs)
 
 
 class CtnrUpdateView(CtnrView, UpdateView):
