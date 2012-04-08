@@ -1,0 +1,3 @@
+{{ object.fqdn }}
+{{ object.ip_str }}
+{{ object.ip_type }}

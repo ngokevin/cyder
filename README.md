@@ -7,3 +7,7 @@ playdoh
 CREATE USER 'cyder'@'localhost' IDENTIFIED BY '****';
 GRANT ALL PRIVILEGES ON *.* TO 'cyder'@'localhost';
 create database cyder;
+
+pip install -e git+https://github.com/toastdriven/django-haystack.git@master#egg=django-haystack
+
+pip install ipaddr
