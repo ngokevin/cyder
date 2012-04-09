@@ -1,0 +1,15 @@
+{% extends "cydns/cydns_detail.html" %}
+
+{% block title %}
+    {{ object.fqdn }}
+{% endblock %}
+
+{% block header %}
+    TXT {{ object.fqdn }}
+{% endblock %}
+
+{% block txt_nav %}
+    {{ super() }}
+
+    {% include "cydns/detail_nav.inc" %}
+{% endblock %}

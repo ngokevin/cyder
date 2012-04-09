@@ -12,7 +12,7 @@
     {{ super() }}
 
     <span class="nav-item">
-        <a class="sub-link nav-link" href="{{ object.get_edit_url() }}">Edit SOA</a>
+        <a class="sub-link nav-link" href="{{ object.get_edit_url() }}">Edit {{ object.name }}</a>
     </span>
     <span class="nav-item">
         <a class="sub-link nav-link" href="/cydns/reverse_nameserver/{{ object.pk }}/create/">Create NS</a>
