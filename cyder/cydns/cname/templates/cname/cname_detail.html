@@ -1,6 +1,8 @@
 {% extends "cydns/cydns_detail.html" %}
 
-{% block title %} {{ object.data_domain.name }} {% endblock %}
+{% block title %} {{ object.fqdn }} {% endblock %}
+
+{% block header %} CNAME {{ object.fqdn }} {% endblock %}
 
 {% block cname_nav %}
     {{ super() }}

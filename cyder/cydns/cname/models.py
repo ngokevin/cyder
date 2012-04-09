@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.models import CydnsRecord
 from cyder.cydns.validation import validate_name, find_root_domain
-from cyder.cysearch.utils import fqdn_exists
+from cyder.search.utils import fqdn_exists
 
 class CNAME(CydnsRecord):
     """CNAMES can't point to an any other records. Said another way,

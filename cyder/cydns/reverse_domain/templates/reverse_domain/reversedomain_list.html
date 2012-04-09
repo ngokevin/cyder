@@ -1,0 +1,47 @@
+{% extends "cydns/cydns_base.html" %}
+
+{% block reverse_domain_nav %}
+    {{ super() }}
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="/cydns/reverse_domain/create/">Create Reverse Domain</a>
+    </span>
+
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="/cydns/reverse_domain/bootstrap_ipv6/">Bootstrap v6</a>
+    </span>
+{% endblock %}
+
+{% block content %}
+
+    <h3>IPv4 Reverse Domains</h3>
+    {% for object in object_list %}
+        {% if object.ip_type == '4' %}
+        <a href="/cydns/reverse_domain/{{object.pk}}/">{{ object.name }}</a> {{object.soa}}
+
+        {% if object.master_reverse_domain and object.soa != object.master_reverse_domain.soa %}
+        <form method="post" action="/cydns/reverse_domain/{{object.pk}}/inheirit_soa/">
+            <input type="submit" value="Inherit SOA">
+        </form>
+        {% endif %}
+
+        <br />
+        {% endif %}
+    {% endfor %}
+
+    <h3>IPv6 Reverse Domains</h3>
+    {% for object in object_list%}
+        {% if object.ip_type == '6' %}
+        <a href="/cydns/reverse_domain/{{object.pk}}/">{{ object.name }}</a> {{object.soa}}
+
+        {% if object.master_reverse_domain and object.soa != object.master_reverse_domain.soa %}
+        <form method="post" action="/cydns/reverse_domain/{{object.pk}}/inheirit_soa">
+            <input type="submit" value="Inherit SOA">
+        </form>
+        {% endif %}
+
+        <br />
+        {% endif %}
+    {% endfor %}
+
+{% endblock %}
+

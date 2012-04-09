@@ -1,6 +1,12 @@
 {% extends "cydns/cydns_detail.html" %}
 
-{% block title %} PTR {% endblock %}
+{% block title %}
+    {{ object.name }}
+{% endblock %}
+
+{% block header %}
+    PTR {{ object.name }}
+{% endblock %}
 
 {% block ptr_nav %}
     {{ super () }}

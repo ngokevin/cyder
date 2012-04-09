@@ -41,6 +41,15 @@ ROOT_URLCONF = 'cyder.urls'
 
 APPEND_SLASH = True
 
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+        'EXCLUDED_INDEXES': ['cyder.cydns.cydns_index.CydnsIndex'],
+        },
+}
+
+
 INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,8 +58,9 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.messages',
     # Application base, containing global templates.
     #'django.contrib.staticfiles',
+    'haystack',
     'cyder.base',
-    'cyder.cysearch',
+    'cyder.search',
     'cyder.core.cyuser',
     'cyder.core',
     'cyder.core.ctnr',
