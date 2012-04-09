@@ -61,8 +61,8 @@ class ReverseDomainView(object):
 
 
 class ReverseDomainCreateView(ReverseDomainView, CreateView):
-    template_name = 'cydns/cydns_form.html'
     form_class = ReverseDomainForm
+    template_name = 'cydns/cydns_form.html'
 
     def post(self, request, *args, **kwargs):
         reverse_domain_form = ReverseDomainForm(request.POST)
@@ -94,8 +94,8 @@ class ReverseDomainCreateView(ReverseDomainView, CreateView):
                         })
 
 class ReverseDomainUpdateView(ReverseDomainView, UpdateView):
-    template_name = 'cydns/cydns_update.html'
     form_class = ReverseDomainUpdateForm
+    template_name = 'cydns/cydns_update.html'
 
     def post(self, request, *args, **kwargs):
         reverse_domain = get_object_or_404(ReverseDomain,
