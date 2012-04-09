@@ -1,8 +1,8 @@
 # Create your views here.
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.address_record.forms import AddressRecordForm
-from cyder.cydns.common.views import CommonDeleteView, CommonDetailView
-from cyder.cydns.common.views import CommonCreateView, CommonUpdateView
+from cyder.cydns.views import CydnsDeleteView, CydnsDetailView
+from cyder.cydns.views import CydnsCreateView, CydnsUpdateView
 
 import pdb
 
@@ -13,17 +13,17 @@ class AddressRecordView(object):
     queryset = AddressRecord.objects.all()
 
 
-class AddressRecordDeleteView(AddressRecordView, CommonDeleteView):
+class AddressRecordDeleteView(AddressRecordView, CydnsDeleteView):
     """ """
 
 
-class AddressRecordDetailView(AddressRecordView, CommonDetailView):
+class AddressRecordDetailView(AddressRecordView, CydnsDetailView):
     """ """
 
 
-class AddressRecordCreateView(AddressRecordView, CommonCreateView):
+class AddressRecordCreateView(AddressRecordView, CydnsCreateView):
     """ """
 
 
-class AddressRecordUpdateView(AddressRecordView, CommonUpdateView):
+class AddressRecordUpdateView(AddressRecordView, CydnsUpdateView):
     """ """

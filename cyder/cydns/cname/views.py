@@ -1,8 +1,8 @@
-from cyder.cydns.common.views import CommonDeleteView
-from cyder.cydns.common.views import CommonDetailView
-from cyder.cydns.common.views import CommonCreateView
-from cyder.cydns.common.views import CommonUpdateView
-from cyder.cydns.common.views import CommonListView
+from cyder.cydns.views import CydnsDeleteView
+from cyder.cydns.views import CydnsDetailView
+from cyder.cydns.views import CydnsCreateView
+from cyder.cydns.views import CydnsUpdateView
+from cyder.cydns.views import CydnsListView
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.cname.forms import CNAMEForm
 
@@ -13,21 +13,21 @@ class CNAMEView(object):
     queryset = CNAME.objects.all().order_by('fqdn')
 
 
-class CNAMEDeleteView(CNAMEView, CommonDeleteView):
+class CNAMEDeleteView(CNAMEView, CydnsDeleteView):
     """ """
 
 
-class CNAMEDetailView(CNAMEView, CommonDetailView):
+class CNAMEDetailView(CNAMEView, CydnsDetailView):
     template_name = "cname/cname_detail.html"
 
 
-class CNAMECreateView(CNAMEView, CommonCreateView):
+class CNAMECreateView(CNAMEView, CydnsCreateView):
     """ """
 
 
-class CNAMEUpdateView(CNAMEView, CommonUpdateView):
+class CNAMEUpdateView(CNAMEView, CydnsUpdateView):
     """ """
 
 
-class CNAMEListView(CNAMEView, CommonListView):
+class CNAMEListView(CNAMEView, CydnsListView):
     template_name = "cname/cname_list.html"

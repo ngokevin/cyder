@@ -1,7 +1,7 @@
 from django.db import models
 
 from cyder.cydns.validation import validate_name
-from cyder.cydns.models import ObjectUrlMixin
+from cyder.cydns.mixins import ObjectUrlMixin
 
 import time
 import pdb

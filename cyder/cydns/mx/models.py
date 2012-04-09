@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from cyder.cydns.common.models import CommonRecord
+from cyder.cydns.models import CydnsRecord
 from cyder.cydns.cname.models import CNAME
 
 from cyder.cydns.validation import validate_mx_priority
@@ -9,7 +9,7 @@ from cyder.cydns.validation import validate_ttl
 from cyder.cydns.validation import validate_name
 
 
-class MX(CommonRecord):
+class MX(CydnsRecord):
     """
     >>> MX(label, domain, server, priority, ttl)
     """
@@ -31,7 +31,7 @@ class MX(CommonRecord):
 
     class Meta:
         db_table = 'mx'
-        # label and domain in CommonRecord
+        # label and domain in CydnsRecord
         unique_together = ('domain', 'label', 'server', 'priority')
 
     def save(self, *args, **kwargs):

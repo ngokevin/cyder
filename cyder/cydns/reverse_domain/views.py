@@ -5,8 +5,8 @@ from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render, render_to_response
 from django.views.generic import DetailView, ListView, CreateView, UpdateView
 
-from cyder.cydns.common.utils import tablefy
-from cyder.cydns.common.views import CommonDeleteView
+from cyder.cydns.utils import tablefy
+from cyder.cydns.views import CydnsDeleteView
 from cyder.cydns.nameserver.reverse_nameserver.models import ReverseNameserver
 from cyder.cydns.reverse_domain.models import boot_strap_ipv6_reverse_domain
 from cyder.cydns.reverse_domain.models import ReverseDomain
@@ -21,7 +21,7 @@ class ReverseDomainView(object):
     form_class = ReverseDomainForm
 
 
-class ReverseDomainDeleteView(ReverseDomainView, CommonDeleteView):
+class ReverseDomainDeleteView(ReverseDomainView, CydnsDeleteView):
     """ """
 
 

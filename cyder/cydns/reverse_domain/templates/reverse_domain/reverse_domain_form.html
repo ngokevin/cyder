@@ -1,8 +1,9 @@
-{% extends "base.html" %}
+{% extends "cydns/cydns_base.html" %}
+
 {% block content %}
-<h3>Create Reverse Domain</h3>
-<form method="post" action="">
-    {{ form }} <br />
-<input type="submit" value="Submit" />
-</form>
+    <h1>Create Reverse Domain</h1>
+    <form method="post" action="">
+        {{ form }} <br />
+    <input type="submit" value="Submit" />
+    </form>
 {% endblock %}

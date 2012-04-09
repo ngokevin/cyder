@@ -27,7 +27,7 @@ def do_setUp(self, url_slug, test_class, test_data, use_domain=True):
     if not create:
         raise Exception
 
-class CommonViewTests(object):
+class CydnsViewTests(object):
     def setUp(self):
         self.client = Client()
         self.url_slug = url_slug
@@ -43,7 +43,7 @@ class CommonViewTests(object):
 
 
 
-class CNAMEViewTests(CommonViewTests, TestCase):
+class CNAMEViewTests(CydnsViewTests, TestCase):
     def setUp(self):
         test_data = {'label': random_label(), 'data':random_label()}
         do_setUp(self, "cname", CNAME, test_data)
@@ -55,7 +55,7 @@ builder = GenericViewTests()
 for test in builder.build_all_tests():
     setattr(CNAMEViewTests,test.__name__+"_cname", test)
 
-class MXViewTests(CommonViewTests, TestCase):
+class MXViewTests(CydnsViewTests, TestCase):
     def setUp(self):
         test_data = {'label': random_label(), 'server':random_label(), 'priority':123 ,'ttl':213 }
         do_setUp(self, "mx", MX, test_data)
@@ -67,7 +67,7 @@ builder = GenericViewTests()
 for test in builder.build_all_tests():
     setattr(MXViewTests,test.__name__+"_mx", test)
 
-class SRVViewTests(CommonViewTests, TestCase):
+class SRVViewTests(CydnsViewTests, TestCase):
     def setUp(self):
         test_data = { 'label':"_"+random_label() ,'target':random_label(),'priority':2 ,'weight':2222 , 'port': 222 }
         do_setUp(self, "srv", SRV, test_data)
@@ -79,7 +79,7 @@ builder = GenericViewTests()
 for test in builder.build_all_tests():
     setattr(SRVViewTests,test.__name__+"_srv", test)
 
-class TXTViewTests(CommonViewTests, TestCase):
+class TXTViewTests(CydnsViewTests, TestCase):
     def setUp(self):
         test_data = { 'label':random_label() ,'txt_data':random_label() }
         do_setUp(self, "txt", TXT, test_data)

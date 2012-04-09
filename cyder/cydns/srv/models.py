@@ -2,9 +2,9 @@ from django.db import models
 from django.core.exceptions import ValidationError
 import cyder
 from cyder.cydns.domain.models import Domain
-from cyder.cydns.common.models import CommonRecord
+from cyder.cydns.models import CydnsRecord
 from cyder.cydns.validation import validate_name
-from cyder.cydns.models import ObjectUrlMixin
+from cyder.cydns.mixins import ObjectUrlMixin
 
 from cyder.cydns.validation import validate_srv_label, validate_srv_port
 from cyder.cydns.validation import validate_srv_priority, validate_srv_weight
@@ -12,7 +12,7 @@ from cyder.cydns.validation import validate_srv_name
 
 
 # Rhetorical Question: Why is SRV not a common record?  SRV records have
-# a '_' in their label. Most domain names do not allow this.  Common
+# a '_' in their label. Most domain names do not allow this.  Cydns
 # record has a validator that would raise an exception when validating
 # it's label.  TODO, verify this.
 class SRV(models.Model, ObjectUrlMixin):

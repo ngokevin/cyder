@@ -3,7 +3,7 @@ from django.forms import ValidationError
 
 from cyder.cydns.soa.models import SOA
 from cyder.cydns.validation import validate_reverse_name
-from cyder.cydns.models import ObjectUrlMixin
+from cyder.cydns.mixins import ObjectUrlMixin
 from cyder.cydns.validation import validate_ip_type, do_zone_validation
 
 import ipaddr

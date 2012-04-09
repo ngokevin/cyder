@@ -7,21 +7,21 @@
 
     <table class="table">
         <thead>
-            {% for item, value in common.details() %}
+            {% for item, value in object.details() %}
                 <th>{{ item }}</th>
             {% endfor %}
         </thead>
 
         <tbody>
             <tr>
-            {% for item, value in common.details() %}
+            {% for item, value in object.details() %}
                 <td>{{ value }}</td>
             {% endfor %}
             </tr>
         </tbody>
     </table>
 
-    <a href='{{ common.get_edit_url() }}'>Edit</a>
+    <a href='{{ object.get_edit_url() }}'>Edit</a>
     <br />
-    <a href='{{ common.domain.get_absolute_url() }}'>View Domain</a>
+    <a href='{{ object.domain.get_absolute_url() }}'>View Domain</a>
 {% endblock %}

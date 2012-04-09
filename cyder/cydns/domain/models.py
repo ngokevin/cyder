@@ -3,8 +3,8 @@ from django.core.exceptions import ValidationError
 
 import cyder
 from cyder.cydns.soa.models import SOA
+from cyder.cydns.mixins import ObjectUrlMixin
 from cyder.cydns.validation import validate_domain_name, _name_type_check
-from cyder.cydns.models import ObjectUrlMixin
 from cyder.cydns.validation import do_zone_validation
 from cyder.cysearch.utils import fqdn_exists
 

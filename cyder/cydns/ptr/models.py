@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.ip.models import Ip
 from cyder.cydns.validation import validate_name
-from cyder.cydns.models import ObjectUrlMixin
+from cyder.cydns.mixins import ObjectUrlMixin
 
 
 class PTR(Ip, ObjectUrlMixin):

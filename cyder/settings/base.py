@@ -58,7 +58,6 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'cyder.core.node',
     'cyder.cybind',
     'cyder.cydns',
-    'cyder.cydns.common',
     'cyder.cydns.address_record',
     'cyder.cydns.cname',
     'cyder.cydns.domain',

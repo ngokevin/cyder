@@ -1,9 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+from cyder.core.mixins import ObjectUrlMixin
 from cyder.cydhcp.range.models import Range
 from cyder.cydns.domain.models import Domain
-from cyder.cydns.models import ObjectUrlMixin
 from cyder.cydns.reverse_domain.models import ReverseDomain
 
 

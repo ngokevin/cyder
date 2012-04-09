@@ -1,8 +1,8 @@
-from cyder.cydns.common.views import CommonDeleteView
-from cyder.cydns.common.views import CommonCreateView
-from cyder.cydns.common.views import CommonDetailView
-from cyder.cydns.common.views import CommonUpdateView
-from cyder.cydns.common.views import CommonListView
+from cyder.cydns.views import CydnsDeleteView
+from cyder.cydns.views import CydnsCreateView
+from cyder.cydns.views import CydnsDetailView
+from cyder.cydns.views import CydnsUpdateView
+from cyder.cydns.views import CydnsListView
 from cyder.cydns.srv.models import SRV
 from cyder.cydns.srv.forms import SRVForm
 
@@ -13,22 +13,22 @@ class SRVView(object):
     queryset = SRV.objects.all()
 
 
-class SRVDeleteView(SRVView, CommonDeleteView):
+class SRVDeleteView(SRVView, CydnsDeleteView):
     """SRV Delete View"""
 
 
-class SRVDetailView(SRVView, CommonDetailView):
+class SRVDetailView(SRVView, CydnsDetailView):
     """SRV Detail View"""
 
 
-class SRVCreateView(SRVView, CommonCreateView):
+class SRVCreateView(SRVView, CydnsCreateView):
     """SRV Create View"""
 
 
-class SRVUpdateView(SRVView, CommonUpdateView):
+class SRVUpdateView(SRVView, CydnsUpdateView):
     """SRV Update View"""
 
 
-class SRVListView(SRVView, CommonListView):
+class SRVListView(SRVView, CydnsListView):
     """SRV List View"""
     template_name = 'srv/srv_list.html'

@@ -13,7 +13,7 @@ from django.views.generic import UpdateView
 from cyder.core.ctnr.forms import CtnrForm
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 from cyder.core.cyuser.utils import tablefy_users
-from cyder.cydns.common.utils import tablefy
+from cyder.cydns.utils import tablefy
 
 
 class CtnrView(object):
@@ -21,12 +21,10 @@ class CtnrView(object):
     queryset = Ctnr.objects.all()
     form_class = CtnrForm
 
-    context_object_name = "ctnr"
-
 
 class CtnrDeleteView(CtnrView, DeleteView):
     """ Delete View """
-    template_name = "common/delete.html"
+    template_name = "confirm_delete.html"
 
 
 class CtnrDetailView(CtnrView, DetailView):
@@ -91,7 +89,6 @@ class CtnrUpdateView(CtnrView, UpdateView):
 
 class CtnrListView(CtnrView, ListView):
     """ List View """
-    context_object_name = "objects"
     paginate_by = 30
 
 

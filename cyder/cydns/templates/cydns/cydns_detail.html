@@ -1,0 +1,9 @@
+{% extends "detail.html" %}
+
+{% block admin_nav %}{% endblock %}
+
+{% block content %}
+    {{ super() }}
+    <a href='{{ object.get_edit_url() }}'>Edit</a><br/>
+    <a href='{{ object.domain.get_absolute_url() }}'>View Domain</a>
+{% endblock %}

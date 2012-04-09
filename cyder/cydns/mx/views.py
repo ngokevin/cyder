@@ -1,10 +1,10 @@
 from cyder.cydns.mx.models import MX
 from cyder.cydns.mx.forms import MXForm
-from cyder.cydns.common.views import CommonDeleteView
-from cyder.cydns.common.views import CommonDetailView
-from cyder.cydns.common.views import CommonCreateView
-from cyder.cydns.common.views import CommonListView
-from cyder.cydns.common.views import CommonUpdateView
+from cyder.cydns.views import CydnsDeleteView
+from cyder.cydns.views import CydnsDetailView
+from cyder.cydns.views import CydnsCreateView
+from cyder.cydns.views import CydnsListView
+from cyder.cydns.views import CydnsUpdateView
 
 
 class MXView(object):
@@ -14,23 +14,23 @@ class MXView(object):
     queryset = MX.objects.all()
 
 
-class MXDeleteView(MXView, CommonDeleteView):
+class MXDeleteView(MXView, CydnsDeleteView):
     """Delete View"""
 
 
-class MXDetailView(MXView, CommonDetailView):
+class MXDetailView(MXView, CydnsDetailView):
     """Detail View"""
     template_name = 'mx/mx_detail.html'
 
 
-class MXCreateView(MXView, CommonCreateView):
+class MXCreateView(MXView, CydnsCreateView):
     """Create View"""
 
 
-class MXUpdateView(MXView, CommonUpdateView):
+class MXUpdateView(MXView, CydnsUpdateView):
     """Update View"""
 
 
-class MXListView(MXView, CommonListView):
+class MXListView(MXView, CydnsListView):
     """List View"""
     template_name = 'mx/mx_list.html'

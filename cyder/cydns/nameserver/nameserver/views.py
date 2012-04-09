@@ -9,22 +9,22 @@ class NSView(object):
     queryset = Nameserver.objects.all()
 
 
-class NSDeleteView(NSView, CommonDeleteView):
+class NSDeleteView(NSView, CydnsDeleteView):
     """ """
 
 
-class NSDetailView(NSView, CommonDetailView):
+class NSDetailView(NSView, CydnsDetailView):
     template_name = "nameserver/nameserver_detail.html"
 
 
-class NSListView(NSView, CommonListView):
+class NSListView(NSView, CydnsListView):
     """ """
     template_name = "nameserver/nameserver_list.html"
 
 
-class NSCreateView(NSView, CommonCreateView):
+class NSCreateView(NSView, CydnsCreateView):
     """ """
 
 
-class NSUpdateView(NSView, CommonUpdateView):
+class NSUpdateView(NSView, CydnsUpdateView):
     """ """

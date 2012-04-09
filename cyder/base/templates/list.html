@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-    {{ objects[0].__class__.__name__ + 's'}}
+    {{ object_list[0].__class__.__name__ + 's'}}
 {% endblock %}
 
 {% block header %}
-    {{ objects[0].__class__.__name__ + 's' }}
+    {{ object_list[0].__class__.__name__ + 's' }}
 {% endblock %}
 
 {% block content %}
@@ -48,7 +48,7 @@
         </thead>
 
         <tbody>
-            {% for obj in objects %}
+            {% for obj in object_list %}
                 <tr><td><a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a></td></tr>
             {% endfor %}
         </tbody>

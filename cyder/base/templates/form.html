@@ -1,9 +1,9 @@
-{% extends "cydns/cydns_base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
-    <h1>Bootstrap IPv6 Reverse Domain</h1>
+    <h1>{{ form_title }}</h1>
     <form method="post" action="">
-        {{ bootstrap_form }} <br />
+        {{ form }}
         <input type="submit" value="Submit" />
     </form>
 {% endblock %}

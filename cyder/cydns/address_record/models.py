@@ -5,12 +5,12 @@ import cyder
 from cyder.cydns.validation import validate_label, validate_name
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.ip.models import Ip
-from cyder.cydns.common.models import CommonRecord
+from cyder.cydns.models import CydnsRecord
 
 import pdb
 
 
-class AddressRecord(Ip, CommonRecord):
+class AddressRecord(Ip, CydnsRecord):
     """AddressRecord is the class that generates A and AAAA records
 
         >>> AddressRecord(label=label, domain=domain_object, ip_str=ip_str,

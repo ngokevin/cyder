@@ -8,22 +8,22 @@ class RevNSView(object):
     queryset = ReverseNameserver.objects.all()
 
 
-class RevNSDeleteView(RevNSView, CommonDeleteView):
+class RevNSDeleteView(RevNSView, CydnsDeleteView):
     """ """
 
 
-class RevNSDetailView(RevNSView, CommonDetailView):
+class RevNSDetailView(RevNSView, CydnsDetailView):
     """ """
 
 
-class RevNSListView(RevNSView, CommonListView):
+class RevNSListView(RevNSView, CydnsListView):
     """ """
     template_name = "reverse_nameserver/reverse_nameserver_list.html"
 
 
-class RevNSCreateView(RevNSView, CommonCreateView):
+class RevNSCreateView(RevNSView, CydnsCreateView):
     """ """
 
 
-class RevNSUpdateView(RevNSView, CommonUpdateView):
+class RevNSUpdateView(RevNSView, CydnsUpdateView):
     """ """

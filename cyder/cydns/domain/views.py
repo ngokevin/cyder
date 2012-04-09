@@ -13,8 +13,8 @@ from django.views.generic import CreateView
 
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.cname.models import CNAME
-from cyder.cydns.common.utils import tablefy
-from cyder.cydns.common.views import CommonDeleteView, CommonListView
+from cyder.cydns.utils import tablefy
+from cyder.cydns.views import CydnsDeleteView, CydnsListView
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.domain.forms import DomainForm, DomainUpdateForm
 from cyder.cydns.mx.models import MX
@@ -30,11 +30,11 @@ class DomainView(object):
     form_class = DomainForm
 
 
-class DomainDeleteView(DomainView, CommonDeleteView):
+class DomainDeleteView(DomainView, CydnsDeleteView):
     """ """
 
 
-class DomainListView(DomainView, CommonListView):
+class DomainListView(DomainView, CydnsListView):
     """ """
     template_name = "domain/domain_list.html"
 
