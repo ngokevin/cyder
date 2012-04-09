@@ -107,11 +107,20 @@
                     {% endblock %}
                 {% endblock %}
 
-                {% block admin_nav %}
-                    <span class="nav-item">
-                        <a class="nav-link" href="/ctnr/">Containers</a>
-                        <a class="side-link" href="/ctnr/create/"><i class="side-icon icon-plus-sign"></i></a>
-                    </span>
+                {% block core_nav %}
+                    {% block ctnr_nav %}
+                        <span class="nav-item">
+                            <a class="nav-link" href="/ctnr/">Containers</a>
+                            <a class="side-link" href="/ctnr/create/"><i class="side-icon icon-plus-sign"></i></a>
+                        </span>
+                    {% endblock %}
+
+                    {% block user_nav %}
+                        <span class="nav-item">
+                            <a class="nav-link" href="/cyuser/">Users</a>
+                            <a class="side-link" href="/cyuser/create/"><i class="side-icon icon-plus-sign"></i></a>
+                        </span>
+                    {% endblock %}
                 {% endblock %}
 
                 <a class="nav-link" href="/logout/">Logout</a>

@@ -109,9 +109,30 @@ def change_ctnr(request, pk = None):
         return redirect(referer)
 
     # check if user has access to ctnr
-    if CtnrUser.objects.filter(user=request.user, ctnr=ctnr) or \
-    CtnrUser.objects.filter(user=request.user, ctnr=1):
+    try:
+        global_ctnr_user = CtnrUser.objects.get(user=request.user, ctnr=1)
+    except CtnrUser.DoesNotExist:
+        global_ctnr_user = None
+    try:
+        ctnr_user = CtnrUser.objects.get(user=request.user, ctnr=ctnr)
+    except CtnrUser.DoesNotExist:
+        ctnr_user = None
+
+    if ctnr_user or global_ctnr_user:
+        # set session ctnr and level
         request.session['ctnr'] = ctnr
+
+        # higher level overrides
+        if ctnr_user:
+            level = ctnr_user.level
+        else:
+            level = 0
+        if global_ctnr_user:
+            global_level = global_ctnr_user.level
+        else:
+            global_level = 0
+        request.session['level'] = max(level, global_level)
+
     else:
         messages.error(request, "You do not have access to this container.")
 
