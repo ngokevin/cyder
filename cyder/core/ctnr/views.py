@@ -96,7 +96,10 @@ class CtnrListView(CtnrView, ListView):
 
 
 def change_ctnr(request, pk = None):
-    referer = request.META['HTTP_REFERER']
+    try:
+        referer = request.META['HTTP_REFERER']
+    except KeyError:
+        referer = '/'
 
     # check if ctnr exists
     try:

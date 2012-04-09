@@ -9,8 +9,8 @@ from cyder.settings import CYDNS_BASE_URL
 class DomainViewTests(TestCase):
     def setUp(self):
         self.url_slug = 'domain'
-        soa = SOA( primary = random_label(), contact = random_label(), comment= random_label() )
-        self.test_obj = Domain( name = random_label())
+        soa = SOA(primary=random_label(), contact=random_label(), comment=random_label())
+        self.test_obj = Domain(name=random_label())
         self.test_obj.save()
         self.test_obj.soa = soa
         self.test_obj.save()
