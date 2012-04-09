@@ -48,8 +48,8 @@ class DomainDetailView(DomainView, DetailView):
         domain = kwargs.get('object', False)
         if not domain:
             return context
-        # TODO
-        # This process can be generalized. It's not very high priority.
+
+        # TODO this process can be generalized. It's not very high priority.
         address_objects = domain.addressrecord_set.all()
         adr_headers, adr_matrix, adr_urls = tablefy(address_objects)
 
@@ -73,35 +73,35 @@ class DomainDetailView(DomainView, DetailView):
 
         # Join the two dicts
         context = dict({
-                    # NS
-                    "ns_headers": ns_headers,
-                    "ns_matrix": ns_matrix,
-                    "ns_urls": ns_urls,
-                    # A and AAAA
-                    "address_headers": adr_headers,
-                    "address_matrix": adr_matrix,
-                    "address_urls": adr_urls,
-                    # MX
-                    "mx_headers": mx_headers,
-                    "mx_matrix": mx_matrix,
-                    "mx_urls": mx_urls,
-                    # SRV
-                    "srv_headers": srv_headers,
-                    "srv_matrix": srv_matrix,
-                    "srv_urls": srv_urls,
-                    # TXT
-                    "txt_headers": txt_headers,
-                    "txt_matrix": txt_matrix,
-                    "txt_urls": txt_urls,
-                    # CNAME
-                    "cname_headers": cname_headers,
-                    "cname_matrix": cname_matrix,
-                    "cname_urls": cname_urls,
-                    # PTR
-                    "ptr_headers": ptr_headers,
-                    "ptr_matrix": ptr_matrix,
-                    "ptr_urls": ptr_urls
-                       }.items() + context.items())
+            "ns_headers": ns_headers,
+            "ns_matrix": ns_matrix,
+            "ns_urls": ns_urls,
+
+            "address_headers": adr_headers,
+            "address_matrix": adr_matrix,
+            "address_urls": adr_urls,
+
+            "mx_headers": mx_headers,
+            "mx_matrix": mx_matrix,
+            "mx_urls": mx_urls,
+
+            "srv_headers": srv_headers,
+            "srv_matrix": srv_matrix,
+            "srv_urls": srv_urls,
+
+            "txt_headers": txt_headers,
+            "txt_matrix": txt_matrix,
+            "txt_urls": txt_urls,
+
+            "cname_headers": cname_headers,
+            "cname_matrix": cname_matrix,
+            "cname_urls": cname_urls,
+
+            "ptr_headers": ptr_headers,
+            "ptr_matrix": ptr_matrix,
+            "ptr_urls": ptr_urls
+        }.items() + context.items())
+
         return context
 
 

@@ -1,12 +1,3 @@
 {% extends "detail.html" %}
 
 {% block core_nav %}{% endblock %}
-
-{% block content %}
-    {{ super() }}
-    <a href='{{ object.get_edit_url() }}'>Edit</a><br/>
-
-    {% if object.domain %}
-        <a href='{{ object.domain.get_absolute_url() }}'>View Domain</a>
-    {% endif %}
-{% endblock %}

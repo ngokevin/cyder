@@ -5,8 +5,6 @@ from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render, render_to_response
 from django.views.generic import DetailView, ListView, CreateView, UpdateView
 
-from cyder.cydns.utils import tablefy
-from cyder.cydns.views import CydnsDeleteView
 from cyder.cydns.nameserver.reverse_nameserver.models import ReverseNameserver
 from cyder.cydns.reverse_domain.models import boot_strap_ipv6_reverse_domain
 from cyder.cydns.reverse_domain.models import ReverseDomain
@@ -14,6 +12,8 @@ from cyder.cydns.reverse_domain.forms import BootStrapForm
 from cyder.cydns.reverse_domain.forms import ReverseDomainForm
 from cyder.cydns.reverse_domain.forms import ReverseDomainUpdateForm
 from cyder.cydns.soa.models import SOA
+from cyder.cydns.utils import tablefy
+from cyder.cydns.views import CydnsDeleteView
 
 
 class ReverseDomainView(object):
@@ -26,7 +26,28 @@ class ReverseDomainDeleteView(ReverseDomainView, CydnsDeleteView):
 
 
 class ReverseDomainListView(ReverseDomainView, ListView):
-    """ """
+    """
+    def get_context_data(self, **kwargs):
+        context = super(ListView, self).get_context_data(**kwargs)
+
+        ip4_rdoms = ReverseDomain.objects.filter(ip_type='4')
+        ip6_rdoms = ReverseDomain.objects.filter(ip_type='6')
+
+        rdom4_headers, rdom4_matrix, rdom4_urls = tablefy(ip4_rdoms)
+        rdom6_headers, rdom6_matrix, rdom6_urls = tablefy(ip6_rdoms)
+
+        context = dict({
+            "rdom4_headers": rdom4_headers,
+            "rdom4_matrix": rdom4_matrix,
+            "rdom4_urls": rdom4_urls,
+
+            "rdom6_headers": rdom6_headers,
+            "rdom6_matrix": rdom6_matrix,
+            "rdom6_urls": rdom6_urls,
+        }.items() + context.items())
+
+        return context
+    """
 
 
 class ReverseDomainDetailView(ReverseDomainView, DetailView):
@@ -38,8 +59,8 @@ class ReverseDomainDetailView(ReverseDomainView, DetailView):
         reverse_domain = kwargs.get('object', False)
         if not reverse_domain:
             return context
-        # TODO
-        # This process can be generalized. It's not very high priority.
+
+        # TODO this process can be generalized. It's not very high priority.
         revns_objects = ReverseNameserver.objects.filter(
                                         reverse_domain=reverse_domain)
 
@@ -47,17 +68,12 @@ class ReverseDomainDetailView(ReverseDomainView, DetailView):
 
         # Join the two dicts
         context = dict({
-                    # NS
-                    "revns_headers": revns_headers,
-                    "revns_matrix": revns_matrix,
-                    "revns_urls": revns_urls,
-                  }.items() + context.items())
+            "revns_headers": revns_headers,
+            "revns_matrix": revns_matrix,
+            "revns_urls": revns_urls,
+        }.items() + context.items())
+
         return context
-
-
-class ReverseDomainView(object):
-    model = ReverseDomain
-    queryset = ReverseDomain.objects.all()
 
 
 class ReverseDomainCreateView(ReverseDomainView, CreateView):
@@ -132,42 +148,55 @@ class ReverseDomainUpdateView(ReverseDomainView, UpdateView):
 
 
 def bootstrap_ipv6(request):
+
     if request.method == 'POST':
         bootstrap_form = BootStrapForm(request.POST)
+
         if bootstrap_form.is_valid():
             if bootstrap_form.data['soa'] == '':
                 soa = None
             else:
                 soa = get_object_or_404(SOA, pk=bootstrap_form.data['soa'])
+
             try:
                 reverse_domain = boot_strap_ipv6_reverse_domain(
-                                    bootstrap_form.cleaned_data['name'],
-                                    soa=soa)
+                    bootstrap_form.cleaned_data['name'],
+                    soa=soa
+                )
             except ValidationError, e:
                 messages.error(request, str(e))
-                return render(request, 'reverse_domain/bootstrap_ipv6.html',
-                              {'bootstrap_form': bootstrap_form})
-        else:
-            return render(request, 'reverse_domain/bootstrap_ipv6.html',
-                          {'bootstrap_form': bootstrap_form})
+                return render(request, 'cydns/cydns_form.html', {
+                    'form': bootstrap_form,
+                    'form_title': 'Bootstrap IPv6 Reverse Domain'
+                })
 
-        # Success redirect to the last domain created.
+        else:
+            return render(request, 'cydns/cydns_form.html', {
+                'form': bootstrap_form,
+                'form_title': 'Bootstrap IPv6 Reverse Domain'
+            })
+
         messages.success(request, "Success! Bootstrap complete. You are "
-                         "now looking at the leaf reverse domain.")
+            "now looking at the leaf reverse domain."
+        )
         return redirect(reverse_domain)
 
     else:
         bootstrap_form = BootStrapForm()
-        return render(request, 'reverse_domain/bootstrap_ipv6.html',
-                      {'bootstrap_form': bootstrap_form})
+        return render(request, 'cydns/cydns_form.html', {
+            'form': bootstrap_form,
+            'form_title': 'Bootstrap IPv6 Reverse Domain'
+        })
 
 
 def inheirit_soa(request, pk):
     reverse_domain = get_object_or_404(ReverseDomain, pk=pk)
+
     if request.method == 'POST':
         if reverse_domain.master_reverse_domain:
             reverse_domain.soa = reverse_domain.master_reverse_domain.soa
             reverse_domain.save()
             messages.success(request, '{0} was successfully updated.'.
                              format(reverse_domain.name))
+
     return redirect('/cydns/reverse_domain/')
