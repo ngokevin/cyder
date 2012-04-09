@@ -1,5 +1,4 @@
 {{ object.fqdn }}
 {{ object.label }}
-{{ object.ip_str }}
-{{ object.ip_type }}
 {{ object.domain.name }}
+{{ object.server }}
