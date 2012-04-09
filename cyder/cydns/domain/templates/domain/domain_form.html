@@ -1,10 +1,9 @@
-{% extends "cydns/cydns_base.html" %}
+{% extends "cydns/cydns_form.html" %}
 
-{% block content %}
-    <h1>Create Domain</h1>
+{% block title %}
+    Create Domain
+{% endblock %}
 
-    <form class="well form-horizontal" method="post" action="">
-        {{ form }}
-        <input type="submit" value="Submit" />
-    </form>
+{% block header %}
+    Create Domain
 {% endblock %}
