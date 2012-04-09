@@ -19,6 +19,7 @@ class SRVDeleteView(SRVView, CydnsDeleteView):
 
 class SRVDetailView(SRVView, CydnsDetailView):
     """SRV Detail View"""
+    template_name = 'srv/srv_detail.html'
 
 
 class SRVCreateView(SRVView, CydnsCreateView):

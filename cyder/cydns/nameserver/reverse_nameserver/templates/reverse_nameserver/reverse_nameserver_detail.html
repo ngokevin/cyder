@@ -1,15 +1,15 @@
 {% extends "cydns/cydns_detail.html" %}
 
 {% block title %}
-    {{ object.fqdn }}
+    {{object.server}}
 {% endblock %}
 
 {% block header %}
-    TXT {{ object.fqdn }}
+    Reverse Nameserver {{object.server}}
 {% endblock %}
 
-{% block txt_nav %}
-    {{ super() }}
+{% block nameserver_nav %}
+    {{ super () }}
 
     {% include "cydns/detail_nav.inc" %}
 {% endblock %}

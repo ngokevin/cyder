@@ -8,8 +8,6 @@ from cyder.cydns.validation import validate_domain_name, _name_type_check
 from cyder.cydns.validation import do_zone_validation
 from cyder.search.utils import fqdn_exists
 
-import pdb
-
 
 class Domain(models.Model, ObjectUrlMixin):
     """

@@ -14,7 +14,7 @@ from django.views.generic import CreateView
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.utils import tablefy
-from cyder.cydns.views import CydnsDeleteView, CydnsListView
+from cyder.cydns.views import CydnsCreateView, CydnsDeleteView, CydnsListView
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.domain.forms import DomainForm, DomainUpdateForm
 from cyder.cydns.mx.models import MX
@@ -26,6 +26,7 @@ from cyder.cydns.txt.models import TXT
 
 
 class DomainView(object):
+    model = Domain
     queryset = Domain.objects.all().order_by('name')
     form_class = DomainForm
 
@@ -40,7 +41,6 @@ class DomainListView(DomainView, CydnsListView):
 
 
 class DomainDetailView(DomainView, DetailView):
-    context_object_name = "domain"
     template_name = "domain/domain_detail.html"
 
     def get_context_data(self, **kwargs):
@@ -48,8 +48,8 @@ class DomainDetailView(DomainView, DetailView):
         domain = kwargs.get('object', False)
         if not domain:
             return context
-        # TODO
-        # This process can be generalized. It's not very high priority.
+
+        # TODO this process can be generalized. It's not very high priority.
         address_objects = domain.addressrecord_set.all()
         adr_headers, adr_matrix, adr_urls = tablefy(address_objects)
 
@@ -73,46 +73,40 @@ class DomainDetailView(DomainView, DetailView):
 
         # Join the two dicts
         context = dict({
-                    # NS
-                    "ns_headers": ns_headers,
-                    "ns_matrix": ns_matrix,
-                    "ns_urls": ns_urls,
-                    # A and AAAA
-                    "address_headers": adr_headers,
-                    "address_matrix": adr_matrix,
-                    "address_urls": adr_urls,
-                    # MX
-                    "mx_headers": mx_headers,
-                    "mx_matrix": mx_matrix,
-                    "mx_urls": mx_urls,
-                    # SRV
-                    "srv_headers": srv_headers,
-                    "srv_matrix": srv_matrix,
-                    "srv_urls": srv_urls,
-                    # TXT
-                    "txt_headers": txt_headers,
-                    "txt_matrix": txt_matrix,
-                    "txt_urls": txt_urls,
-                    # CNAME
-                    "cname_headers": cname_headers,
-                    "cname_matrix": cname_matrix,
-                    "cname_urls": cname_urls,
-                    # PTR
-                    "ptr_headers": ptr_headers,
-                    "ptr_matrix": ptr_matrix,
-                    "ptr_urls": ptr_urls
-                       }.items() + context.items())
+            "ns_headers": ns_headers,
+            "ns_matrix": ns_matrix,
+            "ns_urls": ns_urls,
+
+            "address_headers": adr_headers,
+            "address_matrix": adr_matrix,
+            "address_urls": adr_urls,
+
+            "mx_headers": mx_headers,
+            "mx_matrix": mx_matrix,
+            "mx_urls": mx_urls,
+
+            "srv_headers": srv_headers,
+            "srv_matrix": srv_matrix,
+            "srv_urls": srv_urls,
+
+            "txt_headers": txt_headers,
+            "txt_matrix": txt_matrix,
+            "txt_urls": txt_urls,
+
+            "cname_headers": cname_headers,
+            "cname_matrix": cname_matrix,
+            "cname_urls": cname_urls,
+
+            "ptr_headers": ptr_headers,
+            "ptr_matrix": ptr_matrix,
+            "ptr_urls": ptr_urls
+        }.items() + context.items())
+
         return context
-
-
-class DomainView(object):
-    model = Domain
-    queryset = Domain.objects.all()
 
 
 class DomainCreateView(DomainView, CreateView):
     model_form = DomainForm
-    template_name = "domain/domain_form.html"
 
     def post(self, request, *args, **kwargs):
         domain_form = DomainForm(request.POST)
@@ -120,14 +114,16 @@ class DomainCreateView(DomainView, CreateView):
         try:
             domain = domain_form.save(commit=False)
         except ValueError, e:
-            return render(request, "domain/domain_form.html", {'form': domain_form})
+            return render(request, "cydns/cydns_form.html", {'form': domain_form,
+                'form_title': 'Create Domain'})
 
         if domain_form.cleaned_data['inherit_soa'] and domain.master_domain:
             domain.soa = domain.master_domain.soa
         try:
             domain.save()
         except ValidationError, e:
-            return render(request, "domain/domain_form.html", {'form': domain_form})
+            return render(request, "cydns/cydns_form.html", {'form': domain_form,
+                'form_title': 'Create Domain'})
         # Success. Redirect.
         messages.success(request, "{0} was successfully created.".
                          format(domain.name))
@@ -135,13 +131,13 @@ class DomainCreateView(DomainView, CreateView):
 
     def get(self, request, *args, **kwargs):
         domain_form = DomainForm()
-        return render(request, "domain/domain_form.html", {'form': domain_form})
+        return render(request, "cydns/cydns_form.html", {'form': domain_form,
+            'form_title': 'Create Domain'})
 
 
 class DomainUpdateView(DomainView, UpdateView):
     form_class = DomainUpdateForm
-    template_name = "domain/domain_update.html"
-    context_object_name = "domain"
+    template_name = "cydns/cydns_update.html"
 
     def post(self, request, *args, **kwargs):
         domain = get_object_or_404(Domain, pk=kwargs.get('pk', 0))

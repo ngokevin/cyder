@@ -5,10 +5,10 @@
 {% endblock %}
 
 {% block header %}
-    TXT {{ object.fqdn }}
+    SRV {{ object.fqdn }}
 {% endblock %}
 
-{% block txt_nav %}
+{% block srv_nav %}
     {{ super() }}
 
     {% include "cydns/detail_nav.inc" %}

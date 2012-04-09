@@ -14,6 +14,7 @@ class RevNSDeleteView(RevNSView, CydnsDeleteView):
 
 class RevNSDetailView(RevNSView, CydnsDetailView):
     """ """
+    template_name = "reverse_nameserver/reverse_nameserver_detail.html"
 
 
 class RevNSListView(RevNSView, CydnsListView):

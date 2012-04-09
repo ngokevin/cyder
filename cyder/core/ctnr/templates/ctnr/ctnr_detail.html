@@ -1,8 +1,29 @@
-{% extends "base.html" %}
+{% extends "core/core_base.html" %}
 {% from "tables.html" import render_table %}
 
 {% block title %}
     {{ object.name }}
+{% endblock %}
+
+{% block ctnr_nav %}
+    {{ super() }}
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="{{ object.get_edit_url() }}">Edit {{ object.name }}</a>
+    </span>
+
+    <!-- Must be zone admin or superuser to add users -->
+    {% if request.session.superuser or (request.session.ctnr == object and request.session.level == 2) %}
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/ctnr/{{ object.id }}/add_user/">Add Users</a>
+        </span>
+    {% endif %}
+
+    <!-- Must be superuser to delete container -->
+    {% if request.session.superuser %}
+        <span class="nav-item">
+            <a class="delete-link sub-link nav-link" href="{{ object.get_delete_url() }}">Delete {{ object.name }}</a>
+        </span>
+    {% endif %}
 {% endblock %}
 
 {% block header %}
