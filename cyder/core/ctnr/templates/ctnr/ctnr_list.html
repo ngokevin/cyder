@@ -6,9 +6,11 @@
 
 {% block ctnr_nav %}
     {{ super() }}
-    <span class="nav-item">
-        <a class="sub-link nav-link" href="/ctnr/create/">Create Container</a>
-    </span>
+    {% if request.session.superuser %}
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/ctnr/create/">Create Container</a>
+        </span>
+    {% endif %}
 {% endblock %}
 
 {% block header %}
