@@ -26,13 +26,10 @@ class ReverseDomainDeleteView(ReverseDomainView, CydnsDeleteView):
 
 
 class ReverseDomainListView(ReverseDomainView, ListView):
-    template_name = "reverse_domain/reverse_domain_list.html"
-    context_object_name = "reverse_domains"
+    """ """
 
 
 class ReverseDomainDetailView(ReverseDomainView, DetailView):
-    context_object_name = "reverse_domain"
-    template_name = "reverse_domain/reverse_domain_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super(ReverseDomainDetailView, self).get_context_data(
@@ -54,7 +51,7 @@ class ReverseDomainDetailView(ReverseDomainView, DetailView):
                     "revns_headers": revns_headers,
                     "revns_matrix": revns_matrix,
                     "revns_urls": revns_urls,
-                        }.items() + context.items())
+                  }.items() + context.items())
         return context
 
 
@@ -64,9 +61,8 @@ class ReverseDomainView(object):
 
 
 class ReverseDomainCreateView(ReverseDomainView, CreateView):
+    template_name = 'cydns/cydns_form.html'
     form_class = ReverseDomainForm
-    template_name = "reverse_domain/form.html"
-    context_object_name = "reverse_domain_form"
 
     def post(self, request, *args, **kwargs):
         reverse_domain_form = ReverseDomainForm(request.POST)
@@ -79,8 +75,10 @@ class ReverseDomainCreateView(ReverseDomainView, CreateView):
 
             reverse_domain.save()
         except ValidationError, e:
-            return render(request, "reverse_domain/form.html",
-                          {"reverse_domain_form": reverse_domain_form})
+            return render(request, "cydns/cydns_form.html", {
+                            'form': reverse_domain_form,
+                            'form_title': 'Create Reverse Domain'
+                        })
 
         # Success. Redirect.
         messages.success(request, '{0} was successfully created.'.
@@ -88,11 +86,16 @@ class ReverseDomainCreateView(ReverseDomainView, CreateView):
 
         return redirect(reverse_domain)
 
+    def get(self, request, *args, **kwargs):
+        reverse_domain_form = ReverseDomainForm()
+        return render(request, "cydns/cydns_form.html", {
+                            'form': reverse_domain_form,
+                            'form_title': 'Create Reverse Domain'
+                        })
 
 class ReverseDomainUpdateView(ReverseDomainView, UpdateView):
+    template_name = 'cydns/cydns_update.html'
     form_class = ReverseDomainUpdateForm
-    template_name = "reverse_domain/update.html"
-    context_object_name = "reverse_domain"
 
     def post(self, request, *args, **kwargs):
         reverse_domain = get_object_or_404(ReverseDomain,
@@ -115,16 +118,16 @@ class ReverseDomainUpdateView(ReverseDomainView, UpdateView):
         except ValueError, e:
             rev_domain_form = ReverseDomainUpdateForm(instance=reverse_domain)
             messages.error(request, str(e))
-            return render(request, "reverse_domain/update.html",
-                          {"reverse_domain_form": rev_domain_form})
+            return render(request, "cydns/cydns_update.html", {
+                            "reverse_domain_form": rev_domain_form,
+                        })
 
         messages.success(request, '{0} was successfully updated.'.
                          format(reverse_domain.name))
         return redirect(reverse_domain)
 
     def get(self, request, *args, **kwargs):
-        ret = super(ReverseDomainUpdateView, self).get(request,
-                                                       *args, **kwargs)
+        ret = super(ReverseDomainUpdateView, self).get(request, *args, **kwargs)
         return ret
 
 
@@ -167,4 +170,4 @@ def inheirit_soa(request, pk):
             reverse_domain.save()
             messages.success(request, '{0} was successfully updated.'.
                              format(reverse_domain.name))
-    return redirect('/cydns/reverse_domain')
+    return redirect('/cydns/reverse_domain/')

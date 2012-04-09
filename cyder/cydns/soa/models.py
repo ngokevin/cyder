@@ -1,10 +1,10 @@
+import time
+
 from django.db import models
 
 from cyder.cydns.validation import validate_name
 from cyder.cydns.mixins import ObjectUrlMixin
 
-import time
-import pdb
 
 #TODO, put these defaults in a config file.
 ONE_WEEK = 604800

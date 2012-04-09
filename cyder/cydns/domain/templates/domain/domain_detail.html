@@ -1,62 +1,52 @@
-{% extends "cydns/cydns_base.html" %}
+{% extends "cydns/cydns_detail.html" %}
 
 {% block title %}
-    {{ domain.name }}
+    {{ object.name }}
 {% endblock %}
+
+{% block header %}
+    Domain {{ object.name }}
+{% endblock %}
+
 
 {% block domain_nav %}
     {{ super() }}
 
     <span class="nav-item">
-        <a class="sub-link nav-link" href="{{ domain.get_edit_url() }}">Edit {{ domain.name }}</a>
+        <a class="sub-link nav-link" href="{{ object.get_edit_url() }}">Edit {{ object.name }}</a>
     </span>
-    {% if not domain.delegated %}
+    {% if not object.delegated %}
         <span class="nav-item">
-            <a class="sub-link nav-link" href="/cydns/cname/{{ domain.pk }}/create/">Create CNAME</a>
+            <a class="sub-link nav-link" href="/cydns/cname/{{ object.pk }}/create/">Create CNAME</a>
         </span>
         <span class="nav-item">
-            <a class="sub-link nav-link" href="/cydns/mx/{{ domain.pk }}/create/">Create MX</a>
+            <a class="sub-link nav-link" href="/cydns/mx/{{ object.pk }}/create/">Create MX</a>
         </span>
         <span class="nav-item">
-            <a class="sub-link nav-link" href="/cydns/srv/{{ domain.pk }}/create/">Create SRV</a>
+            <a class="sub-link nav-link" href="/cydns/srv/{{ object.pk }}/create/">Create SRV</a>
         </span>
         <span class="nav-item">
-            <a class="sub-link nav-link" href="/cydns/txt/{{ domain.pk }}/create/">Create TXT</a>
+            <a class="sub-link nav-link" href="/cydns/txt/{{ object.pk }}/create/">Create TXT</a>
         </span>
         <span class="nav-item">
-            <a class="sub-link nav-link" href="/cydns/address_record/{{ domain.pk }}/create/">Create Address Record</a>
+            <a class="sub-link nav-link" href="/cydns/address_record/{{ object.pk }}/create/">Create Address Record</a>
         </span>
         <span class="nav-item">
-            <a class="sub-link nav-link" href="/cydns/ptr/{{ domain.pk }}/create/">Create PTR</a>
+            <a class="sub-link nav-link" href="/cydns/ptr/{{ object.pk }}/create/">Create PTR</a>
         </span>
         <span class="nav-item">
-            <a class="sub-link nav-link" href="/cydns/nameserver/{{ domain.pk }}/create/">Create NS</a>
+            <a class="sub-link nav-link" href="/cydns/nameserver/{{ object.pk }}/create/">Create NS</a>
         </span>
     {% endif %}
     <span class="nav-item">
-        <a class="delete-link sub-link nav-link" href="{{ domain.get_delete_url() }}">Delete {{domain.name }}</a>
+        <a class="delete-link sub-link nav-link" href="{{ object.get_delete_url() }}">Delete {{object.name }}</a>
     </span>
 {% endblock %}
 
 {% block content %}
+    {{ super() }}
+
     {% from "tables.html" import render_table %}
-
-    <h1>Domain {{ domain.name }}</h1>
-
-    {% if domain.soa %}
-        SOA: <a href='{{ domain.soa.get_absolute_url() }}'>{{ domain.soa.primary }}</a>
-        <br/>
-    {% endif %}
-
-    {% if domain.master_domain %}
-        Master Domain: <a href='{{ domain.master_domain.get_absolute_url() }}'>{{ domain.master_domain.name }}</a>
-        <br/>
-    {% endif %}
-
-    {% if domain.delegated %}
-        This domain is delegated.
-        <br/>
-    {% endif %}
 
     {% if ns_matrix %}
         <h3> Nameservers </h3>
