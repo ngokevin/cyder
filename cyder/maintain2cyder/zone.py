@@ -266,7 +266,6 @@ class Zone(object):
                     cn.save()
                     print "Re-Added CNAME ({0})".format(id_)
                     continue
-            cn.full_clean()
             cn.save()
 
 

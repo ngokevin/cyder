@@ -41,10 +41,11 @@ ROOT_URLCONF = 'cyder.urls'
 
 APPEND_SLASH = True
 
+WHOOSH_INDEX_DIR = os.path.join(os.path.dirname(__file__), 'whoosh_index')
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+        'PATH': WHOOSH_INDEX_DIR,
         'EXCLUDED_INDEXES': ['cyder.cydns.cydns_index.CydnsIndex'],
         },
 }
