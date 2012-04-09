@@ -5,5 +5,8 @@
 {% block content %}
     {{ super() }}
     <a href='{{ object.get_edit_url() }}'>Edit</a><br/>
-    <a href='{{ object.domain.get_absolute_url() }}'>View Domain</a>
+
+    {% if object.domain %}
+        <a href='{{ object.domain.get_absolute_url() }}'>View Domain</a>
+    {% endif %}
 {% endblock %}
