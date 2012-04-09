@@ -5,6 +5,19 @@
     {{ object.name }}
 {% endblock %}
 
+{% block ctnr_nav %}
+    {{ super() }}
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="{{ object.get_edit_url() }}">Edit {{ object.name }}</a>
+    </span>
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="/ctnr/add_user/">Add Users</a>
+    </span>
+    <span class="nav-item">
+        <a class="delete-link sub-link nav-link" href="{{ object.get_delete_url() }}">Delete {{ object.name }}</a>
+    </span>
+{% endblock %}
+
 {% block header %}
     Container {{ object.name }}
 {% endblock %}
