@@ -49,7 +49,7 @@
                             <td>{{ object.master_reverse_domain }}</td>
                         {% endif %}
 
-                        {% if object.master_reverse_domain %}
+                        {% if object.soa %}
                             <td><a href="{{ object.soa.get_absolute_url() }}">{{ object.soa }}</a></td>
                         {% else %}
                             <td>{{ object.soa }}</td>
