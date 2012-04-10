@@ -10,7 +10,6 @@ from cyder.settings import CYDNS_BASE_URL
 
 
 class GenericViewTests(object):
-
     """
     An object that builds test funtions. It's super generic and quite a huge hack.
     You need to define a setUp function like this.
@@ -28,10 +27,10 @@ class GenericViewTests(object):
         # Make a generic test "object". This object is called self.test_obj and is used to test datail and
         # update views
         server = "random"
-        self.test_obj, create = Nameserver.objects.get_or_create( server=server, domain= self.domain )
+        self.test_obj, create = Nameserver.objects.get_or_create(server=server, domain= self.domain)
         while not create:
             server = "a"+server
-            self.test_obj, create = Nameserver.objects.get_or_create( server=server, domain= self.domain )
+            self.test_obj, create = Nameserver.objects.get_or_create(server=server, domain= self.domain)
 
     This function is used to generate valid data to test views that require POST data.
 
@@ -39,7 +38,6 @@ class GenericViewTests(object):
             server = random_label()
             return {'server': server, 'domain':self.domain.pk}
     """
-
     def build_all_tests(self):
         return (
                 self.build_get_object_delete(),\
@@ -54,16 +52,19 @@ class GenericViewTests(object):
                 lambda junk: True \
                 )
 
-
-    # url(r'^cyder/cydns/nameserver$', NSListView.as_view() ),
     def build_base_app(self):
+        """
+        ex: url(r'^/cydns/domain/$', DomainListView.as_view()),
+        """
         def test_base_app(self):
             resp = self.client.get(CYDNS_BASE_URL+"/%s/" % (self.url_slug))
             self.assertEqual(resp.status_code, 200)
         return test_base_app
 
-    # url(r'^cyder/cydns/nameserver/create$', NSCreateView.as_view()),
     def build_get_create(self):
+        """
+        ex: url(r'^/cydns/domain/create/$', DomainCreateView.as_view()),
+        """
         def test_get_create(self):
             resp = self.client.get(CYDNS_BASE_URL+"/%s/create/" % (self.url_slug))
             self.assertEqual(resp.status_code, 200)
@@ -76,7 +77,9 @@ class GenericViewTests(object):
         return test_post_create
 
     def build_get_create_in_domain(self):
-        # url(r'^cyder/cydns/nameserver/(?P<domain>[\w-]+)/create$', NSCreateView.as_view()),
+        """
+        ex: url(r'^/cydns/domain/(?P<domain>[\w-]+)/create$', DomainCreateView.as_view()),
+        """
         def test_get_create_in_domain(self):
             resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/create/" % (self.url_slug, self.domain.pk))
             self.assertEqual(resp.status_code, 200)
@@ -89,7 +92,9 @@ class GenericViewTests(object):
         return test_post_create_in_domain
 
     def build_get_object_update(self):
-        # url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/update$', NSUpdateView.as_view() ),
+        """
+        ex: url(r'^/cydns/domain/(?P<pk>[\w-]+)/update$', DomainUpdateView.as_view()),
+        """
         def test_get_object_update(self):
             resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/update/" % (self.url_slug, self.test_obj.pk))
             self.assertEqual(resp.status_code, 200)
@@ -104,14 +109,18 @@ class GenericViewTests(object):
         return test_post_object_update
 
     def build_get_object_details(self):
-        # url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/detail$', NSDetailView.as_view() ),
+        """
+        ex: url(r'^/cydns/domain/(?P<pk>[\w-]+)/$', DomainDetailView.as_view()),
+        """
         def test_get_object_details(self):
             resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/" % (self.url_slug, self.test_obj.pk))
             self.assertEqual(resp.status_code, 200)
         return test_get_object_details
 
     def build_get_object_delete(self):
-        # url(r'^cyder/cydns/nameserver/(?P<pk>[\w-]+)/delete$', NSDeleteView.as_view() )
+        """
+        ex: url(r'^/cydns/domain/(?P<pk>[\w-]+)/delete$', DomainDeleteView.as_view())
+        """
         def test_get_object_delete(self):
             resp = self.client.get(CYDNS_BASE_URL+"/%s/%s/delete/" % (self.url_slug, self.test_obj.pk))
             self.assertEqual(resp.status_code, 200)
@@ -119,8 +128,16 @@ class GenericViewTests(object):
         return test_get_object_delete
 
 def random_label():
-    """Utility function to generate a random *valid* label."""
+    """
+    Utility function to generate a random *valid* label.
+    """
     label = ''
     for i in range(random.randint(5,30)):
         label += string.letters[random.randint(0,len(string.letters)-1)]
     return label
+
+def random_byte():
+    """
+    Utility function to generate a random byte for random IPs
+    """
+    return random.randint(0, 256)

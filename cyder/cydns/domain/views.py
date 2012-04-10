@@ -114,8 +114,10 @@ class DomainCreateView(DomainView, CreateView):
         try:
             domain = domain_form.save(commit=False)
         except ValueError, e:
-            return render(request, "cydns/cydns_form.html", {'form': domain_form,
-                'form_title': 'Create Domain'})
+            return render(request, "cydns/cydns_form.html", {
+                'form': domain_form,
+                'form_title': 'Create Domain'
+        })
 
         if domain_form.cleaned_data['inherit_soa'] and domain.master_domain:
             domain.soa = domain.master_domain.soa

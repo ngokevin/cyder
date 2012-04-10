@@ -82,19 +82,27 @@ class ReverseDomainCreateView(ReverseDomainView, CreateView):
 
     def post(self, request, *args, **kwargs):
         reverse_domain_form = ReverseDomainForm(request.POST)
+
         # Try to create the reverse_domain. Catch all exceptions.
         try:
             reverse_domain = reverse_domain_form.save(commit=False)
-            if (reverse_domain_form.cleaned_data['inherit_soa'] and
-                reverse_domain.master_reverse_domain):
-                reverse_domain.soa = reverse_domain.master_reverse_domain.soa
+        except ValueError, e:
+            return render(request, "cydns/cydns_form.html", {
+                'form': reverse_domain_form,
+                'form_title': 'Create Reverse Domain'
+            })
 
+        if (reverse_domain_form.cleaned_data['inherit_soa'] and
+            reverse_domain.master_reverse_domain):
+            reverse_domain.soa = reverse_domain.master_reverse_domain.soa
+
+        try:
             reverse_domain.save()
         except ValidationError, e:
             return render(request, "cydns/cydns_form.html", {
-                            'form': reverse_domain_form,
-                            'form_title': 'Create Reverse Domain'
-                        })
+                'form': reverse_domain_form,
+                'form_title': 'Create Reverse Domain'
+            })
 
         # Success. Redirect.
         messages.success(request, '{0} was successfully created.'.
@@ -105,9 +113,9 @@ class ReverseDomainCreateView(ReverseDomainView, CreateView):
     def get(self, request, *args, **kwargs):
         reverse_domain_form = ReverseDomainForm()
         return render(request, "cydns/cydns_form.html", {
-                            'form': reverse_domain_form,
-                            'form_title': 'Create Reverse Domain'
-                        })
+            'form': reverse_domain_form,
+            'form_title': 'Create Reverse Domain'
+        })
 
 class ReverseDomainUpdateView(ReverseDomainView, UpdateView):
     form_class = ReverseDomainUpdateForm
