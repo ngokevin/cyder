@@ -11,7 +11,8 @@ from cyder.cydns.validation import validate_name
 
 class MX(CydnsRecord):
     """
-    >>> MX(label, domain, server, priority, ttl)
+    >>> MX(label=label, domain=domain, server=server, priority=prio,
+    ... ttl=tll)
     """
     id = models.AutoField(primary_key=True)
     # The mail server this record should point to.
