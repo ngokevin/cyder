@@ -1,14 +1,14 @@
 {% extends "cydns/cydns_detail.html" %}
 
 {% block title %}
-    {{ object.fqdn }}
+    {{ object.label }}
 {% endblock %}
 
 {% block header %}
-    MX {{ object.fqdn }}
+    Address Record {{ object.label }}
 {% endblock %}
 
-{% block mx_nav %}
+{% block address_record_nav %}
     {{ super () }}
 
     {% include "cydns/detail_nav.inc" %}

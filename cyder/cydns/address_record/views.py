@@ -19,6 +19,7 @@ class AddressRecordDeleteView(AddressRecordView, CydnsDeleteView):
 
 class AddressRecordDetailView(AddressRecordView, CydnsDetailView):
     """ """
+    template_name = 'address_record/addressrecord_detail.html'
 
 
 class AddressRecordCreateView(AddressRecordView, CydnsCreateView):
