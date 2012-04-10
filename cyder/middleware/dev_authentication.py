@@ -2,6 +2,7 @@ import simplejson
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.shortcuts import redirect
 
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 
@@ -51,5 +52,9 @@ class DevAuthenticationMiddleware(object):
                 # to set up the bootstrap typeahead ctnr search bar
                 names = sorted([str(ctnr.name) for ctnr in ctnrs], key=str.lower)
                 request.session['ctnr_names_json'] = simplejson.dumps(names)
+
+        if request.path == '/logout/':
+            request.session.flush()
+            return redirect('/')
 
         return None

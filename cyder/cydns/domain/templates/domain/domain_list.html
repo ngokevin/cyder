@@ -2,9 +2,12 @@
 
 {% block domain_nav %}
     {{ super() }}
-    <span class="nav-item">
-        <a class="sub-link nav-link" href="/cydns/domain/create/">Create Domain</a>
-    </span>
+
+    {% if request.session.superuser %}
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/domain/create/">Create Domain</a>
+        </span>
+    {% endif %}
 
     <span class="nav-item">
         <a class="sub-link nav-link" href="/cydns/address_record/create/">Create Address Record</a>

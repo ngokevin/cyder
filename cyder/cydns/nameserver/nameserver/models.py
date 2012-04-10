@@ -18,11 +18,10 @@ class Nameserver(BaseNameserver):
 
     def details(self):
         details = [
-                    ('Server', self.server),
-                    ('Domain', self.domain.name),
-                  ]
-        if self.glue:
-            details.append(('Glue', self.glue))
+            ('Server', self.server),
+            ('Domain', self.domain.name),
+            ('Glue', self.glue),
+        ]
         return tuple(details)
 
     def clean(self):
@@ -37,9 +36,11 @@ class Nameserver(BaseNameserver):
             glue = AddressRecord.objects.filter(label=glue_label,
                                                 domain=self.domain)
             if not glue:
-                raise ValidationError("NS needs glue record. Create a glue "
-                                      "record for the server before creating "
-                                      "the NS record.")
+                raise ValidationError(
+                    "NS needs glue record. Create a glue "
+                    "record for the server before creating "
+                    "the NS record."
+                )
             else:
                 self.glue = glue[0]
 
