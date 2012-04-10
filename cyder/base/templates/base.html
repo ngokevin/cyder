@@ -36,7 +36,9 @@
                     {% block domain_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/domain/">Domains</a>
-                            <a class="side-link" href="/cydns/domain/create/"><i class="side-icon icon-plus-sign"></i></a>
+                            {% if request.session.superuser %}
+                                <a class="side-link" href="/cydns/domain/create/"><i class="side-icon icon-plus-sign"></i></a>
+                            {% endif %}
                         </span>
                     {% endblock %}
 
@@ -60,7 +62,9 @@
                     {% block soa_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/soa/">SOA</a>
-                            <a class="side-link" href="/cydns/soa/create/"><i class="side-icon icon-plus-sign"></i></a>
+                            {% if request.session.superuser %}
+                                <a class="side-link" href="/cydns/soa/create/"><i class="side-icon icon-plus-sign"></i></a>
+                            {% endif %}
                         </span>
                     {% endblock %}
 
