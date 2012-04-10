@@ -109,8 +109,13 @@ class Reverse_Zone(object):
             # TODO compile this
             if re.search( search_string, ip ):
                 #self.printer.print_PTR( ip, name )
-                ptr,c = PTR.objects.get_or_create( ip_str = ip, name=name,
-                            ip_type='4' )
+                possible = PTR.objects.filter( ip_str = ip, name=name, ip_type='4' )
+                if possible:
+                    ptr = possible[0]
+                else:
+                    ptr = PTR( ip_str = ip, name=name, ip_type='4' )
+                    ptr.full_clean()
+                    ptr.save()
 
                 records_to_remove.append( record )
 

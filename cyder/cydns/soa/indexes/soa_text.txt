@@ -1,1 +1,1 @@
-{{ object.comment }}
+{{ object.primary }}

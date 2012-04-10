@@ -58,6 +58,7 @@ class CtnrDetailView(CtnrView, DetailView):
             "rdomain_urls": rdomain_urls,
         }.items() + context.items())
 
+
 class CtnrCreateView(CtnrView, CreateView):
     """ Create View """
     def post(self, request, *args, **kwargs):
