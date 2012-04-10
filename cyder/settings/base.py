@@ -62,6 +62,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'haystack',
     'cyder.base',
     'cyder.search',
+    'cyder.cysearch',
     'cyder.core.cyuser',
     'cyder.core',
     'cyder.core.ctnr',

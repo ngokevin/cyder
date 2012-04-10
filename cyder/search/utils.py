@@ -27,9 +27,16 @@ def fqdn_exists(fqdn, **kwargs):
             return qset
     return False
 
+def ip_search(ip_str):
+    qsets = []
+    qsets.append(('AddressRecord', cyder.cydns.address_record.models.AddressRecord.objects.
+                    filter(ip_str=ip_str)))
+    qsets.append(('PTR', cyder.cydns.ptr.models.PTR.objects.
+                    filter(ip_str=ip_str)))
+    return qsets
 
 def _build_queries(fqdn, dn=True, rn=True, mx=True, sr=True, tx=True,
-                    cn=True, ar=True, pt=True):
+                    cn=True, ar=True, pt=True, ip=False):
     # We import this way to make it easier to import this file without
     # getting cyclic imports.
     qsets = []
