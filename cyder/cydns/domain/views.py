@@ -50,25 +50,25 @@ class DomainDetailView(DomainView, DetailView):
             return context
 
         # TODO this process can be generalized. It's not very high priority.
-        address_objects = domain.addressrecord_set.all()
+        address_objects = domain.addressrecord_set.all().order_by('label')
         adr_headers, adr_matrix, adr_urls = tablefy(address_objects)
 
-        mx_objects = domain.mx_set.all()
+        mx_objects = domain.mx_set.all().order_by('label')
         mx_headers, mx_matrix, mx_urls = tablefy(mx_objects)
 
-        srv_objects = domain.srv_set.all()
+        srv_objects = domain.srv_set.all().order_by('label')
         srv_headers, srv_matrix, srv_urls = tablefy(srv_objects)
 
-        txt_objects = domain.txt_set.all()
+        txt_objects = domain.txt_set.all().order_by('label')
         txt_headers, txt_matrix, txt_urls = tablefy(txt_objects)
 
-        cname_objects = domain.cname_set.all()
+        cname_objects = domain.cname_set.all().order_by('label')
         cname_headers, cname_matrix, cname_urls = tablefy(cname_objects)
 
-        ptr_objects = domain.ptr_set.all()
+        ptr_objects = domain.ptr_set.all().order_by('ip_str')
         ptr_headers, ptr_matrix, ptr_urls = tablefy(ptr_objects)
 
-        ns_objects = domain.nameserver_set.all()
+        ns_objects = domain.nameserver_set.all().order_by('server')
         ns_headers, ns_matrix, ns_urls = tablefy(ns_objects)
 
         # Join the two dicts
