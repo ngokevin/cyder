@@ -280,6 +280,7 @@ class Zone(object):
         create A record in domain using label
     """
     def gen_forward_pointers(self):
+        print "Migrating Forward Pointers in pointer table."
         sql = "SELECT * FROM `pointer` WHERE `type`='forward' ORDER BY hostname"
         self.cur.execute(sql)
         records = self.cur.fetchall()
