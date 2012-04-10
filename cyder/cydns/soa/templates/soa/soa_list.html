@@ -2,7 +2,10 @@
 
 {% block soa_nav %}
     {{ super() }}
-    <span class="nav-item">
-        <a class="sub-link nav-link" href="/cydns/soa/create/">Create SOA</a>
-    </span>
+
+    {% if request.session.superuser %}
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/soa/create/">Create SOA</a>
+        </span>
+    {% endif %}
 {% endblock %}
