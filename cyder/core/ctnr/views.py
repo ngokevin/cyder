@@ -4,15 +4,11 @@ from django.contrib import messages
 from django import forms
 from django.shortcuts import redirect, render
 
-from django.views.generic import CreateView
-from django.views.generic import DeleteView
-from django.views.generic import DetailView
-from django.views.generic import ListView
-from django.views.generic import UpdateView
-
 from cyder.core.ctnr.forms import CtnrForm
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 from cyder.core.cyuser.utils import tablefy_users
+from cyder.core.views import CoreListView, CoreDetailView, CoreCreateView
+from cyder.core.views import CoreDeleteView, CoreUpdateView
 from cyder.cydns.utils import tablefy
 
 
@@ -22,15 +18,14 @@ class CtnrView(object):
     form_class = CtnrForm
 
 
-class CtnrDeleteView(CtnrView, DeleteView):
-    """ Delete View """
-    template_name = "confirm_delete.html"
+class CtnrDeleteView(CtnrView, CoreDeleteView):
+    """ """
 
 
-class CtnrDetailView(CtnrView, DetailView):
-    """ Detail View """
+class CtnrDetailView(CtnrView, CoreDetailView):
+    """ """
     def get_context_data(self, **kwargs):
-        context = super(DetailView, self).get_context_data(**kwargs)
+        context = super(CoreDetailView, self).get_context_data(**kwargs)
         ctnr = kwargs.get('object', False)
         if not ctnr:
             return context
@@ -59,12 +54,13 @@ class CtnrDetailView(CtnrView, DetailView):
         }.items() + context.items())
 
 
-class CtnrCreateView(CtnrView, CreateView):
-    """ Create View """
+class CtnrCreateView(CtnrView, CoreCreateView):
+    """ """
     def post(self, request, *args, **kwargs):
         ctnr_form = CtnrForm(request.POST)
 
-        # try to save the ctnr TODO: call has_perms
+        # try to save the ctnr
+        # TODO: check perms
         try:
             ctnr = ctnr_form.save(commit=False)
         except ValueError as e:
@@ -78,22 +74,24 @@ class CtnrCreateView(CtnrView, CreateView):
         ctnr_names.append(ctnr.name)
         request.session['ctnr_names_json'] = simplejson.dumps(ctnr_names)
 
-        return redirect('/ctnr/' + str(ctnr.id))
+        return redirect('/ctnr/' + str(ctnr.id) + '/')
 
     def get(self, request, *args, **kwargs):
         return super(CtnrCreateView, self).get(request, *args, **kwargs)
 
 
-class CtnrUpdateView(CtnrView, UpdateView):
-    """ Update View """
+class CtnrUpdateView(CtnrView, CoreUpdateView):
+    """ """
 
 
-class CtnrListView(CtnrView, ListView):
-    """ List View """
-    paginate_by = 30
+class CtnrListView(CtnrView, CoreListView):
+    """ """
 
 
 def change_ctnr(request, pk = None):
+    """
+    Change session container and other related session variables.
+    """
     try:
         referer = request.META['HTTP_REFERER']
     except KeyError:

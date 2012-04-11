@@ -1,23 +1,22 @@
-from django.contrib import messages
-from django.forms import ValidationError
-from django.shortcuts import redirect, render, get_object_or_404
-
-from cyder.base.views import BaseListView, BaseDetailView, BaseCreateView
-from cyder.base.views import BaseUpdateView, BaseDeleteView
 from cyder.cydns.domain.models import Domain
 from cyder.cydns.utils import slim_form
+from cyder.base.views import BaseListView, BaseDetailView, BaseCreateView
+from cyder.base.views import BaseUpdateView, BaseDeleteView
 
 
-class CydnsDeleteView(BaseDeleteView):
-    template_name = "cydns/cydns_confirm_delete.html"
+class CydnsListView(BaseListView):
+    """ """
+    template_name = 'cydns/cydns_list.html'
 
 
 class CydnsDetailView(BaseDetailView):
-    template_name = "cydns/cydns_detail.html"
+    """ """
+    template_name = 'cydns/cydns_detail.html'
 
 
 class CydnsCreateView(BaseCreateView):
-    template_name = "cydns/cydns_form.html"
+    """ """
+    template_name = 'cydns/cydns_form.html'
 
     def get_form(self, form_class):
         form = super(CydnsCreateView, self).get_form(form_class)
@@ -40,9 +39,11 @@ class CydnsCreateView(BaseCreateView):
 
 class CydnsUpdateView(BaseUpdateView):
     """ """
-    template_name = "cydns/cydns_form.html"
+    template_name = 'cydns/cydns_form.html'
 
 
-class CydnsListView(BaseListView):
+class CydnsDeleteView(BaseDeleteView):
     """ """
-    template_name = 'cydns/cydns_list.html'
+    template_name = 'cydns/cydns_confirm_delete.html'
+    succcess_url = '/cydns/'
+

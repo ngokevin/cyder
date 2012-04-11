@@ -106,6 +106,7 @@ class BaseUpdateView(UpdateView):
 
 class BaseDeleteView(DeleteView):
     template_name = 'confirm_delete.html'
+    success_url = '/'
 
     def get_object(self, queryset=None):
         obj = super(BaseDeleteView, self).get_object()

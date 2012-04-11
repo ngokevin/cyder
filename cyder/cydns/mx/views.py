@@ -15,21 +15,21 @@ class MXView(object):
 
 
 class MXDeleteView(MXView, CydnsDeleteView):
-    """Delete View"""
+    """ """
 
 
 class MXDetailView(MXView, CydnsDetailView):
-    """Detail View"""
+    """ """
     template_name = 'mx/mx_detail.html'
 
 
 class MXCreateView(MXView, CydnsCreateView):
-    """Create View"""
+    """ """
 
 
 class MXUpdateView(MXView, CydnsUpdateView):
-    """Update View"""
+    """ """
 
 
 class MXListView(MXView, CydnsListView):
-    """List View"""
+    """ """
