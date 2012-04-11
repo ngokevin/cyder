@@ -1,0 +1,9 @@
+{% extends "cydns/cydns_list.html" %}
+
+{% block address_record_nav %}
+    {{ super() }}
+
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="/cydns/address_record/create/">Create Address Record</a>
+    </span>
+{% endblock %}

@@ -1,10 +1,7 @@
-# Create your views here.
-from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.address_record.forms import AddressRecordForm
+from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.views import CydnsDeleteView, CydnsDetailView
-from cyder.cydns.views import CydnsCreateView, CydnsUpdateView
-
-import pdb
+from cyder.cydns.views import CydnsCreateView, CydnsUpdateView, CydnsListView
 
 
 class AddressRecordView(object):
@@ -28,3 +25,8 @@ class AddressRecordCreateView(AddressRecordView, CydnsCreateView):
 
 class AddressRecordUpdateView(AddressRecordView, CydnsUpdateView):
     """ """
+
+
+class AddressRecordListView(AddressRecordView, CydnsListView):
+    """ """
+    template_name = 'address_record/addressrecord_list.html'
