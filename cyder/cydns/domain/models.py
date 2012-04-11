@@ -35,6 +35,8 @@ class Domain(models.Model, ObjectUrlMixin):
     master_domain = models.ForeignKey("self", null=True,
                                       default=None, blank=True)
     soa = models.ForeignKey(SOA, null=True, default=None, blank=True)
+    # This indicates if this domain (and zone) needs to be rebuilt
+    dirty = models.BooleanField(default=False)
     delegated = models.BooleanField(default=False, null=False, blank=True)
 
     class Meta:

@@ -25,6 +25,8 @@ class ReverseNameserver(BaseNameserver):
 
     def save(self, *args, **kwargs):
         self.full_clean()
+        self.reverse_domain.dirty = True
+        self.reverse_domain.save()
         super(ReverseNameserver, self).save(*args, **kwargs)
 
     def __str__(self):

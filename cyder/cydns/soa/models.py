@@ -51,9 +51,10 @@ class SOA(models.Model, ObjectUrlMixin):
     retry = models.PositiveIntegerField(null=False, default=DEFAULT_RETRY)
     # The time when the slave will try to refresh the zone from the master
     refresh = models.PositiveIntegerField(null=False, default=DEFAULT_REFRESH)
-    # This indicates if this zone needs to be rebuilt
-    dirty = models.BooleanField(default=False)
     comment = models.CharField(max_length=200, null=True, blank=True)
+    # This indicates if this SOA needs to be rebuilt
+    dirty = models.BooleanField(default=False)
+
 
     class Meta:
         db_table = 'soa'
@@ -79,6 +80,7 @@ class SOA(models.Model, ObjectUrlMixin):
     def save(self, *args, **kwargs):
         self.serial = int(time.time())
         self.full_clean()
+        self.dirty = True
         super(SOA, self).save(*args, **kwargs)
 
     def __str__(self):

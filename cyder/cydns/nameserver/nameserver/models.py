@@ -46,6 +46,8 @@ class Nameserver(BaseNameserver):
 
     def save(self, *args, **kwargs):
         self.full_clean()
+        self.domain.dirty = True
+        self.domain.save()
         super(Nameserver, self).save(*args, **kwargs)
 
     def __repr__(self):

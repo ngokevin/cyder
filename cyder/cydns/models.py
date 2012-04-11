@@ -59,6 +59,19 @@ class CydnsRecord(models.Model, ObjectUrlMixin):
         self.set_fqdn()
         self.check_TLD_condition()
 
+    def save(self, *args, **kwargs):
+        if kwargs.has_key('no_build'):
+            no_build = kwargs.pop('no_build')  # Removes key.
+        else:
+            no_build = False  # We are rebuilding
+        super(CydnsRecord, self).save(*args, **kwargs)
+        if no_build:
+            pass
+        else:
+            # Mark the domain as dirty so it can be rebuilt.
+            self.domain.dirty = True
+            self.domain.save()
+
     def set_fqdn(self):
         try:
             if self.label == '':
