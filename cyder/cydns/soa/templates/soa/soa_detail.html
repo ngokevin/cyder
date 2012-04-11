@@ -8,12 +8,6 @@
     SOA {{ object.primary }}
 {% endblock %}
 
-{% block soa_nav %}
-    {{ super() }}
-
-    {% include "cydns/detail_nav.inc" %}
-{% endblock %}
-
 {% block content %}
 
     {{ super() }}

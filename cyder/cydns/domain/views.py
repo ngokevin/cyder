@@ -37,7 +37,6 @@ class DomainDeleteView(DomainView, CydnsDeleteView):
 
 class DomainListView(DomainView, CydnsListView):
     """ """
-    template_name = "domain/domain_list.html"
 
 
 class DomainDetailView(DomainView, DetailView):

@@ -18,6 +18,7 @@ class CNAMEDeleteView(CNAMEView, CydnsDeleteView):
 
 
 class CNAMEDetailView(CNAMEView, CydnsDetailView):
+    """ """
     template_name = "cname/cname_detail.html"
 
 
@@ -30,4 +31,4 @@ class CNAMEUpdateView(CNAMEView, CydnsUpdateView):
 
 
 class CNAMEListView(CNAMEView, CydnsListView):
-    template_name = "cname/cname_list.html"
+    """ """

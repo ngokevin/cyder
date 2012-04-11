@@ -120,7 +120,9 @@
             <div class="span10">
                 <div class="content fluid-container">
                     <h1>{% block header %} {% endblock %}</h1>
-                    {% block action_bar %} {% endblock %}
+                    <div class="action-bar">
+                        {% block action_bar %} {% endblock %}
+                    </div>
                     {% block content %} {% endblock %}
                 </div>
             </div>

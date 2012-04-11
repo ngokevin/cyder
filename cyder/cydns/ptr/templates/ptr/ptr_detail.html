@@ -7,9 +7,3 @@
 {% block header %}
     PTR {{ object.name }}
 {% endblock %}
-
-{% block ptr_nav %}
-    {{ super () }}
-
-    {% include "cydns/detail_nav.inc" %}
-{% endblock %}

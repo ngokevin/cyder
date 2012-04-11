@@ -33,4 +33,3 @@ class MXUpdateView(MXView, CydnsUpdateView):
 
 class MXListView(MXView, CydnsListView):
     """List View"""
-    template_name = 'mx/mx_list.html'

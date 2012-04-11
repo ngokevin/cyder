@@ -37,4 +37,3 @@ class PTRUpdateView(PTRView, CydnsUpdateView):
 
 class PTRListView(PTRView, CydnsListView):
     """ """
-    template_name = "ptr/ptr_list.html"

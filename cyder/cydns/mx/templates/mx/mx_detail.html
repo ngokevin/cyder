@@ -7,9 +7,3 @@
 {% block header %}
     MX {{ object.fqdn }}
 {% endblock %}
-
-{% block mx_nav %}
-    {{ super () }}
-
-    {% include "cydns/detail_nav.inc" %}
-{% endblock %}

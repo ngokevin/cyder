@@ -32,4 +32,3 @@ class SRVUpdateView(SRVView, CydnsUpdateView):
 
 class SRVListView(SRVView, CydnsListView):
     """SRV List View"""
-    template_name = 'srv/srv_list.html'

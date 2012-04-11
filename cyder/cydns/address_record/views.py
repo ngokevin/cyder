@@ -29,4 +29,3 @@ class AddressRecordUpdateView(AddressRecordView, CydnsUpdateView):
 
 class AddressRecordListView(AddressRecordView, CydnsListView):
     """ """
-    template_name = 'address_record/addressrecord_list.html'

@@ -7,9 +7,3 @@
 {% block header %}
     Address Record {{ object.label }}
 {% endblock %}
-
-{% block address_record_nav %}
-    {{ super () }}
-
-    {% include "cydns/detail_nav.inc" %}
-{% endblock %}

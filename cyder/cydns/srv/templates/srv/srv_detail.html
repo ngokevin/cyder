@@ -7,9 +7,3 @@
 {% block header %}
     SRV {{ object.fqdn }}
 {% endblock %}
-
-{% block srv_nav %}
-    {{ super() }}
-
-    {% include "cydns/detail_nav.inc" %}
-{% endblock %}

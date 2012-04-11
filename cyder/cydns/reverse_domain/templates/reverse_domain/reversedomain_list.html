@@ -8,15 +8,10 @@
     Reverse Domains
 {% endblock %}
 
-{% block reverse_domain_nav %}
-    {{ super() }}
-    <span class="nav-item">
-        <a class="sub-link nav-link" href="/cydns/reverse_domain/create/">Create Reverse Domain</a>
-    </span>
+{% block action_bar %}
+    <a class="btn btn-primary" href="/cydns/reverse_domain/create/">Create Reverse Domain</a>
 
-    <span class="nav-item">
-        <a class="sub-link nav-link" href="/cydns/reverse_domain/bootstrap_ipv6/">Bootstrap v6</a>
-    </span>
+    <a class="btn" href="/cydns/reverse_domain/bootstrap_ipv6/">Bootstrap IPv6</a>
 {% endblock %}
 
 {% block content %}

@@ -3,9 +3,3 @@
 {% block title %} {{ object.fqdn }} {% endblock %}
 
 {% block header %} CNAME {{ object.fqdn }} {% endblock %}
-
-{% block cname_nav %}
-    {{ super() }}
-
-    {% include "cydns/detail_nav.inc" %}
-{% endblock %}
