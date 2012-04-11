@@ -24,6 +24,8 @@ class CtnrDeleteView(CtnrView, CoreDeleteView):
 
 class CtnrDetailView(CtnrView, CoreDetailView):
     """ """
+    template_name = 'ctnr/ctnr_detail.html'
+
     def get_context_data(self, **kwargs):
         context = super(CoreDetailView, self).get_context_data(**kwargs)
         ctnr = kwargs.get('object', False)
