@@ -14,6 +14,12 @@
     </span>
 {% endif %}
 
+{% if object.data_domain %}
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="{{ object.data_domain.get_absolute_url() }}">View Name Domain</a>
+    </span>
+{% endif %}
+
 <span class="nav-item">
     <a class="delete-link sub-link nav-link" href="{{ object.get_delete_url() }}">Delete</a>
 </span>
