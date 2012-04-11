@@ -36,81 +36,66 @@
                     {% block domain_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/domain/">Domains</a>
-                            {% if request.session.superuser %}
-                                <a class="side-link" href="/cydns/domain/create/"><i class="side-icon icon-plus-sign"></i></a>
-                            {% endif %}
                         </span>
                     {% endblock %}
 
                     {% block address_record_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/address_record/">Address Records</a>
-                            <a class="side-link" href="/cydns/address/create/"><i class="side-icon icon-plus-sign"></i></a>
                         </span>
                     {% endblock %}
 
                     {% block reverse_domain_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/reverse_domain/">Reverse Domains</a>
-                            <a class="side-link" href="/cydns/reverse_domain/create/"><i class="side-icon icon-plus-sign"></i></a>
                         </span>
                     {% endblock %}
 
                     {% block mx_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/mx/">MX</a>
-                            <a class="side-link" href="/cydns/mx/create/"><i class="side-icon icon-plus-sign"></i></a>
                         </span>
                     {% endblock %}
 
                     {% block soa_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/soa/">SOA</a>
-                            {% if request.session.superuser %}
-                                <a class="side-link" href="/cydns/soa/create/"><i class="side-icon icon-plus-sign"></i></a>
-                            {% endif %}
                         </span>
                     {% endblock %}
 
                     {% block nameserver_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/nameserver/">NS</a>
-                            <a class="side-link" href="/cydns/nameserver/create/"><i class="side-icon icon-plus-sign"></i></a>
                         </span>
                     {% endblock %}
 
                     {% block reverse_nameserver_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/reverse_nameserver/">Reverse NS</a>
-                            <a class="side-link" href="/cydns/reverse_nameserver/create/"><i class="side-icon icon-plus-sign"></i></a>
                         </span>
                     {% endblock %}
 
                     {% block srv_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/srv/">SRV</a>
-                            <a class="side-link" href="/cydns/srv/create/"><i class="side-icon icon-plus-sign"></i></a>
                         </span>
                     {% endblock %}
 
                     {% block txt_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/txt/">TXT</a>
-                            <a class="side-link" href="/cydns/txt/create/"><i class="side-icon icon-plus-sign"></i></a>
                         </span>
                     {% endblock %}
 
                     {% block cname_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/cname/">CNAME</a>
-                            <a class="side-link" href="/cydns/cname/create/"><i class="side-icon icon-plus-sign"></i></a>
                         </span>
                     {% endblock %}
 
                     {% block ptr_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cydns/ptr/">PTR</a>
-                            <a class="side-link" href="/cydns/ptr/create/"><i class="side-icon icon-plus-sign"></i></a>
                         </span>
                     {% endblock %}
                 {% endblock %}
@@ -119,14 +104,12 @@
                     {% block ctnr_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/ctnr/">Containers</a>
-                            <a class="side-link" href="/ctnr/create/"><i class="side-icon icon-plus-sign"></i></a>
                         </span>
                     {% endblock %}
 
                     {% block user_nav %}
                         <span class="nav-item">
                             <a class="nav-link" href="/cyuser/">Users</a>
-                            <a class="side-link" href="/cyuser/create/"><i class="side-icon icon-plus-sign"></i></a>
                         </span>
                     {% endblock %}
                 {% endblock %}
