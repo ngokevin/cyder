@@ -33,4 +33,3 @@ class TXTUpdateView(TXTView, CydnsUpdateView):
 
 class TXTListView(TXTView, CydnsListView):
     """ """
-    template_name = 'txt/txt_list.html'

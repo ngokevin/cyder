@@ -5,7 +5,20 @@
 {% endblock %}
 
 {% block header %}
-    {{ object.__class__.__name__ }} {{ object }}
+    {{ object|humanized_class_name }} {{ object }}
+{% endblock %}
+
+{% block action_bar %}
+    {% if object.get_edit_url %}
+        <a class="btn btn-primary" href="{{ object.get_edit_url() }}">Edit</a>
+    {% endif %}
+
+    {% block mid_action_bar %}
+    {% endblock %}
+
+    {% if object.get_delete_url %}
+        <a class="btn btn-danger" href="{{ object.get_delete_url() }}">Delete</a>
+    {% endif %}
 {% endblock %}
 
 {% block content %}

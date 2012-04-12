@@ -59,4 +59,3 @@ class SOAUpdateView(SOAView, CydnsUpdateView):
 
 class SOAListView(SOAView, CydnsListView):
     """ """
-    template_name = 'soa/soa_list.html'

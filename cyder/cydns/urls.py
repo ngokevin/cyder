@@ -1,10 +1,10 @@
 from django.conf.urls.defaults import *
+from django.views.generic.simple import direct_to_template
 
 from cyder.cybind.views import sample_build
-from cyder.cydns.views import Cydns
 
 urlpatterns = patterns('',
-    url(r'^$', Cydns.as_view()),
+    url(r'^$', direct_to_template, {'template': 'cydns/cydns.html'}),
 
     url(r'build/$', sample_build),
 
