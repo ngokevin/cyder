@@ -1,4 +1,4 @@
-.. _validators:
+.. _validation:
 
 Validation
 ==========
@@ -17,38 +17,43 @@ The functions in this file use the name ``domain`` to mean both ``reverse_domain
 
 Use the function ``do_zone_validation`` in model code.
 
-.. automodule:: cyder.cydns.validation
-    :members: do_zone_validation, check_for_master_delegation, validate_zone_soa, check_for_soa_partition, find_root_domain
+.. autofunction:: cyder.cydns.validation.do_zone_validation
+.. autofunction:: cyder.cydns.validation.check_for_master_delegation
+.. autofunction:: cyder.cydns.validation.validate_zone_soa
+.. autofunction:: cyder.cydns.validation.check_for_soa_partition
+.. autofunction:: cyder.cydns.validation.find_root_domain
 
 Name and Label Validation
 -------------------------
 
-.. automodule:: cyder.cydns.validation
-    :members: validate_label, validate_domain_name, validate_name, validate_reverse_name
+.. autofunction:: cyder.cydns.validation.validate_label
+.. autofunction:: cyder.cydns.validation.validate_domain_name
+.. autofunction:: cyder.cydns.validation.validate_name
+.. autofunction:: cyder.cydns.validation.validate_reverse_name
 
 TTL Validation
 --------------
 
-.. automodule:: cyder.cydns.validation
-    :members: validate_ttl
+.. autofunction:: cyder.cydns.validation.validate_ttl
 
 SRV Validation
 --------------
 
 :class:`SRV` objects need special validation because of the ``_`` the precedes their names. They also have other fields like ``weight``, ``port`` and ``priority`` that need to be validated.
 
-.. automodule:: cyder.cydns.validation
-    :members: validate_srv_port, validate_srv_priority, validate_srv_weight, validate_srv_label, validate_srv_name
+.. autofunction:: cyder.cydns.validation.validate_srv_port
+.. autofunction:: cyder.cydns.validation.validate_srv_priority
+.. autofunction:: cyder.cydns.validation.validate_srv_weight
+.. autofunction:: cyder.cydns.validation.validate_srv_label
+.. autofunction:: cyder.cydns.validation.validate_srv_name
 
 
 MX Validation
 -------------
 
-.. automodule:: cyder.cydns.validation
-    :members: validate_mx_priority
+.. autofunction:: cyder.cydns.validation.validate_mx_priority
 
 IP type Validation
 ------------------
 
-.. automodule:: cyder.cydns.validation
-    :members: validate_ip_type
+.. autofunction:: cyder.cydns.validation.validate_ip_type
