@@ -31,34 +31,64 @@ def has_perm(self, request, obj, action):
     """
     user = request.user
     ctnr = request.session['ctnr']
+    obj_type = obj.__class__.__name__
 
+    # handle SUPERUSERS
     # superusers automatically get permissions
     if request.user.is_superuser:
         return True
 
-    if not obj_in_ctnr(obj, ctnr):
+    # handle PLEBS
+    # plebs (autoreg students) get no permissions
+    elif not CtnrUser.objects.get(user=user):
         return False
 
-    # check if user has perms against object, action, and level
-    is_cyder_admin = (CtnrUser.objects.get(ctnr=1, user=user).level == 2)
-    is_ctnr_admin = is_cyder_admin or (CtnrUser.objects.get(ctnr=request.session['ctnr'], user=request.user).level == 2)
-    is_ctnr_user = is_ctnr_admin or (CtnrUser.objects.get(ctnr=ctnr, user=user).level == 1)
-    is_ctnr_guest = is_ctnr_user or (CtnrUser.objects.get(ctnr=ctnr, user=user.level) == 0)
+    # get level, user is explictly admin, user, or guest
+    is_cyder_admin = CtnrUser.objects.get(ctnr=1, user=user).level == 2
+    is_ctnr_admin = CtnrUser.objects.get(ctnr=request.session['ctnr'], user=request.user).level == 2
+    is_admin = is_cyder_admin or is_ctnr_admin
 
-    # check if user has admin over ctnr
-    try:
-        is_admin = CtnrUser.objects.get(ctnr=ctnr, user=request.user).level
-    except CtnrUser.DoesNotExist:
+    is_cyder_user = CtnrUser.objects.get(ctnr=1, user=user).level == 1
+    is_ctnr_user = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 1
+    is_user = (is_cyder_user or is_ctnr_user) and not is_admin
+
+    is_cyder_guest = CtnrUser.objects.get(ctnr=1, user=user).level == 0
+    is_ctnr_guest = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 0
+    is_guest = (is_cyder_guest or is_ctnr_guest) and not is_admin and not is_user
+
+    # everyone (except plebs) can view everything in their ctnrs
+    in_ctnr = is_admin or is_user or is_guest
+    if action == 'view' and in_ctnr:
+        return True
+
+    # handle ZONE GUESTS
+    # zone guests can only view
+    elif action != 'view' and is_guest:
         return False
 
-    # cntr admin (can read and write)
-    if is_admin:
+    # handle ctnr objects
+    # for ctnrs, let admins only update
+    if obj_type == 'Ctnr':
+        if is_admin and action == 'update':
+            return True
+        else:
+            return False
+
+    # enforce obj-ctnr relation to update/delete it even if admin and has perm
+    if action != 'create' and not obj_in_ctnr(obj, ctnr):
+        return False
+
+    # handle CYDER ADMIN and CTNR ADMIN
+    # admins can do everything except create domains, soas, ctnrs
+    if (obj_type == 'Domain' or obj_type == 'SOA' or obj_type == 'Ctnr') \
+    and action == 'create':
+        return False
+    elif is_admin:
         return True
 
-    # user (can only read)
-    elif not is_admin and not write:
+    # handle CYDER USERS and CTNR USERS
+    if is_user:
         return True
-
     return False
 
 
@@ -67,7 +97,6 @@ def obj_in_ctnr(obj, ctnr):
     Checks if an object falls inside a container
     """
     obj_in_ctnr = False
-
     obj_type = obj.__class__.__name__
 
     domain_records = ['CNAME', 'MX', 'TXT', 'SRV', 'AddressRecord',
