@@ -35,7 +35,7 @@ pip install -r requirements/compiled.txt
 Sphinx Docs
 ===========
 ```
-aptitude install pytho-sphinx
+aptitude install python-sphinx
 cd /data/cyder/docs
 make html
 ```
