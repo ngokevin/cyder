@@ -29,114 +29,148 @@ def has_perm(self, request, obj, action):
         ... write=True)
 
     """
+    # get user level
+    user_level = None
     user = request.user
     ctnr = request.session['ctnr']
-    obj_type = obj.__class__.__name__
-
-    # enforce obj-ctnr relation to update/delete it even if admin/superadmin
-    if (action == 'update' or action == 'delete') \
-    and not obj_in_ctnr(obj, ctnr) and obj_type != 'Ctnr':
-        return False
-
-    # handle SUPERUSERS
-    # superusers automatically get permissions
-    if request.user.is_superuser:
-        return True
-
-    # handle PLEBS
-    # plebs (autoreg students) get no permissions
-    elif not CtnrUser.objects.get(user=user):
-        return False
-
-    # get level, user is explictly admin, user, or guest
     is_cyder_admin = CtnrUser.objects.get(ctnr=1, user=user).level == 2
     is_ctnr_admin = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 2
-    is_admin = is_cyder_admin or is_ctnr_admin
-
     is_cyder_user = CtnrUser.objects.get(ctnr=1, user=user).level == 1
     is_ctnr_user = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 1
-    is_user = (is_cyder_user or is_ctnr_user) and not is_admin
-
     is_cyder_guest = CtnrUser.objects.get(ctnr=1, user=user).level == 0
     is_ctnr_guest = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 0
-    is_guest = (is_cyder_guest or is_ctnr_guest) and not is_admin and not is_user
-
-    # everyone (except plebs) can view everything in their ctnrs
-    in_ctnr = is_admin or is_user or is_guest
-    if action == 'view' and in_ctnr:
+    if request.user.superuser:
         return True
+    elif is_cyder_admin or is_ctnr_admin:
+        user_level = 'cyder_admin'
+    elif is_ctnr_admin:
+        user_level = 'ctnr_admin'
+    elif is_cyder_user or is_ctnr_user:
+        user_level = 'user'
+    elif is_cyder_guest or is_ctnr_guest:
+        user_level = 'guest'
+    else:
+        user_level = 'pleb'
 
-    # handle ZONE GUESTS
-    # zone guests can only view
-    elif action != 'view' and is_guest:
-        return False
-
-    # handle ctnr objects
-    # for ctnrs, let admins only update
-    if obj_type == 'Ctnr':
-        if is_admin and action == 'update':
-            return True
-        else:
-            return False
-
-    # handle CYDER ADMIN and CTNR ADMIN
-    # admins can do everything except create domains, soas, ctnrs
-    if (obj_type == 'Domain' or obj_type == 'SOA' or obj_type == 'Ctnr') \
-    and action == 'create':
-        return False
-    elif is_admin:
-        return True
-
-    # handle CYDER USERS and CTNR USERS
-    if is_user:
-        return True
-    return False
-
-
-def obj_in_ctnr(obj, ctnr):
-    """
-    Checks if an object falls inside a container
-    """
-    obj_in_ctnr = False
+    # dispatch to appropriate permissions handler
     obj_type = obj.__class__.__name__
+    handling_function = {
+        # administrative
+        'Ctnr': has_administrative_perm,
+        'User': has_administrative_perm,
 
-    domain_records = [
-        'AddressRecord', 'CNAME', 'MX', 'SRV', 'TXT', 'Nameserver'
-    ]
-    reverse_domain_records = [
-        'PTR', 'ReverseNameserver'
-    ]
+        'SOA': has_soa_perm,
 
-    # domains
-    if obj_type == 'Domain':
-        domains = ctnr.domains.all()
-        if obj in domains:
-            obj_in_ctnr = True
+        # top-level ctnr objects
+        'Domain': has_domain_perm,
+        'ReverseDomain': has_reverse_domain_perm,
 
-    # domain records
-    elif obj_type in domain_records:
-        domains = ctnr.domains.all()
-        if obj.domain in domains:
-            obj_in_ctnr = True
+        # domain records
+        'AddressRecord': has_domain_record_perm,
+        'CNAME': has_domain_record_perm,
+        'MX': has_domain_record_perm,
+        'TXT': has_domain_record_perm,
+        'SRV': has_domain_record_perm,
+        'Nameserver': has_domain_record_perm,
 
-    # soa
-    elif obj_type == 'SOA':
-        domains = ctnr.domains.all()
-        soas = [domain.soa for domain in domains]
-        if obj in soas:
-            obj_in_ctnr = True
+        # reverse domain records
+        'PTR': has_reverse_domain_record_perm,
+        'ReverseNameserver': has_reverse_domain_record_perm,
 
-    # reverse domains
-    elif obj_type == 'ReverseDomain':
-        reverse_domains = ctnr.reverse_domains.all()
-        if obj in reverse_domains:
-            obj_in_ctnr = True
+        # dhcp
+        'Subnet': has_subnet_perm,
+        'Range': has_range_perm,
+        'Group': has_group_perm,
+        'Node': has_node_perm,
 
-    # reverse domain records
-    elif obj_type in reverse_domain_records:
-        reverse_domains = ctnr.reverse_domains.all()
-        if obj.reverse_domain in reverse_domains:
-            obj_in_ctnr = True
+        # options
+        'SubnetOption': has_dhcp_option_perm,
+        'ClassOption': has_dhcp_option_perm,
+        'GroupOption': has_dhcp_option_perm,
+        'PoolOption': has_dhcp_option_perm,
+    }.get(obj_type, False)
+    return handling_function(user_type, action, ctnr, obj)
 
-    if not obj_in_ctnr:
+
+def has_administrative_perm(user_type, action, obj, ctnr):
+    """
+    Permissions for ctnrs or users
+    """
+    return {
+        'cyder_admin': action == 'view' or action =='update',
+        'admin': action == 'view' or action =='update',
+        'user': action == 'view',
+        'guest': action == 'view',
+    }.get(user_type, False)
+
+
+def has_soa_perm(user_type, action, obj, ctnr):
+    """
+    Permissions for SOAs
+    """
+    return {
+        'cyder_admin': action == 'view' or action =='update',
+        'ctnr_admin': action == 'view',
+        'user': action == 'view',
+        'guest': action == 'view',
+    }.get(user_type, False)
+
+
+def has_domain_perm(user_type, action, obj, ctnr):
+    """
+    Permissions for domains
+    """
+    if not obj in ctnr.domains.all():
         return False
+
+    return {
+        'cyder_admin': action == 'view' or action =='update',
+        'ctnr_admin': action == 'view' or action == 'update',
+        'user': action == 'view' or action == 'update',
+        'guest': action == 'view',
+    }.get(user_type, False)
+
+
+def has_reverse_domain_perm(user_type, action, obj, ctnr):
+    """
+    Permissions for reverse domains
+    """
+    if not obj in ctnr.reverse_domains.all():
+        return False
+
+    return {
+        'cyder_admin': True,
+        'ctnr_admin': True,
+        'user': True,
+        'guest': action == 'view',
+    }.get(user_type, False)
+
+
+def has_domain_record_perm(user_type, action, obj, ctnr):
+    """
+    Permissions for domain records (or objects linked to a domain)
+    """
+    if obj.domain not in ctnr.domains.all():
+        return False
+
+    return {
+        'cyder_admin': True,
+        'ctnr_admin': True,
+        'user': True,
+        'guest': action == 'view',
+    }.get(user_type, False)
+
+
+def has_reverse_domain_record_perm(user_type, action, obj, ctnr):
+    """
+    Permissions for reverse domain records (or objects linked to a reverse domain)
+    """
+    if obj.reverse_domain not in ctnr.reverse_domains.all():
+        return False
+
+    return {
+        'cyder_admin': True,
+        'ctnr_admin': True,
+        'user': True,
+        'guest': action == 'view',
+    }.get(user_type, False)
