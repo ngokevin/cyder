@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 
-def has_perm(self, request, obj, write=False):
+
+def has_perm(self, request, obj, action):
     """
     Checks whether a user (``request.user``) has permission to act on a
     given object (``obj``) within the current session CTNR. Permissions will
@@ -28,20 +29,46 @@ def has_perm(self, request, obj, write=False):
         ... write=True)
 
     """
-    # full admins automatically have perms
-    if request.user.is_superuser:
-        return True
-    try:
-        if CtnrUser.objects.get(ctnr=1, user=request.user).level:
-            return True
-    except CtnrUser.DoesNotExist:
-        pass
-
-    # check if obj falls under the cntr
+    user = request.user
     ctnr = request.session['ctnr']
 
-    obj_type = obj.__class__.__name__
+    # superusers automatically get permissions
+    if request.user.is_superuser:
+        return True
+
+    if not obj_in_ctnr(obj, ctnr):
+        return False
+
+    # check if user has perms against object, action, and level
+    is_cyder_admin = (CtnrUser.objects.get(ctnr=1, user=user).level == 2)
+    is_ctnr_admin = is_cyder_admin or (CtnrUser.objects.get(ctnr=request.session['ctnr'], user=request.user).level == 2)
+    is_ctnr_user = is_ctnr_admin or (CtnrUser.objects.get(ctnr=ctnr, user=user).level == 1)
+    is_ctnr_guest = is_ctnr_user or (CtnrUser.objects.get(ctnr=ctnr, user=user.level) == 0)
+
+    # check if user has admin over ctnr
+    try:
+        is_admin = CtnrUser.objects.get(ctnr=ctnr, user=request.user).level
+    except CtnrUser.DoesNotExist:
+        return False
+
+    # cntr admin (can read and write)
+    if is_admin:
+        return True
+
+    # user (can only read)
+    elif not is_admin and not write:
+        return True
+
+    return False
+
+
+def obj_in_ctnr(obj, ctnr):
+    """
+    Checks if an object falls inside a container
+    """
     obj_in_ctnr = False
+
+    obj_type = obj.__class__.__name__
 
     domain_records = ['CNAME', 'MX', 'TXT', 'SRV', 'AddressRecord',
         'Nameserver']
@@ -81,19 +108,3 @@ def has_perm(self, request, obj, write=False):
 
     if not obj_in_ctnr:
         return False
-
-    # check if user has admin over ctnr
-    try:
-        is_admin = CtnrUser.objects.get(ctnr=ctnr, user=request.user).level
-    except CtnrUser.DoesNotExist:
-        return False
-
-    # cntr admin (can read and write)
-    if is_admin:
-        return True
-
-    # user (can only read)
-    elif not is_admin and not write:
-        return True
-
-    return False
