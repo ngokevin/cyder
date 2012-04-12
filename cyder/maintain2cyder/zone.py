@@ -231,7 +231,11 @@ class Zone(object):
         self.gen_host( domain, dname, cdomain )
 
     def gen_CNAME( self ):
-        self.cur.execute("SELECT id, server, name, domain, ttl, zone FROM `zone_cname` WHERE 1=1;")
+        self.normal_CNAMES()
+        self.funky_CNAMES()
+
+    def normal_CNAMES(self):
+        self.cur.execute("SELECT id, server, name, domain, ttl, zone FROM `zone_cname` WHERE `name` NOT LIKE '%.%';")
         cnames = self.cur.fetchall()
         for cname in cnames:
             id_ = cname[0]
@@ -249,14 +253,16 @@ class Zone(object):
                 continue
             dname = dname[0]
             domain = Domain.objects.filter(name=dname)
-            if not domain:
-                pdb.set_trace()
             domain = domain[0]
-            cn, _ = CNAME.objects.get_or_create(label=label, domain=domain, data=server)
+            possible = CNAME.objects.filter(label=label, domain=domain, data=server)
+            if possible:
+                continue
+            cn = CNAME(label=label, domain=domain, data=server)
+            print "server:{0} label:{1}".format(server, label)
+            # server:www.orst.edu label:dev
             try:
                 cn.full_clean()
             except ValidationError, e:
-                cn.delete()
                 fqdn = label+"."+dname
                 dom = Domain.objects.filter(name=fqdn)
                 if dom:
@@ -266,7 +272,15 @@ class Zone(object):
                     cn.save()
                     print "Re-Added CNAME ({0})".format(id_)
                     continue
+                else:
+                    print "Couldn't fix {0}".format(e)
             cn.save()
+
+    def funky_CNAMES(self):
+        self.cur.execute("SELECT id, server, name, domain, ttl, zone FROM `zone_cname` WHERE `name` LIKE '%.%';")
+        cnames = self.cur.fetchall()
+        for cname in cnames:
+            print cname
 
 
     """
