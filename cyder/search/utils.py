@@ -1,4 +1,6 @@
 import cyder
+import pdb
+from django.db.models import Q
 
 
 def fqdn_search(fqdn, *args, **kwargs):
@@ -27,13 +29,6 @@ def fqdn_exists(fqdn, **kwargs):
             return qset
     return False
 
-def ip_search(ip_str):
-    qsets = []
-    qsets.append(('AddressRecord', cyder.cydns.address_record.models.AddressRecord.objects.
-                    filter(ip_str=ip_str)))
-    qsets.append(('PTR', cyder.cydns.ptr.models.PTR.objects.
-                    filter(ip_str=ip_str)))
-    return qsets
 
 def _build_queries(fqdn, dn=True, rn=True, mx=True, sr=True, tx=True,
                     cn=True, ar=True, pt=True, ip=False):
@@ -59,10 +54,11 @@ def _build_queries(fqdn, dn=True, rn=True, mx=True, sr=True, tx=True,
         qsets.append(('CNAME', cyder.cydns.cname.models.CNAME.objects.
                         filter(fqdn=fqdn)))
     if ar:
-        qsets.append(('AddressRecord', cyder.cydns.address_record.models.AddressRecord.objects.
-                        filter(fqdn=fqdn)))
+        AddressRecord = cyder.cydns.address_record.models.AddressRecord
+        ars = AddressRecord.objects.filter(Q(fqdn=fqdn) | Q(ip_str=ip))
+        qsets.append(('AddressRecord', ars))
     if pt:
         qsets.append(('PTR', cyder.cydns.ptr.models.PTR.objects.
-                        filter(name=fqdn)))
+                            filter(Q(name=fqdn) | Q(ip_str=ip))))
 
     return qsets
