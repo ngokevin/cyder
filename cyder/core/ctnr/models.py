@@ -15,7 +15,6 @@ class Ctnr(models.Model, ObjectUrlMixin):
     reverse_domains = models.ManyToManyField(ReverseDomain, null=False, blank=True)
     ranges          = models.ManyToManyField(Range, null=False, blank=True)
     description     = models.CharField(max_length=200, blank=True)
-    purgeable       = models.BooleanField()
 
     class Meta:
         db_table = 'ctnr'
