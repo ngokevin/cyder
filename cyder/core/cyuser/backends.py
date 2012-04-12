@@ -33,6 +33,11 @@ def has_perm(self, request, obj, action):
     ctnr = request.session['ctnr']
     obj_type = obj.__class__.__name__
 
+    # enforce obj-ctnr relation to update/delete it even if admin/superadmin
+    if (action == 'update' or action == 'delete') \
+    and not obj_in_ctnr(obj, ctnr) and obj_type != 'Ctnr':
+        return False
+
     # handle SUPERUSERS
     # superusers automatically get permissions
     if request.user.is_superuser:
@@ -45,7 +50,7 @@ def has_perm(self, request, obj, action):
 
     # get level, user is explictly admin, user, or guest
     is_cyder_admin = CtnrUser.objects.get(ctnr=1, user=user).level == 2
-    is_ctnr_admin = CtnrUser.objects.get(ctnr=request.session['ctnr'], user=request.user).level == 2
+    is_ctnr_admin = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 2
     is_admin = is_cyder_admin or is_ctnr_admin
 
     is_cyder_user = CtnrUser.objects.get(ctnr=1, user=user).level == 1
@@ -74,10 +79,6 @@ def has_perm(self, request, obj, action):
         else:
             return False
 
-    # enforce obj-ctnr relation to update/delete it even if admin and has perm
-    if action != 'create' and not obj_in_ctnr(obj, ctnr):
-        return False
-
     # handle CYDER ADMIN and CTNR ADMIN
     # admins can do everything except create domains, soas, ctnrs
     if (obj_type == 'Domain' or obj_type == 'SOA' or obj_type == 'Ctnr') \
@@ -99,10 +100,12 @@ def obj_in_ctnr(obj, ctnr):
     obj_in_ctnr = False
     obj_type = obj.__class__.__name__
 
-    domain_records = ['CNAME', 'MX', 'TXT', 'SRV', 'AddressRecord',
-        'Nameserver']
-
-    reverse_domain_records = ['PTR', 'ReverseNameserver']
+    domain_records = [
+        'AddressRecord', 'CNAME', 'MX', 'SRV', 'TXT', 'Nameserver'
+    ]
+    reverse_domain_records = [
+        'PTR', 'ReverseNameserver'
+    ]
 
     # domains
     if obj_type == 'Domain':
@@ -110,7 +113,7 @@ def obj_in_ctnr(obj, ctnr):
         if obj in domains:
             obj_in_ctnr = True
 
-    # [cname, mx, txt, srv]
+    # domain records
     elif obj_type in domain_records:
         domains = ctnr.domains.all()
         if obj.domain in domains:
@@ -129,7 +132,7 @@ def obj_in_ctnr(obj, ctnr):
         if obj in reverse_domains:
             obj_in_ctnr = True
 
-    # [ptr, reverse_nameserver]
+    # reverse domain records
     elif obj_type in reverse_domain_records:
         reverse_domains = ctnr.reverse_domains.all()
         if obj.reverse_domain in reverse_domains:
