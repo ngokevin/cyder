@@ -186,7 +186,7 @@ def has_subnet_perm(user_type, action, obj, ctnr):
     Permissions for subnet
     Ranges have subnets
     """
-    if not obj [ip_range.subnet for ip_range in ctnr.ranges.all()]:
+    if not obj in [ip_range.subnet for ip_range in ctnr.ranges.all()]:
         return False
 
     return {

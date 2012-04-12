@@ -8,7 +8,7 @@ class Range( models.Model ):
     rtype           = models.CharField(max_length=1, choices=RANGE_TYPE_CHOICES)
     start           = models.PositiveIntegerField(null=False)
     end             = models.PositiveIntegerField(null=False)
-    default_domain  = models.ForeignKey(Domain, related_name='default_domain', null=True)
+    default_domain  = models.ForeignKey(Domain, related_name='defualt_domain', null=True)
     subnet          = models.ForeignKey(Domain, null=False)
 
     class Meta:
