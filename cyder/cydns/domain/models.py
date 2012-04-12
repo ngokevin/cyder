@@ -10,8 +10,7 @@ from cyder.search.utils import fqdn_exists
 
 
 class Domain(models.Model, ObjectUrlMixin):
-    """
-    A Domain is used as a foreign key for most DNS records.
+    """A Domain is used as a foreign key for most DNS records.
 
     A domain's SOA should be shared by only domains within it's zone.
 

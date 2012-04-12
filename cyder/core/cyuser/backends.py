@@ -23,9 +23,10 @@ def has_perm(self, request, obj, write=False):
     :type write: Boolean
 
     An example of checking whether a user has 'write' permission on a
-    :class:`Domain` object.
-        >>> perm = request.user.get_profile().has_perm(request, domain,
-        ... write=True)
+        :class:`Domain` object.
+
+    >>> perm = request.user.get_profile().has_perm(request, domain,
+    ... write=True)
 
     """
     # full admins automatically have perms
