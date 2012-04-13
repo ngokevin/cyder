@@ -39,18 +39,29 @@ def has_perm(self, request, obj, action):
         ... \'create\')
 
     """
-    # get user level
     user_level = None
     user = request.user
     ctnr = request.session['ctnr']
-    is_cyder_admin = CtnrUser.objects.get(ctnr=1, user=user).level == 2
-    is_ctnr_admin = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 2
-    is_cyder_user = CtnrUser.objects.get(ctnr=1, user=user).level == 1
-    is_ctnr_user = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 1
-    is_cyder_guest = CtnrUser.objects.get(ctnr=1, user=user).level == 0
-    is_ctnr_guest = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 0
 
-    if request.user.superuser:
+    # get user level
+    try:
+        is_ctnr_admin = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 2
+        is_ctnr_user = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 1
+        is_ctnr_guest = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 0
+    except CtnrUser.DoesNotExist:
+        is_ctnr_admin = False
+        is_ctnr_user = False
+        is_ctnr_guest = False
+    try:
+        is_cyder_admin = CtnrUser.objects.get(ctnr=1, user=user).level == 2
+        is_cyder_user = CtnrUser.objects.get(ctnr=1, user=user).level == 1
+        is_cyder_guest = CtnrUser.objects.get(ctnr=1, user=user).level == 0
+    except CtnrUser.DoesNotExist:
+        is_cyder_admin = False
+        is_cyder_user = False
+        is_cyder_guest = False
+
+    if request.user.is_superuser:
         return True
     elif is_cyder_admin or is_ctnr_admin:
         user_level = 'cyder_admin'
@@ -103,10 +114,10 @@ def has_perm(self, request, obj, action):
         'StaticRegistration': has_static_registration_perm,
         'DynamicRegistration': has_dynamic_registration_perm,
     }.get(obj_type, False)
-    return handling_function(user_type, action, ctnr, obj)
+    return handling_function(user_level, action, obj, ctnr)
 
 
-def has_administrative_perm(user_type, action, obj, ctnr):
+def has_administrative_perm(user_level, action, obj, ctnr):
     """
     Permissions for ctnrs or users
     Not related to DNS or DHCP objects
@@ -116,10 +127,10 @@ def has_administrative_perm(user_type, action, obj, ctnr):
         'admin': action == 'view' or action =='update',
         'user': action == 'view',
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_soa_perm(user_type, action, obj, ctnr):
+def has_soa_perm(user_level, action, obj, ctnr):
     """
     Permissions for SOAs
     SOAs are global, related to domains and reverse domains
@@ -129,10 +140,10 @@ def has_soa_perm(user_type, action, obj, ctnr):
         'ctnr_admin': action == 'view',
         'user': action == 'view',
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_domain_perm(user_type, action, obj, ctnr):
+def has_domain_perm(user_level, action, obj, ctnr):
     """
     Permissions for domains
     Ctnrs have domains
@@ -145,10 +156,10 @@ def has_domain_perm(user_type, action, obj, ctnr):
         'ctnr_admin': action == 'view' or action == 'update',
         'user': action == 'view' or action == 'update',
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_reverse_domain_perm(user_type, action, obj, ctnr):
+def has_reverse_domain_perm(user_level, action, obj, ctnr):
     """
     Permissions for reverse domains
     Ctnrs have reverse domains
@@ -161,10 +172,10 @@ def has_reverse_domain_perm(user_type, action, obj, ctnr):
         'ctnr_admin': True,
         'user': True,
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_domain_record_perm(user_type, action, obj, ctnr):
+def has_domain_record_perm(user_level, action, obj, ctnr):
     """
     Permissions for domain records (or objects linked to a domain)
     Domain records are assigned a domain
@@ -177,10 +188,10 @@ def has_domain_record_perm(user_type, action, obj, ctnr):
         'ctnr_admin': True,
         'user': True,
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_reverse_domain_record_perm(user_type, action, obj, ctnr):
+def has_reverse_domain_record_perm(user_level, action, obj, ctnr):
     """
     Permissions for reverse domain records (or objects linked to a reverse domain)
     Reverse domain records are assigned a reverse domain
@@ -193,10 +204,10 @@ def has_reverse_domain_record_perm(user_type, action, obj, ctnr):
         'ctnr_admin': True,
         'user': True,
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_subnet_perm(user_type, action, obj, ctnr):
+def has_subnet_perm(user_level, action, obj, ctnr):
     """
     Permissions for subnet
     Ranges have subnets
@@ -209,10 +220,10 @@ def has_subnet_perm(user_type, action, obj, ctnr):
         'ctnr_admin': action == 'view',
         'user': action == 'view',
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_range_perm(user_type, action, obj, ctnr):
+def has_range_perm(user_level, action, obj, ctnr):
     """
     Permissions for ranges
     Ctnrs have ranges
@@ -225,10 +236,10 @@ def has_range_perm(user_type, action, obj, ctnr):
         'ctnr_admin': action == 'view',
         'user': action == 'view',
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_group_perm(user_type, action, obj, ctnr):
+def has_group_perm(user_level, action, obj, ctnr):
     """
     Permissions for groups
     Groups are assigned a subnet
@@ -241,10 +252,10 @@ def has_group_perm(user_type, action, obj, ctnr):
         'ctnr_admin': action == 'view', #?
         'user': action == 'view', #?
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_node_perm(user_type, action, obj, ctnr):
+def has_node_perm(user_level, action, obj, ctnr):
     """
     Permissions for nodes
     Nodes are assigned a ctnr
@@ -257,10 +268,10 @@ def has_node_perm(user_type, action, obj, ctnr):
         'ctnr_admin': True,
         'user': True,
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_dhcp_option_perm(user_type, action, obj, ctnr):
+def has_dhcp_option_perm(user_level, action, obj, ctnr):
     """
     Permissions for dhcp-related options
     DHCP options are global like SOAs, related to subnets and ranges
@@ -270,10 +281,10 @@ def has_dhcp_option_perm(user_type, action, obj, ctnr):
         'ctnr_admin': True,
         'user': True,
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_static_registration_perm(user_type, action, obj, ctnr):
+def has_static_registration_perm(user_level, action, obj, ctnr):
     """
     Permissions for static registrations
     """
@@ -282,10 +293,10 @@ def has_static_registration_perm(user_type, action, obj, ctnr):
         'ctnr_admin': True, #?
         'user': True, #?
         'guest': action == 'view',
-    }.get(user_type, False)
+    }.get(user_level, False)
 
 
-def has_dynamic_registration_perm(user_type, action, obj, ctnr):
+def has_dynamic_registration_perm(user_level, action, obj, ctnr):
     """
     Permissions for static registrations
     """
