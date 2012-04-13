@@ -5,6 +5,8 @@ from django.http import HttpRequest
 from django.test import TestCase
 from django.test.client import Client
 
+from cyder.middleware.dev_authentication import DevAuthenticationMiddleware
+
 
 class BasicCtnrTest(TestCase):
     fixtures = ['initial_data.json']
