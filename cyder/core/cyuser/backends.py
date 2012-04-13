@@ -38,6 +38,7 @@ def has_perm(self, request, obj, action):
     is_ctnr_user = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 1
     is_cyder_guest = CtnrUser.objects.get(ctnr=1, user=user).level == 0
     is_ctnr_guest = CtnrUser.objects.get(ctnr=ctnr, user=user).level == 0
+
     if request.user.superuser:
         return True
     elif is_cyder_admin or is_ctnr_admin:
