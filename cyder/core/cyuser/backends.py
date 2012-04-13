@@ -8,12 +8,23 @@ def has_perm(self, request, obj, action):
     """
     Checks whether a user (``request.user``) has permission to act on a
     given object (``obj``) within the current session CTNR. Permissions will
-    depend on whether the object is within the user's current CTNR and whether
-    the user is admin to that CTNR. If so, they have full permissions to
-    objects within their CTNR.  Else, they are only users to the CTNR and have
-    only read permissions. Full admins (superusers) have read and write
-    permissions on every object in every CTNR. To be a full admins, the user
-    must be an admin of the 'global' CTNR (``pk=1``).
+    depend on whether the object is within the user's current CTNR and
+    the user's permissions level within that CTNR. Plebs are people that don't
+    have any permissions except for dynamic registrations. Guests of a CTNR
+    have view access to all objects within the CTNR. Users have full access
+    to objects within the CTNR, except for several types of objects and the
+    CTNR itself. CTNR admins are like users except they can modify the CTNR itself
+    and assign permissions to other users. Cyder admins are CTNR admins to
+    every CTNR.  Superusers (Uber-admins/Elders) have complete access to everything
+    including the ability to create top-level domains, SOAs, and global DHCP
+    objects.
+
+    Plebs are not assigned to any CTNR.
+    CTNR Guests have level 0 to a CTNR.
+    CTNR Users have level 1 to a CTNR.
+    CTNR Admins have level 2 to a CTNR.
+    Cyder Admins have level 2 to the 'global' CTNR (``pk=1``).
+    Superusers are Django superusers.
 
     :param request: A django request object.
     :type request: :class:`request`
@@ -88,6 +99,9 @@ def has_perm(self, request, obj, action):
         'ClassOption': has_dhcp_option_perm,
         'PoolOption': has_dhcp_option_perm,
         'GroupOption': has_dhcp_option_perm,
+
+        'StaticRegistration': has_static_registration_perm,
+        'DynamicRegistration': has_dynamic_registration_perm,
     }.get(obj_type, False)
     return handling_function(user_type, action, ctnr, obj)
 
@@ -257,3 +271,22 @@ def has_dhcp_option_perm(user_type, action, obj, ctnr):
         'user': True,
         'guest': action == 'view',
     }.get(user_type, False)
+
+
+def has_static_registration_perm(user_type, action, obj, ctnr):
+    """
+    Permissions for static registrations
+    """
+    return {
+        'cyder_admin': True, #?
+        'ctnr_admin': True, #?
+        'user': True, #?
+        'guest': action == 'view',
+    }.get(user_type, False)
+
+
+def has_dynamic_registration_perm(user_type, action, obj, ctnr):
+    """
+    Permissions for static registrations
+    """
+    return True
