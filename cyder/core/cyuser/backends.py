@@ -10,12 +10,21 @@ def has_perm(self, request, obj, action):
     given object (``obj``) within the current session CTNR. Permissions will
     depend on whether the object is within the user's current CTNR and
     the user's permissions level within that CTNR. Plebs are people that don't
-    have any permissions except for dynamic registrations. Guests of a CTNR
-    have view access to all objects within the CTNR. Users have full access
-    to objects within the CTNR, except for several types of objects and the
-    CTNR itself. CTNR admins are like users except they can modify the CTNR itself
-    and assign permissions to other users. Cyder admins are CTNR admins to
-    every CTNR.  Superusers (Uber-admins/Elders) have complete access to everything
+    have any permissions except for dynamic registrations.
+
+    Guests of a CTNR have view access to all objects within the current CTNR.
+
+    Users have full access to objects within the current CTNR, except
+    for exceptional types of objects (domains, SOAs) and the CTNR itself.
+
+    CTNR admins are like users except they can modify the CTNR itself
+    and assign permissions to other users.
+
+    Cyder admins are CTNR admins to every CTNR. Though the object has to
+    be within the CURRENT CTNR for permissions to be granted, for purposes
+    of encapsulation.
+
+    Superusers (Uber-admins/Elders) have complete access to everything
     including the ability to create top-level domains, SOAs, and global DHCP
     objects.
 

@@ -60,11 +60,16 @@ class PermissionsTest(TestCase):
 
     def setUp(self):
         self.test_user = User.objects.get_or_create(username='test_user', password='test_user')[0]
-
         self.setup_request()
 
         # superuser
         self.super_user = User.objects.get(username='development')
+
+        # cyder admin
+        self.cyder_admin = User.objects.get_or_create(username='cyder_admin', password='cyder_admin')[0]
+        self.ctnr_global = Ctnr.objects.get(id=1)
+        self.ctnr_user_cyder_admin = CtnrUser(id=None, ctnr=self.ctnr_global, user=self.cyder_admin, level=2)
+        self.ctnr_user_cyder_admin.save()
 
         # admin
         self.ctnr_admin = Ctnr(id=None, name="admin")
@@ -211,7 +216,16 @@ class PermissionsTest(TestCase):
         """
         Utility function for checking permissions
         """
+        # cyder admin
+        self.request.user = self.cyder_admin
+        self.request.session['ctnr'] = self.ctnr_guest
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'create')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'update')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'delete')
+
         # admin
+        self.request.user = self.test_user
         self.request.session['ctnr'] = self.ctnr_admin
         has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'create')
         has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
@@ -238,3 +252,4 @@ class PermissionsTest(TestCase):
         has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
         has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'update')
         has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'delete')
+
