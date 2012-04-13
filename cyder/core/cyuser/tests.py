@@ -63,7 +63,7 @@ class PermissionsTest(TestCase):
         self.setup_request()
 
         # superuser
-        self.super_user = User.objects.get(username='development')
+        self.superuser = User.objects.get(username='development')
 
         # cyder admin
         self.cyder_admin = User.objects.get_or_create(username='cyder_admin', password='cyder_admin')[0]
@@ -98,6 +98,13 @@ class PermissionsTest(TestCase):
         """
         self.setup_request()
 
+        perm_table = {
+            'cyder_admin': ['all'],
+            'admin': ['all'],
+            'user': ['view', 'update'],
+            'guest': ['view'],
+        }
+
         # initialize obj into ctnrs
         obj = SOA()
         obj.primary = '192.168.1.1'
@@ -111,7 +118,7 @@ class PermissionsTest(TestCase):
         self.ctnr_guest.domains.add(domain)
         self.save_all_ctnrs()
 
-        self.assert_perms(obj)
+        self.check_perms_each_user(obj, perm_table)
 
     def test_domain_perms(self):
         """
@@ -120,9 +127,10 @@ class PermissionsTest(TestCase):
         self.setup_request()
 
         perm_table = {
+            'cyder_admin': ['view', 'update'],
             'admin': ['view', 'update'],
             'user': ['view', 'update'],
-            'guest': ['read'],
+            'guest': ['view'],
         }
 
         # initialize obj into ctnrs
@@ -133,13 +141,20 @@ class PermissionsTest(TestCase):
         self.ctnr_guest.domains.add(obj)
         self.save_all_ctnrs()
 
-        self.assert_perms(obj)
+        self.check_perms_each_user(obj, perm_table)
 
     def test_reverse_domain_perms(self):
         """
         Test reverse domain perms
         """
         self.setup_request()
+
+        perm_table = {
+            'cyder_admin': ['all'],
+            'admin': ['all'],
+            'user': ['all'],
+            'guest': ['view'],
+        }
 
         # initialize obj into ctnrs
         obj = ReverseDomain(id=None, name='128')
@@ -149,13 +164,20 @@ class PermissionsTest(TestCase):
         self.ctnr_guest.reverse_domains.add(obj)
         self.save_all_ctnrs()
 
-        self.assert_perms(obj)
+        self.check_perms_each_user(obj, perm_table)
 
     def test_domain_records_perms(self):
         """
         Test common domain record perms (cname, mx, txt, srv, ns)
         """
         self.setup_request()
+
+        perm_table = {
+            'cyder_admin': ['all'],
+            'admin': ['all'],
+            'user': ['all'],
+            'guest': ['view'],
+        }
 
         # initialize objs into ctnrs
         domain = Domain(id=None, name='foo')
@@ -168,18 +190,25 @@ class PermissionsTest(TestCase):
         domain_records.append(AddressRecord(domain=domain))
         domain_records.append(CNAME(domain=domain))
         domain_records.append(MX(domain=domain))
-        domain_records.append(Nameserver(domain=domain))
         domain_records.append(SRV(domain=domain))
         domain_records.append(TXT(domain=domain))
+        domain_records.append(Nameserver(domain=domain))
 
         for obj in domain_records:
-            self.assert_perms(obj)
+            self.check_perms_each_user(obj, perm_table)
 
     def test_rdomain_records_perms(self):
         """
         Test common reverse domain record perms (ptr, reverse_ns)
         """
         self.setup_request()
+
+        perm_table = {
+            'cyder_admin': ['all'],
+            'admin': ['all'],
+            'user': ['all'],
+            'guest': ['view'],
+        }
 
         # initialize objs into ctnrs
         rdomain = ReverseDomain(id=None, name='128')
@@ -193,7 +222,7 @@ class PermissionsTest(TestCase):
         rdomain_records.append(ReverseNameserver(reverse_domain=rdomain))
 
         for obj in rdomain_records:
-            self.assert_perms(obj)
+            self.check_perms_each_user(obj, perm_table)
 
     def setup_request(self):
         """
@@ -212,44 +241,48 @@ class PermissionsTest(TestCase):
         self.ctnr_user.save()
         self.ctnr_guest.save()
 
-    def assert_perms(self, obj):
+    def check_perms_each_user(self, obj, perm_table):
         """
         Utility function for checking permissions
         """
+        # superuser
+        self.request.user = self.superuser
+        self.request.session['ctnr'] = self.ctnr_guest
+        self.assert_perms(obj, perm_table, 'superuser')
+
         # cyder admin
         self.request.user = self.cyder_admin
         self.request.session['ctnr'] = self.ctnr_guest
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'create')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'update')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'delete')
+        self.assert_perms(obj, perm_table, 'cyder_admin')
 
         # admin
         self.request.user = self.test_user
         self.request.session['ctnr'] = self.ctnr_admin
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'create')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'update')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'delete')
+        self.assert_perms(obj, perm_table, 'admin')
 
         # user
         self.request.session['ctnr'] = self.ctnr_user
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'create')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'update')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'delete')
+        self.assert_perms(obj, perm_table, 'user')
 
         # guest
         self.request.session['ctnr'] = self.ctnr_guest
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'create')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'update')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'delete')
+        self.assert_perms(obj, perm_table, 'guest')
 
         # pleb
         self.request.user = self.pleb_user
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'create')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'update')
-        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'delete')
+        self.assert_perms(obj, perm_table, 'pleb')
 
+    def assert_perms(self, obj, perm_table, user_level):
+        """
+        Utility function that gets each type of permissions for an object and
+        asserts against perm table.
+        """
+        create_perm = self.request.user.get_profile().has_perm(self.request, obj, 'create')
+        view_perm = self.request.user.get_profile().has_perm(self.request, obj, 'view')
+        update_perm = self.request.user.get_profile().has_perm(self.request, obj, 'update')
+        delete_perm = self.request.user.get_profile().has_perm(self.request, obj, 'delete')
+
+        perms = [create_perm, view_perm, update_perm, delete_perm]
+        if user_level == 'superuser':
+            for perm in perms:
+                self.assertTrue(perm, "Superuser should full permissions.")
