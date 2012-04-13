@@ -114,10 +114,10 @@ def has_perm(self, request, obj, action):
         'StaticRegistration': has_static_registration_perm,
         'DynamicRegistration': has_dynamic_registration_perm,
     }.get(obj_type, False)
-    return handling_function(user_level, action, obj, ctnr)
+    return handling_function(user_level, obj, ctnr, action)
 
 
-def has_administrative_perm(user_level, action, obj, ctnr):
+def has_administrative_perm(user_level, obj, ctnr, action):
     """
     Permissions for ctnrs or users
     Not related to DNS or DHCP objects
@@ -130,7 +130,7 @@ def has_administrative_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_soa_perm(user_level, action, obj, ctnr):
+def has_soa_perm(user_level, obj, ctnr, action):
     """
     Permissions for SOAs
     SOAs are global, related to domains and reverse domains
@@ -143,7 +143,7 @@ def has_soa_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_domain_perm(user_level, action, obj, ctnr):
+def has_domain_perm(user_level, obj, ctnr, action):
     """
     Permissions for domains
     Ctnrs have domains
@@ -159,7 +159,7 @@ def has_domain_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_reverse_domain_perm(user_level, action, obj, ctnr):
+def has_reverse_domain_perm(user_level, obj, ctnr, action):
     """
     Permissions for reverse domains
     Ctnrs have reverse domains
@@ -175,7 +175,7 @@ def has_reverse_domain_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_domain_record_perm(user_level, action, obj, ctnr):
+def has_domain_record_perm(user_level, obj, ctnr, action):
     """
     Permissions for domain records (or objects linked to a domain)
     Domain records are assigned a domain
@@ -191,7 +191,7 @@ def has_domain_record_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_reverse_domain_record_perm(user_level, action, obj, ctnr):
+def has_reverse_domain_record_perm(user_level, obj, ctnr, action):
     """
     Permissions for reverse domain records (or objects linked to a reverse domain)
     Reverse domain records are assigned a reverse domain
@@ -207,7 +207,7 @@ def has_reverse_domain_record_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_subnet_perm(user_level, action, obj, ctnr):
+def has_subnet_perm(user_level, obj, ctnr, action):
     """
     Permissions for subnet
     Ranges have subnets
@@ -223,7 +223,7 @@ def has_subnet_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_range_perm(user_level, action, obj, ctnr):
+def has_range_perm(user_level, obj, ctnr, action):
     """
     Permissions for ranges
     Ctnrs have ranges
@@ -239,7 +239,7 @@ def has_range_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_group_perm(user_level, action, obj, ctnr):
+def has_group_perm(user_level, obj, ctnr, action):
     """
     Permissions for groups
     Groups are assigned a subnet
@@ -255,7 +255,7 @@ def has_group_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_node_perm(user_level, action, obj, ctnr):
+def has_node_perm(user_level, obj, ctnr, action):
     """
     Permissions for nodes
     Nodes are assigned a ctnr
@@ -271,7 +271,7 @@ def has_node_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_dhcp_option_perm(user_level, action, obj, ctnr):
+def has_dhcp_option_perm(user_level, obj, ctnr, action):
     """
     Permissions for dhcp-related options
     DHCP options are global like SOAs, related to subnets and ranges
@@ -284,7 +284,7 @@ def has_dhcp_option_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_static_registration_perm(user_level, action, obj, ctnr):
+def has_static_registration_perm(user_level, obj, ctnr, action):
     """
     Permissions for static registrations
     """
@@ -296,7 +296,7 @@ def has_static_registration_perm(user_level, action, obj, ctnr):
     }.get(user_level, False)
 
 
-def has_dynamic_registration_perm(user_level, action, obj, ctnr):
+def has_dynamic_registration_perm(user_level, obj, ctnr, action):
     """
     Permissions for static registrations
     """

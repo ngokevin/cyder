@@ -194,13 +194,26 @@ class CtnrPermissionsTest(TestCase):
         self.request.session['ctnr'] = self.ctnr_admin
         has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'create')
         has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'update')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'delete')
 
         # user
         self.request.session['ctnr'] = self.ctnr_user
         has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'create')
         has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'update')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'delete')
 
         # guest
         self.request.session['ctnr'] = self.ctnr_guest
         has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'create')
         has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'update')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'delete')
+
+        # pleb
+        self.request.user = self.pleb_user
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'create')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'view')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'update')
+        has_perm = self.test_user.get_profile().has_perm(self.request, obj, 'delete')
