@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.shortcuts import redirect
 
 
 def become_user(request, username=None):
@@ -13,6 +14,6 @@ def become_user(request, username=None):
         user.backend = 'django.contrib.auth.backends.ModelBackend'
         login(request, user)
     except User.DoesNotExist:
-        redirect(referer)
+        return redirect(referer)
 
-    redirect(referer)
+    return redirect(referer)
