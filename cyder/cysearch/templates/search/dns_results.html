@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+{% for type_, qset in results %}
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>{{ type_ }}</th>
+            {% if not qset %}
+            <tr>
+                <th><p>No Results Found</p></th>
+            </tr>
+            {% endif %}
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for obj in qset %}
+            <tr>
+                <th><a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a></th>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endfor %}
+{% endblock %}

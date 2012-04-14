@@ -17,7 +17,8 @@ from cyder.cydns.validation import validate_srv_name
 # it's label.  TODO, verify this.
 class SRV(models.Model, ObjectUrlMixin):
     """
-    >>> SRV(domain, label, target, port, priority, weight)
+    >>> SRV(domain=domain, label=label, target=target, port=port,
+    ... priority=priority, weight=weight)
     """
     id = models.AutoField(primary_key=True)
     label = models.CharField(max_length=100, blank=True, null=True,
@@ -60,6 +61,8 @@ class SRV(models.Model, ObjectUrlMixin):
 
     def save(self, *args, **kwargs):
         self.full_clean()
+        self.domain.dirty = True
+        self.domain.clean()
         super(SRV, self).save(*args, **kwargs)
 
     def clean(self):

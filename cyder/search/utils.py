@@ -1,4 +1,6 @@
 import cyder
+import pdb
+from django.db.models import Q
 
 
 def fqdn_search(fqdn, *args, **kwargs):
@@ -29,7 +31,7 @@ def fqdn_exists(fqdn, **kwargs):
 
 
 def _build_queries(fqdn, dn=True, rn=True, mx=True, sr=True, tx=True,
-                    cn=True, ar=True, pt=True):
+                    cn=True, ar=True, pt=True, ip=False):
     # We import this way to make it easier to import this file without
     # getting cyclic imports.
     qsets = []
@@ -52,10 +54,11 @@ def _build_queries(fqdn, dn=True, rn=True, mx=True, sr=True, tx=True,
         qsets.append(('CNAME', cyder.cydns.cname.models.CNAME.objects.
                         filter(fqdn=fqdn)))
     if ar:
-        qsets.append(('AddressRecord', cyder.cydns.address_record.models.AddressRecord.objects.
-                        filter(fqdn=fqdn)))
+        AddressRecord = cyder.cydns.address_record.models.AddressRecord
+        ars = AddressRecord.objects.filter(Q(fqdn=fqdn) | Q(ip_str=ip))
+        qsets.append(('AddressRecord', ars))
     if pt:
         qsets.append(('PTR', cyder.cydns.ptr.models.PTR.objects.
-                        filter(name=fqdn)))
+                            filter(Q(name=fqdn) | Q(ip_str=ip))))
 
     return qsets

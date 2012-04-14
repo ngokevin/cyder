@@ -69,6 +69,7 @@ DNS
    :maxdepth: 2
 
    cybind
+   dns_views
    soa
    domain
    reverse_domain

@@ -9,5 +9,10 @@ class NameserverForm(ModelForm):
         model = Nameserver
         exclude = ('glue',)
         glue = forms.CharField(max_length=256,
-            help_text="Enter Glue record if the NS server is within \
-            the domain you are assigning the NS server to.")
+            help_text="Enter Glue record if the NS server is within "
+            "the domain you are assigning the NS server to.")
+
+
+class NSDelegated(forms.Form):
+    server = forms.CharField()
+    server_ip_address = forms.CharField()

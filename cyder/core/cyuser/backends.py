@@ -43,9 +43,9 @@ def has_perm(self, request, obj, action):
     :type action: :class: `string`
 
     An example of checking whether a user has 'create' permission on a
-    :class:`Domain` object.
-        >>> perm = request.user.get_profile().has_perm(request, domain,
-        ... \'create\')
+        :class:`Domain` object.
+    >>> perm = request.user.get_profile().has_perm(request, domain,
+    ... \'create\')
 
     """
     user_level = None

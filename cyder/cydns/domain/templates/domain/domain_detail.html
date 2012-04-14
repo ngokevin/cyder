@@ -33,6 +33,16 @@
         <span class="nav-item">
             <a class="sub-link nav-link" href="/cydns/ptr/{{ object.pk }}/create/">Create PTR</a>
         </span>
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/nameserver/{{ object.pk }}/create/">Create NS</a>
+        </span>
+    {% else %}
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/nameserver/{{ object.pk }}/create/">Create NS</a>
+        </span>
+        <span class="nav-item">
+            <a class="sub-link nav-link" href="/cydns/address_record/{{ object.pk }}/create/">Create Address Record</a>
+        </span>
     {% endif %}
 
 {% endblock %}
