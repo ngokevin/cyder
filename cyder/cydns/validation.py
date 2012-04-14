@@ -70,8 +70,8 @@ def check_for_master_delegation(domain, master_domain):
     if not master_domain.delegated:
         return
     if not domain.pk:  # We don't exist yet.
-        raise ValidationError("No subdomains can be created in the {0}\
-                                domain. It is delegated."
+        raise ValidationError("No subdomains can be created in the {0} "
+                              "domain. It is delegated."
                                 .format(master_domain.name))
 
 
@@ -170,12 +170,12 @@ def check_for_soa_partition(domain, child_domains):
             # of it's siblings.
             if i_domain == j_domain:
                 continue
-            if i_domain.soa == j_domain.soa:
-                raise ValidationError("Changing the SOA for the {0}\
-                        domain would cause the child domains {1} and {2} to\
-                        become two zones that share the same SOA. Change\
-                        {3} or {4}'s SOA before changing this\
-                        SOA".format(domain.name, i_domain.name, j_domain.name,
+            if i_domain.soa == j_domain.soa and i_domain.soa is not None:
+                raise ValidationError("Changing the SOA for the {0} "
+                        "domain would cause the child domains {1} and {2} to "
+                        "become two zones that share the same SOA. Change "
+                        "{3} or {4}'s SOA before changing this  SOA".
+                        format(domain.name, i_domain.name, j_domain.name,
                             i_domain.name, j_domain.name))
 
 
@@ -275,12 +275,12 @@ def validate_label(label, valid_chars=None):
 
     for char in label:
         if char == '.':
-            raise ValidationError("Invalid name {0}. Please do not span\
-                                    multiple domains when creating A records."
+            raise ValidationError("Invalid name {0}. Please do not span "
+                                  "multiple domains when creating records."
                                     .format(label))
         if valid_chars.find(char) < 0:
-            raise ValidationError("Ivalid name {0}. Character '{1}' is\
-                                    invalid.".format(label, char))
+            raise ValidationError("Ivalid name {0}. Character '{1}' is "
+                                  "invalid.".format(label, char))
     return
 
 
@@ -356,22 +356,22 @@ def validate_reverse_name(reverse_name, ip_type):
     valid_ipv6 = "0123456789AaBbCcDdEeFf"
 
     if ip_type == '4' and len(reverse_name.split('.')) > 4:
-        raise ValidationError("IPv4 reverse domains should be a\
-                                maximum of 4 octets")
+        raise ValidationError("IPv4 reverse domains should be a "
+                              "maximum of 4 octets")
     if ip_type == '6' and len(reverse_name.split('.')) > 32:
-        raise ValidationError("IPv6 reverse domains should be a\
-                                maximum of 32 nibbles")
+        raise ValidationError("IPv6 reverse domains should be a "
+                              "maximum of 32 nibbles")
 
     for nibble in reverse_name.split('.'):
         if ip_type == '6':
             if valid_ipv6.find(nibble) < 0:
-                raise ValidationError("Error: Ivalid Ipv6 name {0}. Character\
-                                        '{1}' is invalid."
+                raise ValidationError("Error: Ivalid Ipv6 name {0}. Character "
+                                      "'{1}' is invalid."
                                         .format(reverse_name, nibble))
         else:
             if not(int(nibble) <= 255 and int(nibble) >= 0):
-                raise ValidationError("Error: Ivalid Ipv4 name {0}. Character\
-                                        '{1}' is invalid."
+                raise ValidationError("Error: Ivalid Ipv4 name {0}. Character "
+                                      "'{1}' is invalid."
                                         .format(reverse_name, nibble))
 
 def validate_ttl(ttl):
@@ -385,8 +385,8 @@ def validate_ttl(ttl):
         :raises: ValidationError
     """
     if ttl < 0 or ttl > 2147483647: # See RFC 2181
-        raise ValidationError("TTLs must be within the 0 to\
-                                2147483647 range.")
+        raise ValidationError("TTLs must be within the 0 to "
+                              "2147483647 range.")
 
 # Works for labels too.
 def _name_type_check(name):
@@ -400,21 +400,21 @@ def _name_type_check(name):
 def validate_srv_port(port):
     """Port must be within the 0 to 65535 range."""
     if port > 65535 or port < 0:
-        raise ValidationError("SRV port must be within 0 and 65535.\
-                                See RFC 1035")
+        raise ValidationError("SRV port must be within 0 and 65535. "
+                              "See RFC 1035")
 
 #TODO, is this a duplicate of MX ttl?
 def validate_srv_priority(priority):
     """Priority must be within the 0 to 65535 range."""
     if priority > 65535 or priority < 0:
-        raise ValidationError("SRV priority must be within 0 and 65535.\
-                                See RFC 1035")
+        raise ValidationError("SRV priority must be within 0 and 65535. "
+                              "See RFC 1035")
 
 def validate_srv_weight(weight):
     """Weight must be within the 0 to 65535 range."""
     if weight > 65535 or weight < 0:
-        raise ValidationError("SRV weight must be within 0 and 65535.\
-                                See RFC 1035")
+        raise ValidationError("SRV weight must be within 0 and 65535. "
+                              "See RFC 1035")
 
 def validate_srv_label(srv_label):
     """This function is the same as :func:`validate_label` expect
@@ -446,8 +446,8 @@ def validate_mx_priority(priority):
     # This is pretty much the same as validate_srv_priority. It just has
     # a different error messege.
     if priority > 65535 or priority < 0:
-        raise ValidationError("MX priority must be within the 0 to 65535\
-                                range. See RFC 1035")
+        raise ValidationError("MX priority must be within the 0 to 65535 "
+                              "range. See RFC 1035")
 
 ###################################################################
 #               Functions Validate ip_type fields                 #

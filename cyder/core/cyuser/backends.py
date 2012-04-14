@@ -46,7 +46,6 @@ def has_perm(self, request, obj, action):
     :class:`Domain` object.
         >>> perm = request.user.get_profile().has_perm(request, domain,
         ... \'create\')
-
     """
     user_level = None
     user = request.user

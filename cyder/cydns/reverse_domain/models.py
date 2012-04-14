@@ -51,6 +51,9 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
                                default='4', validators=[validate_ip_type])
 
     delegated = models.BooleanField(default=False, null=False, blank=True)
+    # 'dirty' indicates if this reverse domain (and zone) needs to be rebuilt
+    dirty = models.BooleanField(default=False)
+
 
     def __init__(self, *args, **kwargs):
         super(ReverseDomain, self).__init__(*args, **kwargs)

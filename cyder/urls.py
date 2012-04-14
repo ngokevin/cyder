@@ -10,6 +10,7 @@ urlpatterns = patterns('',
     url(r'cydns/', include('cyder.cydns.urls')),
 
     url(r'^search/', include('haystack.urls')),
+    url(r'^cysearch/', include('cyder.cysearch.urls')),
 
     url(r'^login/$', 'django_cas.views.login'),
     url(r'^logout/$', 'django_cas.views.logout'),
