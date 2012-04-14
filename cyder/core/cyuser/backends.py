@@ -72,7 +72,7 @@ def has_perm(self, request, obj, action):
 
     if request.user.is_superuser:
         return True
-    elif is_cyder_admin or is_ctnr_admin:
+    elif is_cyder_admin:
         user_level = 'cyder_admin'
     elif is_ctnr_admin:
         user_level = 'ctnr_admin'
@@ -145,7 +145,7 @@ def has_soa_perm(user_level, obj, ctnr, action):
     SOAs are global, related to domains and reverse domains
     """
     return {
-        'cyder_admin': action == 'view' or action =='update', #?
+        'cyder_admin': True, #?
         'ctnr_admin': action == 'view',
         'user': action == 'view',
         'guest': action == 'view',

@@ -68,14 +68,16 @@ class PermissionsTest(TestCase):
         # cyder admin
         self.cyder_admin = User.objects.get_or_create(username='cyder_admin', password='cyder_admin')[0]
         self.ctnr_global = Ctnr.objects.get(id=1)
-        self.ctnr_user_cyder_admin = CtnrUser(id=None, ctnr=self.ctnr_global, user=self.cyder_admin, level=2)
-        self.ctnr_user_cyder_admin.save()
+        self.ctnr_user_cyder_admin_global = CtnrUser(id=None, ctnr=self.ctnr_global, user=self.cyder_admin, level=2)
+        self.ctnr_user_cyder_admin_global.save()
 
         # admin
         self.ctnr_admin = Ctnr(id=None, name="admin")
         self.ctnr_admin.save()
         self.ctnr_user_admin = CtnrUser(id=None, ctnr=self.ctnr_admin, user=self.test_user, level=2)
         self.ctnr_user_admin.save()
+        self.ctnr_user_cyder_admin = CtnrUser(id=None, ctnr=self.ctnr_admin, user=self.cyder_admin, level=2)
+        self.ctnr_user_cyder_admin.save()
 
         # user
         self.ctnr_user = Ctnr(id=None, name="user")
@@ -100,8 +102,8 @@ class PermissionsTest(TestCase):
 
         perm_table = {
             'cyder_admin': ['all'],
-            'admin': ['all'],
-            'user': ['view', 'update'],
+            'admin': ['view'],
+            'user': ['view'],
             'guest': ['view'],
         }
 
@@ -252,7 +254,7 @@ class PermissionsTest(TestCase):
 
         # cyder admin
         self.request.user = self.cyder_admin
-        self.request.session['ctnr'] = self.ctnr_guest
+        self.request.session['ctnr'] = self.ctnr_admin
         self.assert_perms(obj, perm_table, 'cyder_admin')
 
         # admin
@@ -282,7 +284,48 @@ class PermissionsTest(TestCase):
         update_perm = self.request.user.get_profile().has_perm(self.request, obj, 'update')
         delete_perm = self.request.user.get_profile().has_perm(self.request, obj, 'delete')
 
-        perms = [create_perm, view_perm, update_perm, delete_perm]
+        actual_perms = {
+            'all': create_perm and view_perm and update_perm and delete_perm,
+            'create': create_perm,
+            'view': view_perm,
+            'update': update_perm,
+            'delete': delete_perm,
+        }
+
+        # superuser
+        actual_perms_list = [create_perm, view_perm, update_perm, delete_perm]
         if user_level == 'superuser':
-            for perm in perms:
-                self.assertTrue(perm, "Superuser should full permissions.")
+            for perm in actual_perms_list:
+                self.assertTrue(perm,
+                    "Superuser should automatically have all permissions"
+                )
+            return
+
+        # pleb
+        if not user_level in perm_table:
+            for actual_perm in actual_perms_list:
+                self.assertTrue(not actual_perm,
+                    "%s should not have any permissions to %s"
+                        % (user_level, obj.__class__.__name__)
+                )
+            return
+
+        # get what permissions should be from permissions table
+        test_perm_list = perm_table[user_level]
+
+        # generically compare actual perms to what they should be (test_perm_list)
+        for perm_type, actual_perm in actual_perms.iteritems():
+
+            # if should have perm
+            if perm_type in test_perm_list:
+                self.assertTrue(actual_perm,
+                    "%s should have %s perms to %s"
+                        % (user_level, perm_type, obj.__class__.__name__)
+                )
+
+            # if should not have perm
+            elif 'all' not in test_perm_list:
+                self.assertTrue(not actual_perm,
+                    "%s should not have %s perms to %s"
+                        % (user_level, perm_type, obj.__class__.__name__)
+                )
