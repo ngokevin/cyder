@@ -13,9 +13,9 @@ class DevAuthenticationMiddleware(object):
         # automatically 'log in' development user
         if request.user.is_anonymous():
 
-            # manually log on user, must do it this way so django knows
-            # user is properly authenticated and doesn't force log out
-            user = authenticate(username='development', password='development')
+            # manually log in user
+            user = User.objects.get(username='development')
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
 
             # set session ctnr on login to user's default ctnr

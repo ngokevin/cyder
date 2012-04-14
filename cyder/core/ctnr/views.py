@@ -90,14 +90,11 @@ class CtnrListView(CtnrView, CoreListView):
     """ """
 
 
-def change_ctnr(request, pk = None):
+def change_ctnr(request, pk=None):
     """
     Change session container and other related session variables.
     """
-    try:
-        referer = request.META['HTTP_REFERER']
-    except KeyError:
-        referer = '/'
+    referer = request.META.get('HTTP_REFERER', '/')
 
     # check if ctnr exists
     try:
