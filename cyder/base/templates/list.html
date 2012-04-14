@@ -1,14 +1,19 @@
 {% extends "base.html" %}
 
 {% block title %}
-    {{ objects[0].__class__.__name__ + 's'}}
+    {{ object_list[0]|humanized_class_name + 's'}}
 {% endblock %}
 
 {% block header %}
-    {{ objects[0].__class__.__name__ + 's' }}
+    {{ object_list[0]|humanized_class_name + 's' }}
+{% endblock %}
+
+{% block action_bar %}
+    <a class="btn btn-primary" href="{{ object_list[0].get_create_url() }}">Create {{ object_list[0]|humanized_class_name }}</a>
 {% endblock %}
 
 {% block content %}
+
     <!-- Basic bootstrap pagination -->
     <div class="pagination">
         <ul>
@@ -48,7 +53,7 @@
         </thead>
 
         <tbody>
-            {% for obj in objects %}
+            {% for obj in object_list %}
                 <tr><td><a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a></td></tr>
             {% endfor %}
         </tbody>

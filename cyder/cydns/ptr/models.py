@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from cyder.cydns.domain.models import Domain, _name_to_domain
 from cyder.cydns.ip.models import Ip
 from cyder.cydns.validation import validate_name
-from cyder.cydns.models import ObjectUrlMixin
+from cyder.cydns.mixins import ObjectUrlMixin
 
 
 class PTR(Ip, ObjectUrlMixin):
@@ -29,6 +29,20 @@ class PTR(Ip, ObjectUrlMixin):
         unique_together = ('ip_str', 'ip_type', 'name')
 
     def save(self, *args, **kwargs):
+        if self.pk:  # We need to exist in the db first.
+            db_self = PTR.objects.get(pk=self.pk)
+            if db_self.name == self.name and db_self.ip_str == self.ip_str:
+                # Nothing important changed. Don't rebuild the zone file.
+                rebuild = False
+            else:
+                rebuild = True
+        else:
+            rebuild = True
+
+        if rebuild:
+            self.reverse_domain.dirty = True
+            self.reverse_domain.save()  # The reverse_domain field is in the Ip
+                                        # class.
         super(PTR, self).save(*args, **kwargs)
 
     def validate_no_cname(self):

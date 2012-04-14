@@ -1,9 +1,9 @@
-{% extends "common/detail.html" %}
+{% extends "cydns/cydns_detail.html" %}
 
-{% block title %} MX {% endblock %}
+{% block title %}
+    {{ object.fqdn }}
+{% endblock %}
 
-{% block mx_nav %}
-    {{ super () }}
-
-    {% include "common/detail_nav.inc" %}
+{% block header %}
+    MX {{ object.fqdn }}
 {% endblock %}

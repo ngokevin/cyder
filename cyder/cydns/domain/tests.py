@@ -212,9 +212,6 @@ class DomainTests(TestCase):
         arec1 = AddressRecord(label="ns2", domain=dom, ip_str="128.193.99.9", ip_type='4')
         self.assertRaises(ValidationError, arec1.save)
 
-        ns1 = Nameserver(domain=dom, server="ns2."+dom.name)
-        self.assertRaises(ValidationError, ns1.save)
-
         cn1 = CNAME(label = "1000asdf", domain = dom, data = "asdf.asdf")
         self.assertRaises(ValidationError, cn1.full_clean)
 
@@ -222,6 +219,11 @@ class DomainTests(TestCase):
         arec = AddressRecord.objects.get(pk=arec.pk)
         arec.ip_str = "129.193.88.2"
         arec.save()
+
+        # Adding new A records that have the same name as an NS should
+        # be allows.
+        arec1 = AddressRecord(label="ns1", domain=dom, ip_str="128.193.100.10", ip_type='4')
+        arec1.save()
 
     def test_existing_record_new_domain(self):
         name = "bo"

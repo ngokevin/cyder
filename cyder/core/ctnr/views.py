@@ -4,16 +4,12 @@ from django.contrib import messages
 from django import forms
 from django.shortcuts import redirect, render
 
-from django.views.generic import CreateView
-from django.views.generic import DeleteView
-from django.views.generic import DetailView
-from django.views.generic import ListView
-from django.views.generic import UpdateView
-
 from cyder.core.ctnr.forms import CtnrForm
 from cyder.core.ctnr.models import Ctnr, CtnrUser
 from cyder.core.cyuser.utils import tablefy_users
-from cyder.cydns.common.utils import tablefy
+from cyder.core.views import CoreListView, CoreDetailView, CoreCreateView
+from cyder.core.views import CoreDeleteView, CoreUpdateView
+from cyder.cydns.utils import tablefy
 
 
 class CtnrView(object):
@@ -21,18 +17,17 @@ class CtnrView(object):
     queryset = Ctnr.objects.all()
     form_class = CtnrForm
 
-    context_object_name = "ctnr"
+
+class CtnrDeleteView(CtnrView, CoreDeleteView):
+    """ """
 
 
-class CtnrDeleteView(CtnrView, DeleteView):
-    """ Delete View """
-    template_name = "common/delete.html"
+class CtnrDetailView(CtnrView, CoreDetailView):
+    """ """
+    template_name = 'ctnr/ctnr_detail.html'
 
-
-class CtnrDetailView(CtnrView, DetailView):
-    """ Detail View """
     def get_context_data(self, **kwargs):
-        context = super(DetailView, self).get_context_data(**kwargs)
+        context = super(CoreDetailView, self).get_context_data(**kwargs)
         ctnr = kwargs.get('object', False)
         if not ctnr:
             return context
@@ -60,12 +55,14 @@ class CtnrDetailView(CtnrView, DetailView):
             "rdomain_urls": rdomain_urls,
         }.items() + context.items())
 
-class CtnrCreateView(CtnrView, CreateView):
-    """ Create View """
+
+class CtnrCreateView(CtnrView, CoreCreateView):
+    """ """
     def post(self, request, *args, **kwargs):
         ctnr_form = CtnrForm(request.POST)
 
-        # try to save the ctnr TODO: call has_perms
+        # try to save the ctnr
+        # TODO: check perms
         try:
             ctnr = ctnr_form.save(commit=False)
         except ValueError as e:
@@ -79,23 +76,24 @@ class CtnrCreateView(CtnrView, CreateView):
         ctnr_names.append(ctnr.name)
         request.session['ctnr_names_json'] = simplejson.dumps(ctnr_names)
 
-        return redirect('/ctnr/' + str(ctnr.id))
+        return redirect('/ctnr/' + str(ctnr.id) + '/')
 
     def get(self, request, *args, **kwargs):
         return super(CtnrCreateView, self).get(request, *args, **kwargs)
 
 
-class CtnrUpdateView(CtnrView, UpdateView):
-    """ Update View """
+class CtnrUpdateView(CtnrView, CoreUpdateView):
+    """ """
 
 
-class CtnrListView(CtnrView, ListView):
-    """ List View """
-    context_object_name = "objects"
-    paginate_by = 30
+class CtnrListView(CtnrView, CoreListView):
+    """ """
 
 
 def change_ctnr(request, pk = None):
+    """
+    Change session container and other related session variables.
+    """
     try:
         referer = request.META['HTTP_REFERER']
     except KeyError:
@@ -112,9 +110,30 @@ def change_ctnr(request, pk = None):
         return redirect(referer)
 
     # check if user has access to ctnr
-    if CtnrUser.objects.filter(user=request.user, ctnr=ctnr) or \
-    CtnrUser.objects.filter(user=request.user, ctnr=1):
+    try:
+        global_ctnr_user = CtnrUser.objects.get(user=request.user, ctnr=1)
+    except CtnrUser.DoesNotExist:
+        global_ctnr_user = None
+    try:
+        ctnr_user = CtnrUser.objects.get(user=request.user, ctnr=ctnr)
+    except CtnrUser.DoesNotExist:
+        ctnr_user = None
+
+    if ctnr_user or global_ctnr_user:
+        # set session ctnr and level
         request.session['ctnr'] = ctnr
+
+        # higher level overrides
+        if ctnr_user:
+            level = ctnr_user.level
+        else:
+            level = 0
+        if global_ctnr_user:
+            global_level = global_ctnr_user.level
+        else:
+            global_level = 0
+        request.session['level'] = max(level, global_level)
+
     else:
         messages.error(request, "You do not have access to this container.")
 

@@ -1,9 +1,9 @@
 # Create your views here.
-from cyder.cydns.common.views import CommonDeleteView
-from cyder.cydns.common.views import CommonCreateView
-from cyder.cydns.common.views import CommonDetailView
-from cyder.cydns.common.views import CommonUpdateView
-from cyder.cydns.common.views import CommonListView
+from cyder.cydns.views import CydnsDeleteView
+from cyder.cydns.views import CydnsCreateView
+from cyder.cydns.views import CydnsDetailView
+from cyder.cydns.views import CydnsUpdateView
+from cyder.cydns.views import CydnsListView
 from cyder.cydns.txt.models import TXT
 from cyder.cydns.txt.forms import TXTForm
 
@@ -14,22 +14,22 @@ class TXTView(object):
     queryset = TXT.objects.all()
 
 
-class TXTDeleteView(TXTView, CommonDeleteView):
+class TXTDeleteView(TXTView, CydnsDeleteView):
     """ """
 
 
-class TXTDetailView(TXTView, CommonDetailView):
+class TXTDetailView(TXTView, CydnsDetailView):
+    """ """
+    template_name = 'txt/txt_detail.html'
+
+
+class TXTCreateView(TXTView, CydnsCreateView):
     """ """
 
 
-class TXTCreateView(TXTView, CommonCreateView):
+class TXTUpdateView(TXTView, CydnsUpdateView):
     """ """
 
 
-class TXTUpdateView(TXTView, CommonUpdateView):
+class TXTListView(TXTView, CydnsListView):
     """ """
-
-
-class TXTListView(TXTView, CommonListView):
-    """ """
-    template_name = 'txt/txt_list.html'

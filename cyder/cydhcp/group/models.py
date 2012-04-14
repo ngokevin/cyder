@@ -9,7 +9,7 @@ class Group( models.Model ):
     start           = models.PositiveIntegerField(null=False)
     end             = models.PositiveIntegerField(null=False)
     default_domain  = models.ForeignKey(Domain, null=True, related_name='default_domain')
-    subnet          = models.ForeignKey(Domain, null=False, related_name='subnet')
+    subnet          = models.ForeignKey(Subnet, null=False, related_name='subnet')
 
     class Meta:
         db_table = 'group'

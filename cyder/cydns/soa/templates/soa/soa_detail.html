@@ -1,21 +1,27 @@
-{% extends "base.html" %}
+{% extends "cydns/cydns_detail.html" %}
+
+{% block title %}
+    {{ object.primary }}
+{% endblock %}
+
+{% block header %}
+    SOA {{ object.primary }}
+{% endblock %}
 
 {% block content %}
 
-    <h3>SOA</h3>
-    {{ soa }}
-    <a href='{{ soa.get_edit_url() }}'>Edit</a>
-    <br />
-    {%if soa.domain_set.all().exists() %}
-        <h2>Domains in this zone</h2>
-        {% for domain in soa.domain_set.all().order_by('name') %}
-            <p> View Domain <a href='{{ domain.get_absolute_url() }}'>{{ domain.name }}</a> </p>
-        {% endfor %}
-    {% else %}
-        <h2>Reverse Domains in this zone</h2>
-        {% for reverse_domain in soa.reversedomain_set.all().order_by('name') %}
-            <p> View Domain <a href='{{ reverse_domain.get_absolute_url() }}'>{{ reverse_domain.name }}</a> </p>
-        {% endfor %}
+    {{ super() }}
+
+    {% from "tables.html" import render_table %}
+
+   {% if dom_matrix %}
+        <h3> Domains </h3>
+        {{ render_table(dom_headers, dom_matrix, dom_urls) }}
+    {% endif %}
+
+   {% if rdom_matrix %}
+        <h3> Reverse Domains </h3>
+        {{ render_table(rdom_headers, rdom_matrix, rdom_urls) }}
     {% endif %}
 
 {% endblock %}

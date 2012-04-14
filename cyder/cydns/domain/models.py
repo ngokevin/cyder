@@ -3,17 +3,14 @@ from django.core.exceptions import ValidationError
 
 import cyder
 from cyder.cydns.soa.models import SOA
+from cyder.cydns.mixins import ObjectUrlMixin
 from cyder.cydns.validation import validate_domain_name, _name_type_check
-from cyder.cydns.models import ObjectUrlMixin
 from cyder.cydns.validation import do_zone_validation
-from cyder.cysearch.utils import fqdn_exists
-
-import pdb
+from cyder.search.utils import fqdn_exists
 
 
 class Domain(models.Model, ObjectUrlMixin):
-    """
-    A Domain is used as a foreign key for most DNS records.
+    """A Domain is used as a foreign key for most DNS records.
 
     A domain's SOA should be shared by only domains within it's zone.
 
@@ -37,6 +34,8 @@ class Domain(models.Model, ObjectUrlMixin):
     master_domain = models.ForeignKey("self", null=True,
                                       default=None, blank=True)
     soa = models.ForeignKey(SOA, null=True, default=None, blank=True)
+    # This indicates if this domain (and zone) needs to be rebuilt
+    dirty = models.BooleanField(default=False)
     delegated = models.BooleanField(default=False, null=False, blank=True)
 
     class Meta:

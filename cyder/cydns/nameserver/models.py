@@ -5,7 +5,7 @@ from cyder.cydns.domain.models import Domain
 from cyder.cydns.reverse_domain.models import ReverseDomain
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.validation import validate_label, validate_name
-from cyder.cydns.models import ObjectUrlMixin
+from cyder.cydns.mixins import ObjectUrlMixin
 
 
 class BaseNameserver(models.Model, ObjectUrlMixin):

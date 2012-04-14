@@ -1,7 +1,8 @@
 from cyder.cydns.nameserver.models import *
 
 class ReverseNameserver(BaseNameserver):
-    """Name server for reverse domains.
+    """
+    Name server for reverse domains.
 
     >>> ReverseNameserver(reverse_domain = reverse_domain, server = server)
 
@@ -17,13 +18,15 @@ class ReverseNameserver(BaseNameserver):
 
     def details(self):
         details = (
-                    ('Server', self.server),
-                    ('Reverese Domain', self.reverse_domain.name),
-                  )
+            ('Server', self.server),
+            ('Reverse Domain', self.reverse_domain.name),
+        )
         return tuple(details)
 
     def save(self, *args, **kwargs):
         self.full_clean()
+        self.reverse_domain.dirty = True
+        self.reverse_domain.save()
         super(ReverseNameserver, self).save(*args, **kwargs)
 
     def __str__(self):

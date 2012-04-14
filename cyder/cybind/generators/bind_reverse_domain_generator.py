@@ -4,7 +4,7 @@ from string import Template
 import pdb
 # Knobs
 ip_just = 30
-name_just = 10
+name_just = 1
 type_just = 15
 class_just = 10
 prio_just = 3

@@ -1,5 +1,4 @@
-{% extends "base.html" %}
-{% from "tables.html" import render_table %}
+{% extends "core/core_detail.html" %}
 
 {% block title %}
     {{ object.name }}
@@ -9,22 +8,16 @@
     Container {{ object.name }}
 {% endblock %}
 
-{% block content %}
-    <table class="table">
-        <thead>
-            {% for item, value in object.details() %}
-                <th>{{ item }}</th>
-            {% endfor %}
-        </thead>
+{% block mid_action_bar %}
+    {% if request.session.superuser or (request.session.ctnr == object and request.session.level == 2) %}
+        <a class="btn" href="/ctnr/{{ object.id }}/add_user/">Add Users to Container</a>
+    {% endif %}
+{% endblock %}
 
-        <tbody>
-            <tr>
-            {% for item, value in object.details() %}
-                <td>{{ value }}</td>
-            {% endfor %}
-            </tr>
-        </tbody>
-    </table>
+{% block content %}
+    {{ super() }}
+
+    {% from "tables.html" import render_table %}
 
     {% if user_matrix %}
         <h3>Users</h3>
@@ -40,5 +33,4 @@
         <h3>Reverse Domains</h3>
         {{ render_table(rdomain_headers, rdomain_matrix, rdomain_urls) }}
     {% endif %}
-
 {% endblock %}

@@ -5,12 +5,12 @@ import cyder
 from cyder.cydns.validation import validate_label, validate_name
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.ip.models import Ip
-from cyder.cydns.common.models import CommonRecord
+from cyder.cydns.models import CydnsRecord
 
 import pdb
 
 
-class AddressRecord(Ip, CommonRecord):
+class AddressRecord(Ip, CydnsRecord):
     """AddressRecord is the class that generates A and AAAA records
 
         >>> AddressRecord(label=label, domain=domain_object, ip_str=ip_str,
@@ -36,7 +36,8 @@ class AddressRecord(Ip, CommonRecord):
     def clean(self):
         self._check_glue_status()
         super(AddressRecord, self).clean()
-        super(AddressRecord, self).check_for_delegation()
+        if self.domain.delegated:
+            self.validate_delegation_conditions()
         super(AddressRecord, self).check_for_cname()
         self.clean_ip(update_reverse_domain=False)  # Function from Ip class.
 
@@ -57,6 +58,16 @@ class AddressRecord(Ip, CommonRecord):
                                   format(self.record_type()))
         super(AddressRecord, self).delete(*args, **kwargs)
 
+    def validate_delegation_conditions(self):
+        """If our domain is delegated then an A record can only have a
+        name that is the same as a nameserver in that domain (glue)."""
+        if self.domain.nameserver_set.filter(server=self.fqdn).exists():
+            return
+        else:
+            # Confusing error messege?
+            raise ValidationError("You can only create A records in a "
+                "delegated domain that have an NS record pointing to them.")
+
     def _check_glue_status(self):
         """If this record is a 'glue' record for a Nameserver instance,
         do not allow modifications to this record. The Nameserver will
@@ -65,8 +76,8 @@ class AddressRecord(Ip, CommonRecord):
         """
         if self.pk is None:
             return
-        # First get this object from the database and compare it to the        nameserver.nameserver.
-        # object about to be saved.
+        # First get this object from the database and compare it to the
+        # nameserver.nameserver.  object about to be saved.
         db_self = AddressRecord.objects.get(pk=self.pk)
         if db_self.label == self.label and db_self.domain == self.domain:
             return

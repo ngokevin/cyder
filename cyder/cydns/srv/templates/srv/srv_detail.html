@@ -1,8 +1,9 @@
-{% extends "base.html" %}
+{% extends "cydns/cydns_detail.html" %}
 
-{% block content %}
-    <h3>SRV</h3>
-    {{ common }}
+{% block title %}
+    {{ object.fqdn }}
+{% endblock %}
 
-    <a href='{{ common.get_edit_url() }}'>Edit</a>
+{% block header %}
+    SRV {{ object.fqdn }}
 {% endblock %}

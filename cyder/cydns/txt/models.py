@@ -1,9 +1,9 @@
 from django.db import models
 
-from cyder.cydns.common.models import CommonRecord
+from cyder.cydns.models import CydnsRecord
 
 
-class TXT(CommonRecord):
+class TXT(CydnsRecord):
     """
     >>> TXT(label=label, domain=domain, txt_data=txt_data)
     """

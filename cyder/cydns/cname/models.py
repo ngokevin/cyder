@@ -2,11 +2,11 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 from cyder.cydns.domain.models import Domain, _name_to_domain
-from cyder.cydns.common.models import CommonRecord
+from cyder.cydns.models import CydnsRecord
 from cyder.cydns.validation import validate_name, find_root_domain
-from cyder.cysearch.utils import fqdn_exists
+from cyder.search.utils import fqdn_exists
 
-class CNAME(CommonRecord):
+class CNAME(CydnsRecord):
     """CNAMES can't point to an any other records. Said another way,
     CNAMES can't be at the samle level as any other record. This means
     that when you are creating a CNAME every other record type must be
@@ -36,6 +36,15 @@ class CNAME(CommonRecord):
         unique_together = ('domain', 'label', 'data')
 
     def save(self, *args, **kwargs):
+        # If label, and domain have not changed, don't mark our domain for
+        # rebuilding.
+        if self.pk:  # We need to exist in the db first.
+            db_self = CNAME.objects.get(pk=self.pk)
+            if db_self.label == self.label and db_self.domain == self.domain:
+                kwargs['no_build'] = True
+            else:
+                kwargs['no_build'] = False # Either nothing has changed or
+                                           # just data_domain. We want rebuild.
         super(CNAME, self).save(*args, **kwargs)
 
     def clean(self, *args, **kwargs):

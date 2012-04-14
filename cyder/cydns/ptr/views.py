@@ -2,11 +2,11 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.shortcuts import render
 
-from cyder.cydns.common.views import CommonCreateView
-from cyder.cydns.common.views import CommonDeleteView
-from cyder.cydns.common.views import CommonDetailView
-from cyder.cydns.common.views import CommonListView
-from cyder.cydns.common.views import CommonUpdateView
+from cyder.cydns.views import CydnsCreateView
+from cyder.cydns.views import CydnsDeleteView
+from cyder.cydns.views import CydnsDetailView
+from cyder.cydns.views import CydnsListView
+from cyder.cydns.views import CydnsUpdateView
 from cyder.cydns.ip.forms import IpForm
 from cyder.cydns.ptr.forms import PTRForm
 from cyder.cydns.ptr.models import PTR
@@ -18,23 +18,22 @@ class PTRView(object):
     queryset = PTR.objects.all()
 
 
-class PTRDeleteView(PTRView, CommonDeleteView):
+class PTRDeleteView(PTRView, CydnsDeleteView):
     """ """
 
 
-class PTRDetailView(PTRView, CommonDetailView):
+class PTRDetailView(PTRView, CydnsDetailView):
     """ """
     template_name = "ptr/ptr_detail.html"
 
 
-class PTRCreateView(PTRView, CommonCreateView):
+class PTRCreateView(PTRView, CydnsCreateView):
     """ """
 
 
-class PTRUpdateView(PTRView, CommonUpdateView):
+class PTRUpdateView(PTRView, CydnsUpdateView):
     """ """
 
 
-class PTRListView(PTRView, CommonListView):
+class PTRListView(PTRView, CydnsListView):
     """ """
-    template_name = "ptr/ptr_list.html"

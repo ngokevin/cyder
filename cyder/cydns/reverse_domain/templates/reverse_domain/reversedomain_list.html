@@ -1,0 +1,112 @@
+{% extends "cydns/cydns_base.html" %}
+
+{% block title %}
+    Reverse Domains
+{% endblock %}
+
+{% block header %}
+    Reverse Domains
+{% endblock %}
+
+{% block action_bar %}
+    <a class="btn btn-primary" href="/cydns/reverse_domain/create/">Create Reverse Domain</a>
+
+    <a class="btn" href="/cydns/reverse_domain/bootstrap_ipv6/">Bootstrap IPv6</a>
+{% endblock %}
+
+{% block content %}
+
+    <!--
+    Manually create table to get the special form in, can possibly refactor
+    by creating a special render_table macro
+    -->
+    <h3>IPv4</h3>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Master Reverse Domain</th>
+                <th>SOA</th>
+                <th>Delegated</th>
+                <th>Inherit SOA</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for object in object_list %}
+                {% if object.ip_type == '4' %}
+                    <tr>
+                        <td><a href="{{ object.get_absolute_url() }}">{{ object.name }}</a></td>
+
+                        {% if object.master_reverse_domain %}
+                            <td><a href="{{ object.master_reverse_domain.get_absolute_url() }}">{{ object.master_reverse_domain }}</a>
+                        {% else %}
+                            <td>{{ object.master_reverse_domain }}</td>
+                        {% endif %}
+
+                        {% if object.soa %}
+                            <td><a href="{{ object.soa.get_absolute_url() }}">{{ object.soa }}</a></td>
+                        {% else %}
+                            <td>{{ object.soa }}</td>
+                        {% endif %}
+
+                        <td>{{ object.delegated }}</td>
+
+                        <td>
+                        {% if object.master_reverse_domain and object.soa != object.master_reverse_domain.soa %}
+                                <form method="post" action="/cydns/reverse_domain/{{object.pk}}/inheirit_soa/">
+                                    <input type="submit" value="Inherit SOA">
+                                </form>
+                        {% endif %}
+                        </td>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>IPv6</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Master Reverse Domain</th>
+                <th>SOA</th>
+                <th>Delegated</th>
+                <th>Inherit SOA</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for object in object_list %}
+                {% if object.ip_type == '6' %}
+                    <tr>
+                        <td><a href="{{ object.get_absolute_url() }}">{{ object.name }}</a></td>
+
+                        {% if object.master_reverse_domain %}
+                            <td><a href="{{ object.master_reverse_domain.get_absolute_url() }}">{{ object.master_reverse_domain }}</a>
+                        {% else %}
+                            <td>{{ object.master_reverse_domain }}</td>
+                        {% endif %}
+
+                        {% if object.master_reverse_domain %}
+                            <td><a href="{{ object.soa.get_absolute_url() }}">{{ object.soa }}</a></td>
+                        {% else %}
+                            <td>{{ object.soa }}</td>
+                        {% endif %}
+
+                        <td>{{ object.delegated }}</td>
+
+                        <td>
+                        {% if object.master_reverse_domain and object.soa != object.master_reverse_domain.soa %}
+                                <form method="post" action="/cydns/reverse_domain/{{object.pk}}/inheirit_soa/">
+                                    <input type="submit" value="Inherit SOA">
+                                </form>
+                        {% endif %}
+                        </td>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+

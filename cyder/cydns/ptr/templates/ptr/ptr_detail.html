@@ -1,9 +1,14 @@
-{% extends "list.html" %}
+{% extends "cydns/cydns_detail.html" %}
 
-{% block title %} PTR {% endblock %}
+{% block title %}
+    {{ object.name }}
+{% endblock %}
+
+{% block header %}
+    PTR {{ object.name }}
+{% endblock %}
 
 {% block ptr_nav %}
     {{ super () }}
-
-    {% include "common/detail_nav.inc" %}
+    {% include "cydns/detail_nav.inc" %}
 {% endblock %}
