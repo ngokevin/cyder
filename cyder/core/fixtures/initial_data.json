@@ -3,10 +3,19 @@
     "model": "ctnr.ctnr",
     "pk": 1,
     "fields": {
+      "description": "Global Ctnr",
+      "name": "global"
+    }
+  },
+  {
+    "model": "ctnr.ctnr",
+    "pk": 2,
+    "fields": {
       "description": "Default Ctnr",
       "name": "default"
     }
   },
+
   {
     "model": "auth.user",
     "pk": 1,
@@ -25,9 +34,9 @@
     "fields": {
       "user": 1,
       "default_ctnr": 1,
-      "phone_number": 1234567890
-    }
+      "phone_number": 1234567890 }
   },
+
   {
     "model": "ctnr.ctnruser",
     "pk": 1,
@@ -37,4 +46,5 @@
         "level": 2
     }
   }
+
 ]

@@ -7,7 +7,7 @@ from cyder.core.ctnr.models import Ctnr
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
-    default_ctnr = models.ForeignKey(Ctnr, default=1)
+    default_ctnr = models.ForeignKey(Ctnr, default=2)
     phone_number = models.IntegerField(null=True)
 
     has_perm = backends.has_perm

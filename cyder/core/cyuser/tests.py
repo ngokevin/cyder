@@ -30,8 +30,6 @@ class AuthenticationTest(TestCase):
     def test_middleware_login_dev(self):
         """
         Test development middleware logs on development user
-        Precondition: anonymous
-        Postcondition: logged in as development
         """
         request = HttpRequest()
         request.user = AnonymousUser()
@@ -44,8 +42,6 @@ class AuthenticationTest(TestCase):
     def test_user_profile_create(self):
         """
         Test that user profile is created on user creation
-        Precondition: new user created
-        Postcondition: user profile created
         """
         user = User(username='user_profile_test', password='user_profile_test')
         user.save()
