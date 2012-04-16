@@ -6,8 +6,10 @@ from django.views.generic.simple import direct_to_template
 urlpatterns = patterns('',
     url(r'^$', direct_to_template, {'template': 'cydns/cydns.html'}),
 
-    url(r'ctnr/', include('cyder.core.ctnr.urls')),
     url(r'cydns/', include('cyder.cydns.urls')),
+
+    url(r'ctnr/', include('cyder.core.ctnr.urls')),
+    url(r'user/', include('cyder.core.cyuser.urls')),
 
     url(r'^search/', include('haystack.urls')),
     url(r'^cysearch/', include('cyder.cysearch.urls')),
