@@ -115,6 +115,7 @@ def unbecome_user(request):
 
     request = login_session(request, username)
 
-    request.session['become_user_stack'] = become_user_stack
+    if len(become_user_stack) > 0:
+        request.session['become_user_stack'] = become_user_stack
 
     return redirect(referer)

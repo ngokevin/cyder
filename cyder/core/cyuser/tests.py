@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.test.client import Client
 
 from cyder.core.ctnr.models import Ctnr, CtnrUser
-from cyder.core.cyuser.views import become_user, login_session
+from cyder.core.cyuser.views import login_session, become_user, unbecome_user
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.domain.models import Domain
@@ -65,7 +65,7 @@ class AuthenticationTest(TestCase):
 
     def test_become_user(self):
         """
-        Tests the functionality to be able to become another user if superuser
+        Tests the functionality to be able to become and unbecome another user if superuser
         """
         self.setup_request()
         request = login_session(self.request, 'development')
@@ -74,7 +74,16 @@ class AuthenticationTest(TestCase):
         user.save()
 
         become_user(self.request, 'development2')
-        self.assertTrue(self.request.user == user)
+        self.assertTrue(self.request.user.username == 'development2')
+        become_user(self.request, 'development')
+        self.assertTrue(self.request.user.username == 'development')
+
+        unbecome_user(self.request)
+        self.assertTrue(self.request.user.username == 'development2')
+        unbecome_user(self.request)
+        self.assertTrue(self.request.user.username == 'development')
+        unbecome_user(self.request)
+        self.assertTrue(self.request.user.username == 'development')
 
     def setup_request(self):
         """
