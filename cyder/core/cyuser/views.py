@@ -1,5 +1,3 @@
-import pdb
-
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
@@ -84,7 +82,6 @@ def become_user(request, username=None):
         return redirect(referer)
 
     # save stack since session will be overwritten
-    pdb.set_trace()
     if 'become_user_stack' in request.session:
         become_user_stack = [user for user in request.session['become_user_stack']]
         become_user_stack.append(current_user)
