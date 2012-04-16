@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.test.client import Client
 
 from cyder.core.ctnr.models import Ctnr, CtnrUser
+from cyder.core.cyuser.views import become_user, login_session
 from cyder.cydns.address_record.models import AddressRecord
 from cyder.cydns.cname.models import CNAME
 from cyder.cydns.domain.models import Domain
@@ -25,19 +26,19 @@ class AuthenticationTest(TestCase):
     fixtures = ['initial_data.json']
 
     def setUp(self):
+        self.setup_request()
         self.dev_middleware = DevAuthenticationMiddleware()
 
     def test_middleware_login_dev(self):
         """
         Test development middleware logs on development user
         """
-        request = HttpRequest()
-        request.user = AnonymousUser()
-        request.session = SessionStore()
+        self.setup_request()
+        self.request.user = AnonymousUser()
 
-        self.dev_middleware.process_request(request)
+        self.dev_middleware.process_request(self.request)
 
-        self.assertTrue(str(request.user) is not 'AnonymousUser')
+        self.assertTrue(str(self.request.user) is not 'AnonymousUser')
 
     def test_user_profile_create(self):
         """
@@ -54,14 +55,34 @@ class AuthenticationTest(TestCase):
         """
         Test session ctnr set on log in
         """
-        request = HttpRequest()
-        request.user = AnonymousUser()
-        request.session = SessionStore()
+        self.setup_request()
+        self.request.user = AnonymousUser()
 
         dev_middleware = DevAuthenticationMiddleware()
-        dev_middleware.process_request(request)
+        dev_middleware.process_request(self.request)
 
-        self.assertTrue('ctnr' in request.session)
+        self.assertTrue('ctnr' in self.request.session)
+
+    def test_become_user(self):
+        """
+        Tests the functionality to be able to become another user if superuser
+        """
+        self.setup_request()
+        request = login_session(self.request, 'development')
+
+        user = User.objects.get_or_create(username='development2')[0]
+        user.save()
+
+        become_user(self.request, 'development2')
+        self.assertTrue(self.request.user == user)
+
+    def setup_request(self):
+        """
+        Utility function for flushing and setting up request object for testing
+        """
+        self.request = HttpRequest()
+        self.request.user = AnonymousUser()
+        self.request.session = SessionStore()
 
 
 class PermissionsTest(TestCase):
