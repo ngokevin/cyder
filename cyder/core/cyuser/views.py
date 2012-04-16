@@ -1,3 +1,5 @@
+import pdb
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
@@ -75,7 +77,47 @@ def become_user(request, username=None):
     Become another user with their permissions, be able to change back
     """
     referer = request.META.get('HTTP_REFERER', '/')
+    current_user = request.user.username
+
+    # don't do anything if becoming self
+    if current_user == username:
+        return redirect(referer)
+
+    # save stack since session will be overwritten
+    pdb.set_trace()
+    if 'become_user_stack' in request.session:
+        become_user_stack = [user for user in request.session['become_user_stack']]
+        become_user_stack.append(current_user)
+    else:
+        become_user_stack = [current_user]
 
     request = login_session(request, username)
+
+    # restore user stack
+    if str(request.user) == username:
+        request.session['become_user_stack'] = become_user_stack
+        messages.success(request, 'Successfully became %s' % (username))
+
+    return redirect(referer)
+
+
+def unbecome_user(request):
+    """
+    If user became another user, unbecome by popping become_user_stack
+    """
+    referer = request.META.get('HTTP_REFERER', '/')
+
+    if 'become_user_stack' in request.session \
+    and len(request.session['become_user_stack']) > 0:
+        become_user_stack = [user for user in request.session['become_user_stack']]
+        username = become_user_stack.pop()
+        messages.success(request, 'Successfully rebecame %s' % (username))
+    else:
+        become_user_stack = []
+        username = request.user.username
+
+    request = login_session(request, username)
+
+    request.session['become_user_stack'] = become_user_stack
 
     return redirect(referer)

@@ -5,7 +5,6 @@ from cyder.core.cyuser.views import login_session
 class DevAuthenticationMiddleware(object):
 
     def process_request(self, request):
-
         # log in as development user
         if request.user.is_anonymous():
             request = login_session(request, 'development')
