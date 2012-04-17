@@ -5,7 +5,7 @@ from cyder.cydns.domain.models import Domain
 from cyder.cydns.reverse_domain.models import ReverseDomain
 
 
-def tablefy(objects):
+def tablefy(objects): #TODO: add ability to specify form or extra urls?
     """Given a list of objects, build a matrix that is can be printed as a table. Also return
     the headers for that table. Populate the given url with the pk of the object. Return all
     headers, field array, and urls in a seperate lists.

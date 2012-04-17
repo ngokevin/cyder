@@ -37,3 +37,6 @@ class CtnrUser(models.Model):
     class Meta:
         db_table = 'ctnr_users'
         unique_together = ('ctnr', 'user')
+
+    def get_absolute_url(self):
+        return '/ctnr/%s/' % (self.ctnr.id)

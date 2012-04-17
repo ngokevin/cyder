@@ -4,15 +4,6 @@
     Containers
 {% endblock %}
 
-{% block ctnr_nav %}
-    {{ super() }}
-    {% if request.session.superuser %}
-        <span class="nav-item">
-            <a class="sub-link nav-link" href="/ctnr/create/">Create Container</a>
-        </span>
-    {% endif %}
-{% endblock %}
-
 {% block header %}
     Containers
 {% endblock %}
